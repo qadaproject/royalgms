@@ -1,0 +1,33 @@
+{
+  "name": "SeatingZone",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Zone name e.g. Inner Circle, Royal Pavilion"
+    },
+    "capacity": {
+      "type": "number",
+      "description": "Maximum number of guests"
+    },
+    "categories_allowed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Which guest categories are allowed in this zone"
+    },
+    "description": {
+      "type": "string",
+      "description": "Zone description and location details"
+    },
+    "special_notes": {
+      "type": "string",
+      "description": "Security or protocol notes for this zone"
+    }
+  },
+  "required": [
+    "name",
+    "capacity"
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "name": "Guest",
+  "type": "object",
+  "properties": {
+    "formal_salutation": {
+      "type": "string",
+      "description": "e.g. His Royal Majesty, Her Excellency, Rt. Hon."
+    },
+    "full_name": {
+      "type": "string",
+      "description": "Full legal name of the guest"
+    },
+    "official_title": {
+      "type": "string",
+      "description": "e.g. Governor of Delta State, CEO of Shell Nigeria"
+    },
+    "post_nominals": {
+      "type": "string",
+      "description": "e.g. CFR, OFR, GCON, MFR, PhD"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "A - Royal",
+        "B - Federal",
+        "C - State",
+        "D - Corporate",
+        "E - Diplomatic",
+        "F - Traditional",
+        "G - General"
+      ],
+      "description": "Hierarchical category of the guest"
+    },
+    "email": {
+      "type": "string",
+      "description": "Primary email address"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Primary phone number"
+    },
+    "contact_person_name": {
+      "type": "string",
+      "description": "PA/Aide name for follow-ups"
+    },
+    "contact_person_phone": {
+      "type": "string",
+      "description": "PA/Aide phone number"
+    },
+    "contact_person_email": {
+      "type": "string",
+      "description": "PA/Aide email"
+    },
+    "rsvp_status": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "Accepted",
+        "Declined",
+        "Proxy"
+      ],
+      "default": "Pending"
+    },
+    "dietary_requirements": {
+      "type": "string",
+      "description": "Any dietary restrictions or preferences"
+    },
+    "medical_alerts": {
+      "type": "string",
+      "description": "Any medical conditions to be aware of"
+    },
+    "security_detail_size": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of orderlies/aides"
+    },
+    "arrival_details": {
+      "type": "string",
+      "description": "Flight details or vehicle plate numbers"
+    },
+    "seating_zone": {
+      "type": "string",
+      "description": "Assigned seating zone"
+    },
+    "special_requirements": {
+      "type": "string",
+      "description": "High-level security clearance or cultural etiquette notes"
+    },
+    "qr_code": {
+      "type": "string",
+      "description": "Unique QR code identifier"
+    },
+    "protocol_validated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the protocol team has validated this entry"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes"
+    }
+  },
+  "required": [
+    "full_name",
+    "category"
+  ]
+}

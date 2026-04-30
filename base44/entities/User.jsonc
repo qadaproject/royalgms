@@ -1,0 +1,17 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "chairman",
+        "data_manager",
+        "dispatch_unit",
+        "protocol_liaison"
+      ],
+      "default": "admin"
+    }
+  }
+}
