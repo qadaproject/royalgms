@@ -1,8 +1,16 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, ShieldCheck, ShieldAlert } from "lucide-react";
+import { Pencil, Trash2, ShieldCheck, ShieldAlert, Link2 } from "lucide-react";
+import { toast } from "sonner";
 import CategoryBadge from "../shared/CategoryBadge";
 import StatusBadge from "../shared/StatusBadge";
+
+function copyRSVPLink(guest) {
+  if (!guest.qr_code) { toast.error("No RSVP token yet. Re-save the guest."); return; }
+  const link = `${window.location.origin}/rsvp?token=${guest.qr_code}`;
+  navigator.clipboard.writeText(link);
+  toast.success("RSVP link copied");
+}
 
 export default function GuestTable({ guests, onEdit, onDelete }) {
   if (guests.length === 0) {
@@ -70,6 +78,9 @@ export default function GuestTable({ guests, onEdit, onDelete }) {
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-accent" title="Copy RSVP Link" onClick={() => copyRSVPLink(guest)}>
+                    <Link2 className="w-3.5 h-3.5" />
+                  </Button>
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(guest)}>
                     <Pencil className="w-3.5 h-3.5" />
                   </Button>

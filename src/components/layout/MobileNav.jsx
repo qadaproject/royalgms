@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LayoutDashboard, Users, Send, Armchair, BarChart3, Crown } from "lucide-react";
+import { Menu, X, LayoutDashboard, Users, Send, Armchair, BarChart3, Bell, Shield } from "lucide-react";
 import RoyalCrest from "./RoyalCrest";
 
 const navItems = [
@@ -8,7 +8,9 @@ const navItems = [
   { path: "/guests", label: "Guests", icon: Users },
   { path: "/invitations", label: "Dispatch", icon: Send },
   { path: "/seating", label: "Seating", icon: Armchair },
+  { path: "/notifications", label: "Notifications", icon: Bell },
   { path: "/reports", label: "Reports", icon: BarChart3 },
+  { path: "/checkpoint", label: "Checkpoint", icon: Shield },
 ];
 
 export default function MobileNav({ user }) {

@@ -11,6 +11,9 @@ import Guests from './pages/Guests';
 import Invitations from './pages/Invitations';
 import Seating from './pages/Seating';
 import Reports from './pages/Reports';
+import Notifications from './pages/Notifications';
+import SecurityCheckpoint from './pages/SecurityCheckpoint';
+import RSVPPortal from './pages/RSVPPortal';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -38,12 +41,15 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
+      <Route path="/rsvp" element={<RSVPPortal />} />
+      <Route path="/checkpoint" element={<SecurityCheckpoint />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/guests" element={<Guests />} />
         <Route path="/invitations" element={<Invitations />} />
         <Route path="/seating" element={<Seating />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/notifications" element={<Notifications />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

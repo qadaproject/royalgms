@@ -1,0 +1,45 @@
+{
+  "name": "NotificationLog",
+  "type": "object",
+  "properties": {
+    "guest_id": {
+      "type": "string"
+    },
+    "guest_name": {
+      "type": "string"
+    },
+    "guest_email": {
+      "type": "string"
+    },
+    "guest_phone": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "Email",
+        "SMS",
+        "Both"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Sent",
+        "Failed",
+        "Pending"
+      ]
+    },
+    "message_preview": {
+      "type": "string"
+    },
+    "rsvp_token": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "guest_id",
+    "guest_name",
+    "channel"
+  ]
+}
