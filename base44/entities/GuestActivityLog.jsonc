@@ -1,0 +1,48 @@
+{
+  "name": "GuestActivityLog",
+  "type": "object",
+  "properties": {
+    "guest_id": {
+      "type": "string",
+      "description": "Reference to the Guest"
+    },
+    "guest_name": {
+      "type": "string",
+      "description": "Cached guest name"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "invitation_dispatched",
+        "delivery_status_changed",
+        "rsvp_status_changed",
+        "notification_sent",
+        "zone_assigned",
+        "protocol_validated"
+      ],
+      "description": "Type of event logged"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the event"
+    },
+    "old_value": {
+      "type": "string",
+      "description": "Previous value (for status changes)"
+    },
+    "new_value": {
+      "type": "string",
+      "description": "New value (for status changes)"
+    },
+    "performed_by": {
+      "type": "string",
+      "description": "User who performed the action"
+    }
+  },
+  "required": [
+    "guest_id",
+    "guest_name",
+    "event_type",
+    "description"
+  ]
+}

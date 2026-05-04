@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import GuestActivityLog from "./GuestActivityLog";
 
 const categories = ["A - Royal", "B - Federal", "C - State", "D - Corporate", "E - Diplomatic", "F - Traditional", "G - General"];
 const salutations = ["His Royal Majesty", "Her Royal Majesty", "His Excellency", "Her Excellency", "Rt. Hon.", "Hon.", "Chief", "Dr.", "Prof.", "Engr.", "Barr.", "Alhaji", "Chief (Mrs.)", "Mr.", "Mrs.", "Ms."];
@@ -60,10 +61,11 @@ export default function GuestFormDialog({ open, onOpenChange, guest, onSave }) {
         </DialogHeader>
 
         <Tabs defaultValue="basic" className="mt-4">
-          <TabsList className="grid grid-cols-3 w-full">
+          <TabsList className={`grid w-full ${isEdit ? "grid-cols-4" : "grid-cols-3"}`}>
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
             <TabsTrigger value="contact">Contact & Liaison</TabsTrigger>
             <TabsTrigger value="protocol">Protocol & Security</TabsTrigger>
+            {isEdit && <TabsTrigger value="activity">Activity Log</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4 mt-4">
@@ -166,6 +168,12 @@ export default function GuestFormDialog({ open, onOpenChange, guest, onSave }) {
               <Textarea value={form.notes} onChange={(e) => update("notes", e.target.value)} />
             </div>
           </TabsContent>
+
+          {isEdit && (
+            <TabsContent value="activity" className="mt-4">
+              <GuestActivityLog guestId={guest?.id} />
+            </TabsContent>
+          )}
         </Tabs>
 
         <div className="flex justify-end gap-3 mt-6 pt-4 border-t">

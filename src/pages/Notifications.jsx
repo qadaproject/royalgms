@@ -90,6 +90,15 @@ export default function Notifications() {
       rsvp_token: guest.qr_code,
     });
 
+    // Write activity log entry
+    base44.entities.GuestActivityLog.create({
+      guest_id: guest.id,
+      guest_name: guest.full_name,
+      event_type: "notification_sent",
+      description: `${ch} RSVP reminder ${success ? "sent" : "failed"} via ${ch.toLowerCase()} channel`,
+      new_value: success ? "Sent" : "Failed",
+    }).catch(() => {});
+
     setSending((prev) => ({ ...prev, [guest.id]: false }));
     if (success) {
       toast.success(`Notification sent to ${guest.full_name}`);

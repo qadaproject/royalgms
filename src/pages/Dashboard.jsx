@@ -8,16 +8,24 @@ import DashboardCategoryBreakdown from "../components/dashboard/CategoryBreakdow
 import RecentActivity from "../components/dashboard/RecentActivity";
 import NoShowAlerts from "../components/dashboard/NoShowAlerts";
 import TierRSVPChart from "../components/dashboard/TierRSVPChart";
+import ZoneCapacityLive from "../components/dashboard/ZoneCapacityLive";
 
 export default function Dashboard() {
   const { data: guests = [] } = useQuery({
     queryKey: ["guests"],
     queryFn: () => base44.entities.Guest.list("-created_date", 500),
+    refetchInterval: 30000,
   });
 
   const { data: invitations = [] } = useQuery({
     queryKey: ["invitations"],
     queryFn: () => base44.entities.Invitation.list("-created_date", 500),
+  });
+
+  const { data: zones = [] } = useQuery({
+    queryKey: ["zones"],
+    queryFn: () => base44.entities.SeatingZone.list("-created_date", 100),
+    refetchInterval: 30000,
   });
 
   const accepted = guests.filter((g) => g.rsvp_status === "Accepted").length;
@@ -52,10 +60,19 @@ export default function Dashboard() {
         <TierRSVPChart guests={guests} invitations={invitations} />
       </div>
 
-      {/* Activity & Alerts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Live Zone Capacity + Alerts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-1">
+          <ZoneCapacityLive zones={zones} guests={guests} />
+        </div>
+        <div className="lg:col-span-2">
+          <NoShowAlerts guests={guests} invitations={invitations} />
+        </div>
+      </div>
+
+      {/* Activity */}
+      <div className="grid grid-cols-1 gap-6">
         <RecentActivity guests={guests} invitations={invitations} />
-        <NoShowAlerts guests={guests} invitations={invitations} />
       </div>
     </div>
   );

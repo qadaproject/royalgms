@@ -28,6 +28,11 @@ export default function Seating() {
     queryFn: () => base44.entities.Guest.list("-created_date", 500),
   });
 
+  const { data: invitations = [] } = useQuery({
+    queryKey: ["invitations"],
+    queryFn: () => base44.entities.Invitation.list("-created_date", 500),
+  });
+
   const createZoneMutation = useMutation({
     mutationFn: (data) => base44.entities.SeatingZone.create(data),
     onSuccess: () => {
@@ -128,6 +133,7 @@ export default function Seating() {
         onOpenChange={() => setAssignZone(null)}
         zone={assignZone}
         guests={guests}
+        invitations={invitations}
         onAssign={(guestId) => assignGuestMutation.mutate({ guestId, zoneName: assignZone.name })}
       />
     </div>

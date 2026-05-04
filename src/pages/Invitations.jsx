@@ -10,6 +10,7 @@ import InvitationFilters from "../components/invitations/InvitationFilters";
 import CreateInvitationDialog from "../components/invitations/CreateInvitationDialog";
 import UpdateDeliveryDialog from "../components/invitations/UpdateDeliveryDialog";
 import InvitationPDFExport from "../components/invitations/InvitationPDFExport";
+import BulkPrintExport from "../components/invitations/BulkPrintExport";
 
 export default function Invitations() {
   const [search, setSearch] = useState("");
@@ -18,6 +19,7 @@ export default function Invitations() {
   const [createOpen, setCreateOpen] = useState(false);
   const [updateInvite, setUpdateInvite] = useState(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [bulkPrintOpen, setBulkPrintOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -41,11 +43,23 @@ export default function Invitations() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Invitation.update(id, data),
-    onSuccess: () => {
+    mutationFn: ({ id, data, prev }) =>
+      base44.entities.Invitation.update(id, data).then((res) => ({ res, data, prev })),
+    onSuccess: ({ data, prev }) => {
       queryClient.invalidateQueries({ queryKey: ["invitations"] });
       setUpdateInvite(null);
       toast.success("Delivery status updated");
+      // Write activity log entry if status changed
+      if (prev && data.delivery_status && data.delivery_status !== prev.delivery_status) {
+        base44.entities.GuestActivityLog.create({
+          guest_id: prev.guest_id,
+          guest_name: prev.guest_name,
+          event_type: "delivery_status_changed",
+          description: `Invitation delivery status updated`,
+          old_value: prev.delivery_status,
+          new_value: data.delivery_status,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -59,6 +73,10 @@ export default function Invitations() {
   return (
     <div>
       <PageHeader title="Dispatch Tracker" subtitle={`${invitations.length} invitations tracked`}>
+        <Button variant="outline" onClick={() => setBulkPrintOpen(true)}>
+          <Printer className="w-4 h-4 mr-2" />
+          Bulk Print
+        </Button>
         <Button variant="outline" onClick={() => setExportOpen(true)}>
           <Printer className="w-4 h-4 mr-2" />
           Export PDF
@@ -101,7 +119,7 @@ export default function Invitations() {
         invitation={updateInvite}
         open={!!updateInvite}
         onOpenChange={() => setUpdateInvite(null)}
-        onSave={(id, data) => updateMutation.mutate({ id, data })}
+        onSave={(id, data) => updateMutation.mutate({ id, data, prev: updateInvite })}
       />
 
       <InvitationPDFExport
@@ -109,6 +127,13 @@ export default function Invitations() {
         onOpenChange={setExportOpen}
         guests={guests}
         invitations={invitations}
+      />
+
+      <BulkPrintExport
+        open={bulkPrintOpen}
+        onOpenChange={setBulkPrintOpen}
+        invitations={filtered}
+        guests={guests}
       />
     </div>
   );
