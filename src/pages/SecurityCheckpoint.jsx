@@ -31,13 +31,25 @@ export default function SecurityCheckpoint() {
     setError("");
     setResult(null);
     try {
-      const results = await base44.entities.Guest.filter({ qr_code: code.trim() }, "-created_date", 1);
+      // Try exact QR code match first
+      let results = await base44.entities.Guest.filter({ qr_code: code.trim() }, "-created_date", 1);
+      // If no result, try fetching all and filtering by name
+      if (!results || results.length === 0) {
+        const all = await base44.entities.Guest.list("-created_date", 500);
+        const q = code.trim().toLowerCase();
+        results = all.filter(
+          (g) =>
+            g.full_name?.toLowerCase().includes(q) ||
+            g.qr_code?.toLowerCase().includes(q) ||
+            g.official_title?.toLowerCase().includes(q)
+        ).slice(0, 1);
+      }
       if (results && results.length > 0) {
         const g = results[0];
         setResult(g);
         setScanHistory((prev) => [{ id: g.id, name: g.full_name, status: g.rsvp_status, time: new Date().toLocaleTimeString() }, ...prev.slice(0, 9)]);
       } else {
-        setError("No guest found for this code. Verify manually.");
+        setError("No guest found for this code or name. Verify manually.");
       }
     } catch {
       setError("Lookup failed. Check connection.");
@@ -98,7 +110,7 @@ export default function SecurityCheckpoint() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && lookup(query)}
-                placeholder="Enter QR code e.g. RGMS-1234..."
+                placeholder="Enter QR code (e.g. RGMS-ROYAL-001) or guest name..."
                 className="bg-[#0d0604] border-[#c9a84c]/20 text-white placeholder:text-white/30 focus:border-[#c9a84c]/60 flex-1"
               />
               <Button
@@ -230,6 +242,20 @@ export default function SecurityCheckpoint() {
                   <div className="pt-2 border-t border-white/10">
                     <p className="text-white/40 text-[10px] uppercase tracking-wider mb-1">Arrival Details</p>
                     <p className="text-white/70 text-xs">{result.arrival_details}</p>
+                  </div>
+                )}
+
+                {result.qr_code && (
+                  <div className="pt-3 border-t border-white/10 flex flex-col items-center gap-2">
+                    <p className="text-white/40 text-[10px] uppercase tracking-wider">Admission Token</p>
+                    <div className="bg-white p-2 rounded-lg">
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(result.qr_code)}`}
+                        alt="QR Code"
+                        className="w-28 h-28"
+                      />
+                    </div>
+                    <p className="text-[#c9a84c] text-xs font-mono font-bold tracking-widest">{result.qr_code}</p>
                   </div>
                 )}
               </div>

@@ -8,6 +8,7 @@ import { Bell, Send, Mail, MessageSquare, CheckCircle2, AlertTriangle, Loader2, 
 import { toast } from "sonner";
 import PageHeader from "../components/shared/PageHeader";
 import CategoryBadge from "../components/shared/CategoryBadge";
+import ReminderWorkflow from "../components/notifications/ReminderWorkflow";
 import { format } from "date-fns";
 
 const APP_URL = window.location.origin;
@@ -35,6 +36,11 @@ export default function Notifications() {
   const { data: guests = [] } = useQuery({
     queryKey: ["guests"],
     queryFn: () => base44.entities.Guest.list("-created_date", 500),
+  });
+
+  const { data: invitations = [] } = useQuery({
+    queryKey: ["invitations"],
+    queryFn: () => base44.entities.Invitation.list("-created_date", 500),
   });
 
   const { data: logs = [] } = useQuery({
@@ -121,6 +127,11 @@ export default function Notifications() {
           Send to All Pending ({pendingGuests.filter((g) => !sentGuestIds.has(g.id)).length})
         </Button>
       </PageHeader>
+
+      {/* Automated Reminder Workflow */}
+      <div className="mb-6">
+        <ReminderWorkflow guests={guests} invitations={invitations} />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Pending Guests */}

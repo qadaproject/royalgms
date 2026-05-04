@@ -10,11 +10,12 @@ const categoryStyles = {
   "G - General": "bg-slate-500/10 text-slate-700 border-slate-500/20",
 };
 
-export default function CategoryBadge({ category }) {
+export default function CategoryBadge({ category, compact }) {
   if (!category) return null;
+  const label = compact ? category.split(" - ")[0] : category;
   return (
     <Badge variant="outline" className={`text-[10px] font-medium uppercase tracking-wider border ${categoryStyles[category] || "bg-muted text-muted-foreground"}`}>
-      {category}
+      {label}
     </Badge>
   );
 }

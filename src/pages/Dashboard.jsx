@@ -7,6 +7,7 @@ import DashboardRSVPChart from "../components/dashboard/RSVPChart";
 import DashboardCategoryBreakdown from "../components/dashboard/CategoryBreakdown";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import NoShowAlerts from "../components/dashboard/NoShowAlerts";
+import TierRSVPChart from "../components/dashboard/TierRSVPChart";
 
 export default function Dashboard() {
   const { data: guests = [] } = useQuery({
@@ -44,6 +45,11 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <DashboardRSVPChart guests={guests} />
         <DashboardCategoryBreakdown guests={guests} />
+      </div>
+
+      {/* Tier RSVP Chart */}
+      <div className="grid grid-cols-1 gap-6 mb-6">
+        <TierRSVPChart guests={guests} invitations={invitations} />
       </div>
 
       {/* Activity & Alerts */}

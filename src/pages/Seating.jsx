@@ -2,17 +2,19 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, LayoutGrid, Map } from "lucide-react";
 import { toast } from "sonner";
 import PageHeader from "../components/shared/PageHeader";
 import ZoneCard from "../components/seating/ZoneCard";
 import ZoneFormDialog from "../components/seating/ZoneFormDialog";
 import AssignGuestDialog from "../components/seating/AssignGuestDialog";
+import SeatingChartView from "../components/seating/SeatingChartView";
 
 export default function Seating() {
   const [zoneDialogOpen, setZoneDialogOpen] = useState(false);
   const [editZone, setEditZone] = useState(null);
   const [assignZone, setAssignZone] = useState(null);
+  const [viewMode, setViewMode] = useState("cards"); // "cards" | "chart"
 
   const queryClient = useQueryClient();
 
@@ -64,10 +66,26 @@ export default function Seating() {
   return (
     <div>
       <PageHeader title="Seating & Protocol" subtitle="Manage zones and assign guests">
-        <Button onClick={() => { setEditZone(null); setZoneDialogOpen(true); }}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Zone
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-lg border border-border overflow-hidden">
+            <button
+              onClick={() => setViewMode("cards")}
+              className={`px-3 py-1.5 text-xs flex items-center gap-1.5 transition-colors ${viewMode === "cards" ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" /> Cards
+            </button>
+            <button
+              onClick={() => setViewMode("chart")}
+              className={`px-3 py-1.5 text-xs flex items-center gap-1.5 transition-colors ${viewMode === "chart" ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              <Map className="w-3.5 h-3.5" /> Chart View
+            </button>
+          </div>
+          <Button onClick={() => { setEditZone(null); setZoneDialogOpen(true); }}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Zone
+          </Button>
+        </div>
       </PageHeader>
 
       {isLoading ? (
@@ -79,6 +97,8 @@ export default function Seating() {
           <p className="text-lg font-heading">No seating zones yet</p>
           <p className="text-sm mt-1">Create your first zone to start assigning guests</p>
         </div>
+      ) : viewMode === "chart" ? (
+        <SeatingChartView zones={zones} guests={guests} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {zones.map((zone) => {

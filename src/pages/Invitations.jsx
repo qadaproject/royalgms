@@ -2,13 +2,14 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Printer } from "lucide-react";
 import { toast } from "sonner";
 import PageHeader from "../components/shared/PageHeader";
 import InvitationTable from "../components/invitations/InvitationTable";
 import InvitationFilters from "../components/invitations/InvitationFilters";
 import CreateInvitationDialog from "../components/invitations/CreateInvitationDialog";
 import UpdateDeliveryDialog from "../components/invitations/UpdateDeliveryDialog";
+import InvitationPDFExport from "../components/invitations/InvitationPDFExport";
 
 export default function Invitations() {
   const [search, setSearch] = useState("");
@@ -16,6 +17,7 @@ export default function Invitations() {
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [createOpen, setCreateOpen] = useState(false);
   const [updateInvite, setUpdateInvite] = useState(null);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -57,6 +59,10 @@ export default function Invitations() {
   return (
     <div>
       <PageHeader title="Dispatch Tracker" subtitle={`${invitations.length} invitations tracked`}>
+        <Button variant="outline" onClick={() => setExportOpen(true)}>
+          <Printer className="w-4 h-4 mr-2" />
+          Export PDF
+        </Button>
         <Button onClick={() => setCreateOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           New Dispatch
@@ -96,6 +102,13 @@ export default function Invitations() {
         open={!!updateInvite}
         onOpenChange={() => setUpdateInvite(null)}
         onSave={(id, data) => updateMutation.mutate({ id, data })}
+      />
+
+      <InvitationPDFExport
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        guests={guests}
+        invitations={invitations}
       />
     </div>
   );
