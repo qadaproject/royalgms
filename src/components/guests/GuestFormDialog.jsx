@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GuestActivityLog from "./GuestActivityLog";
 
 const categories = ["A - Royal", "B - Federal", "C - State", "D - Corporate", "E - Diplomatic", "F - Traditional", "G - General"];
-const salutations = ["His Royal Majesty", "Her Royal Majesty", "His Excellency", "Her Excellency", "Rt. Hon.", "Hon.", "Chief", "Dr.", "Prof.", "Engr.", "Barr.", "Alhaji", "Chief (Mrs.)", "Mr.", "Mrs.", "Ms."];
+const salutations = ["His Imperial Majesty", "His Majesty", "His Royal Highness", "His Royal Majesty", "Her Royal Majesty", "His Excellency", "Her Excellency", "Senator", "Pastor", "Rt. Hon.", "Hon.", "Chief", "Dr.", "Prof.", "Engr.", "Barr.", "Alhaji", "Chief (Mrs.)", "Mr.", "Mrs.", "Ms."];
 
 const emptyGuest = {
   formal_salutation: "",

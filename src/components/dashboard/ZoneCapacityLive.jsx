@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { MapPin, Wifi } from "lucide-react";
+import { MapPin, Wifi, AlertTriangle } from "lucide-react";
 
 export default function ZoneCapacityLive({ zones, guests }) {
   const [pulse, setPulse] = useState(false);
@@ -14,17 +13,19 @@ export default function ZoneCapacityLive({ zones, guests }) {
 
   // Build per-zone check-in stats (Accepted = checked in for live view)
   const zoneStats = zones.map((z) => {
-    const assigned = guests.filter((g) => g.seating_zone === z.name);
-    const checkedIn = assigned.filter((g) => g.rsvp_status === "Accepted").length;
+    const zoneGuests = guests.filter((g) => g.seating_zone === z.name);
+    const checkedIn = zoneGuests.filter((g) => g.rsvp_status === "Accepted").length;
+    const assigned = zoneGuests.length;
     const capacity = z.capacity || 0;
-    const pct = capacity ? Math.min(100, Math.round((checkedIn / capacity) * 100)) : 0;
+    const pct = capacity ? Math.min(100, Math.round((assigned / capacity) * 100)) : 0;
 
     let statusColor = "bg-emerald-500";
     let textColor = "text-emerald-700";
-    if (pct >= 90) { statusColor = "bg-destructive"; textColor = "text-destructive"; }
+    const isOverCapacity = assigned > capacity && capacity > 0;
+    if (isOverCapacity || pct >= 90) { statusColor = "bg-destructive"; textColor = "text-destructive"; }
     else if (pct >= 70) { statusColor = "bg-amber-500"; textColor = "text-amber-700"; }
 
-    return { ...z, checkedIn, capacity, pct, statusColor, textColor };
+    return { ...z, checkedIn, assigned, capacity, pct, statusColor, textColor, isOverCapacity };
   });
 
   const totalCheckedIn = zoneStats.reduce((s, z) => s + z.checkedIn, 0);
@@ -62,16 +63,22 @@ export default function ZoneCapacityLive({ zones, guests }) {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-foreground truncate max-w-[60%]">{z.name}</span>
                 <span className={`text-xs font-semibold ${z.textColor}`}>
-                  {z.checkedIn} / {z.capacity}
+                  {z.assigned} / {z.capacity}
                   <span className="text-muted-foreground font-normal ml-1">({z.pct}%)</span>
                 </span>
               </div>
               <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-700 ${z.statusColor}`}
-                  style={{ width: `${z.pct}%` }}
+                  style={{ width: `${Math.min(100, z.pct)}%` }}
                 />
               </div>
+              {z.isOverCapacity && (
+                <div className="flex items-center gap-1.5 text-destructive text-[10px] font-semibold">
+                  <AlertTriangle className="w-3 h-3" />
+                  Over capacity — {z.assigned - z.capacity} guest{z.assigned - z.capacity > 1 ? "s" : ""} exceeds limit
+                </div>
+              )}
             </div>
           ))
         )}

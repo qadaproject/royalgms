@@ -11,6 +11,19 @@ const TIER_BADGE = {
   "Tier 3 - Digital": "bg-blue-500/10 text-blue-700 border-blue-500/20",
 };
 
+// Category-based colour coding for invitations
+const CATEGORY_COLORS = {
+  "A - Royal":      { accent: "#7a1c2e", bg: "#f9f0f2", border: "#7a1c2e" },
+  "B - Federal":    { accent: "#1a3a6b", bg: "#f0f3f9", border: "#1a3a6b" },
+  "C - State":      { accent: "#1a5c3a", bg: "#f0f7f3", border: "#1a5c3a" },
+  "D - Corporate":  { accent: "#4a3000", bg: "#faf6ee", border: "#c9a84c" },
+  "E - Diplomatic": { accent: "#4a1a6b", bg: "#f5f0f9", border: "#4a1a6b" },
+  "F - Traditional":{ accent: "#6b3a00", bg: "#fdf5ee", border: "#b87333" },
+  "G - General":    { accent: "#2a2a2a", bg: "#f8f8f8", border: "#888888" },
+};
+
+const LOGO_URL = "https://media.base44.com/images/public/69f83e971133ed44e3fc81f6/a46b1eb03_atuwatseiii.png";
+
 function buildPrintHTML(selected, invitations, guests) {
   const guestMap = Object.fromEntries(guests.map((g) => [g.id, g]));
 
@@ -18,64 +31,59 @@ function buildPrintHTML(selected, invitations, guests) {
     const g = guestMap[inv.guest_id] || {};
     const salutation = g.formal_salutation ? `${g.formal_salutation} ` : "";
     const postNominals = g.post_nominals ? `, ${g.post_nominals}` : "";
-    const tierLabel = inv.tier || "";
-    const isGold = tierLabel.includes("Gold");
-    const isWax = tierLabel.includes("Wax");
-
-    const accentColor = isGold ? "#c9a84c" : isWax ? "#7c3aed" : "#0ea5e9";
-    const tierText = isGold ? "TIER I — GOLD FOIL INVITATION" : isWax ? "TIER II — WAX SEAL INVITATION" : "TIER III — DIGITAL INVITATION";
+    const cat = g.category || inv.guest_category || "G - General";
+    const colors = CATEGORY_COLORS[cat] || CATEGORY_COLORS["G - General"];
 
     return `
-    <div class="card" style="border-top:4px solid ${accentColor};">
-      <div class="card-header" style="color:${accentColor};">${tierText}</div>
-      <div class="emblem">♛</div>
-      <div class="event-title">5th Coronation Anniversary</div>
+    <div class="card" style="border-top:5px solid ${colors.accent}; background:${colors.bg};">
+      <div class="card-header" style="color:${colors.accent};">OFFICIAL INVITATION — ${cat}</div>
+      <div class="logo-wrap">
+        <img src="${LOGO_URL}" class="logo-img" alt="Royal Crest" />
+      </div>
+      <div class="event-title" style="color:${colors.accent};">5th Coronation Anniversary</div>
       <div class="event-subtitle">Ogiame Atuwatse III · Olu of Warri Kingdom</div>
-      <div class="divider" style="background:${accentColor};"></div>
+      <div class="divider" style="background:${colors.accent};"></div>
       <div class="guest-name">${salutation}${g.full_name || inv.guest_name}${postNominals}</div>
       ${g.official_title ? `<div class="guest-title">${g.official_title}</div>` : ""}
-      <div class="details-grid">
-        <div class="detail-item"><span class="detail-label">Category</span><span class="detail-value">${inv.guest_category || g.category || "—"}</span></div>
-        <div class="detail-item"><span class="detail-label">Zone</span><span class="detail-value">${g.seating_zone || "—"}</span></div>
-        <div class="detail-item"><span class="detail-label">Dispatch</span><span class="detail-value">${inv.dispatch_type || "—"}</span></div>
-        <div class="detail-item"><span class="detail-label">Status</span><span class="detail-value">${inv.delivery_status || "Pending"}</span></div>
-        ${inv.tracking_number ? `<div class="detail-item"><span class="detail-label">Tracking</span><span class="detail-value">${inv.tracking_number}</span></div>` : ""}
-        ${inv.courier_name ? `<div class="detail-item"><span class="detail-label">Courier</span><span class="detail-value">${inv.courier_name}</span></div>` : ""}
+      <div class="details-grid" style="border-color:${colors.border}30; background:${colors.accent}08;">
+        <div class="detail-item"><span class="detail-label" style="color:${colors.accent}99;">Category</span><span class="detail-value">${cat}</span></div>
+        <div class="detail-item"><span class="detail-label" style="color:${colors.accent}99;">Zone</span><span class="detail-value">${g.seating_zone || "—"}</span></div>
       </div>
       ${g.qr_code ? `
       <div class="qr-section">
         <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(g.qr_code)}" class="qr-img" alt="QR" />
         <div class="qr-code-text">${g.qr_code}</div>
       </div>` : ""}
-      <div class="footer-note">This is an official invitation document. Present upon arrival.</div>
+      <div class="footer-note" style="border-color:${colors.accent}20;">This is an official invitation document. Present upon arrival at the venue.</div>
     </div>`;
   }).join("");
 
   return `<!DOCTYPE html><html><head><title>Invitation Dispatch Documents</title>
+  <link href="https://fonts.cdnfonts.com/css/trajan-pro" rel="stylesheet">
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: 'Georgia', serif; background: #f5f0e8; }
+    body { font-family: 'Trajan Pro', 'Georgia', serif; background: #f5f0e8; }
     .card { width: 680px; margin: 24px auto; background: #fff; padding: 40px 48px; border-radius: 6px;
       box-shadow: 0 2px 16px rgba(0,0,0,0.12); page-break-after: always; }
-    .card-header { font-size: 10px; font-family: sans-serif; letter-spacing: 0.18em; font-weight: 700;
-      text-transform: uppercase; text-align: center; margin-bottom: 20px; }
-    .emblem { font-size: 36px; text-align: center; margin-bottom: 8px; opacity: 0.7; }
-    .event-title { font-size: 26px; font-weight: 700; text-align: center; color: #1a1a1a; letter-spacing: 0.04em; }
-    .event-subtitle { font-size: 13px; text-align: center; color: #666; margin-top: 4px; letter-spacing: 0.06em; }
-    .divider { height: 2px; width: 80px; margin: 20px auto; border-radius: 1px; }
-    .guest-name { font-size: 22px; font-weight: 700; text-align: center; color: #1a1a1a; }
+    .card-header { font-size: 9px; font-family: 'Trajan Pro', serif; letter-spacing: 0.22em; font-weight: 700;
+      text-transform: uppercase; text-align: center; margin-bottom: 16px; }
+    .logo-wrap { text-align: center; margin-bottom: 12px; }
+    .logo-img { width: 110px; height: 110px; object-fit: contain; }
+    .event-title { font-size: 24px; font-weight: 700; text-align: center; letter-spacing: 0.05em; font-family: 'Trajan Pro', serif; }
+    .event-subtitle { font-size: 12px; text-align: center; color: #555; margin-top: 5px; letter-spacing: 0.08em; }
+    .divider { height: 2px; width: 80px; margin: 18px auto; border-radius: 1px; }
+    .guest-name { font-size: 21px; font-weight: 700; text-align: center; color: #1a1a1a; font-family: 'Trajan Pro', serif; }
     .guest-title { font-size: 12px; text-align: center; color: #555; margin-top: 6px; font-style: italic; }
-    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; margin-top: 24px;
-      background: #faf8f4; border-radius: 4px; padding: 16px; border: 1px solid #e8e0d0; }
-    .detail-item { display: flex; flex-direction: column; gap: 2px; }
-    .detail-label { font-size: 9px; font-family: sans-serif; letter-spacing: 0.12em; text-transform: uppercase;
-      color: #999; font-weight: 600; }
+    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; margin-top: 22px;
+      border-radius: 4px; padding: 16px; border: 1px solid #ddd; }
+    .detail-item { display: flex; flex-direction: column; gap: 3px; }
+    .detail-label { font-size: 8px; font-family: 'Trajan Pro', sans-serif; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; }
     .detail-value { font-size: 13px; color: #1a1a1a; font-weight: 500; }
     .qr-section { display: flex; flex-direction: column; align-items: center; margin-top: 20px; gap: 6px; }
     .qr-img { width: 80px; height: 80px; }
     .qr-code-text { font-family: monospace; font-size: 11px; color: #888; letter-spacing: 0.1em; }
-    .footer-note { text-align: center; font-size: 10px; font-family: sans-serif; color: #bbb;
-      margin-top: 24px; letter-spacing: 0.06em; border-top: 1px solid #eee; padding-top: 14px; }
+    .footer-note { text-align: center; font-size: 9px; font-family: 'Trajan Pro', serif; color: #aaa;
+      margin-top: 22px; letter-spacing: 0.07em; border-top: 1px solid #eee; padding-top: 14px; }
     @media print { body { background: white; } .card { box-shadow: none; margin: 0 auto; page-break-after: always; } }
   </style>
   </head><body>${cards}</body></html>`;

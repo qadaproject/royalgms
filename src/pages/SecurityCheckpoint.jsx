@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Camera, Search, CheckCircle2, XCircle, AlertTriangle, Shield, Users, MapPin, Loader2, RefreshCw } from "lucide-react";
+import { Camera, Search, CheckCircle2, XCircle, AlertTriangle, Shield, Users, MapPin, Loader2, RefreshCw, UserCheck } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import RoyalCrest from "../components/layout/RoyalCrest";
 import CategoryBadge from "../components/shared/CategoryBadge";
 
@@ -21,6 +22,8 @@ export default function SecurityCheckpoint() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [scanHistory, setScanHistory] = useState([]);
+  const [checkedIn, setCheckedIn] = useState({});
+  const [checkingIn, setCheckingIn] = useState(false);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const intervalRef = useRef(null);
@@ -47,6 +50,7 @@ export default function SecurityCheckpoint() {
       if (results && results.length > 0) {
         const g = results[0];
         setResult(g);
+        setCheckedIn((prev) => ({ ...prev })); // keep existing check-ins
         setScanHistory((prev) => [{ id: g.id, name: g.full_name, status: g.rsvp_status, time: new Date().toLocaleTimeString() }, ...prev.slice(0, 9)]);
       } else {
         setError("No guest found for this code or name. Verify manually.");
@@ -81,6 +85,21 @@ export default function SecurityCheckpoint() {
   useEffect(() => () => stopCamera(), []);
 
   const cfg = result ? (statusConfig[result.rsvp_status] || statusConfig["Pending"]) : null;
+
+  const handleCheckIn = async (guest, checked) => {
+    setCheckingIn(true);
+    try {
+      await base44.entities.Guest.update(guest.id, { rsvp_status: checked ? "Accepted" : "Pending" });
+      setResult((prev) => prev ? { ...prev, rsvp_status: checked ? "Accepted" : "Pending" } : prev);
+      setCheckedIn((prev) => ({ ...prev, [guest.id]: checked }));
+      setScanHistory((prev) => prev.map((e) =>
+        e.id === guest.id ? { ...e, status: checked ? "Accepted" : "Pending" } : e
+      ));
+    } catch {
+      // silently ignore
+    }
+    setCheckingIn(false);
+  };
 
   return (
     <div className="min-h-screen bg-[#0d0604] text-white flex flex-col">
@@ -183,6 +202,23 @@ export default function SecurityCheckpoint() {
                 <Button variant="ghost" size="icon" className="ml-auto text-white/40" onClick={() => { setResult(null); setQuery(""); }}>
                   <RefreshCw className="w-4 h-4" />
                 </Button>
+              </div>
+
+              {/* Check-in toggle */}
+              <div className="flex items-center justify-between bg-black/20 rounded-xl px-4 py-3 mb-3 border border-white/10">
+                <div className="flex items-center gap-2">
+                  <UserCheck className="w-4 h-4 text-[#c9a84c]" />
+                  <span className="text-sm font-semibold text-white/90">Mark as Arrived on Site</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {checkingIn && <Loader2 className="w-3.5 h-3.5 animate-spin text-white/40" />}
+                  <Switch
+                    checked={result.rsvp_status === "Accepted"}
+                    onCheckedChange={(v) => handleCheckIn(result, v)}
+                    disabled={checkingIn}
+                    className="data-[state=checked]:bg-emerald-500"
+                  />
+                </div>
               </div>
 
               <div className="bg-black/30 rounded-lg p-4 space-y-3">
