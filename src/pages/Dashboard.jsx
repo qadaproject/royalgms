@@ -9,12 +9,13 @@ import RecentActivity from "../components/dashboard/RecentActivity";
 import NoShowAlerts from "../components/dashboard/NoShowAlerts";
 import TierRSVPChart from "../components/dashboard/TierRSVPChart";
 import ZoneCapacityLive from "../components/dashboard/ZoneCapacityLive";
+import ArrivalTracker from "../components/dashboard/ArrivalTracker";
 
 export default function Dashboard() {
   const { data: guests = [] } = useQuery({
     queryKey: ["guests"],
     queryFn: () => base44.entities.Guest.list("-created_date", 500),
-    refetchInterval: 30000,
+    refetchInterval: 10000,
   });
 
   const { data: invitations = [] } = useQuery({
@@ -68,6 +69,11 @@ export default function Dashboard() {
         <div className="lg:col-span-2">
           <NoShowAlerts guests={guests} invitations={invitations} />
         </div>
+      </div>
+
+      {/* Arrival Tracker */}
+      <div className="grid grid-cols-1 gap-6 mb-6">
+        <ArrivalTracker guests={guests} />
       </div>
 
       {/* Activity */}
