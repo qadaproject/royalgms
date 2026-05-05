@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LayoutDashboard, Users, Send, Armchair, BarChart3, Bell, Shield } from "lucide-react";
+import { Menu, X, LayoutDashboard, Users, Send, Armchair, BarChart3, Bell, Shield, Settings } from "lucide-react";
 import RoyalCrest from "./RoyalCrest";
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { path: "/seating", label: "Seating", icon: Armchair },
   { path: "/notifications", label: "Notifications", icon: Bell },
   { path: "/reports", label: "Reports", icon: BarChart3 },
+  { path: "/settings", label: "Event Settings", icon: Settings },
   { path: "/checkpoint", label: "Checkpoint", icon: Shield },
 ];
 

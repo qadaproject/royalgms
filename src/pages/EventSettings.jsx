@@ -12,13 +12,13 @@ import PageHeader from "../components/shared/PageHeader";
 
 const defaults = {
   event_name: "5th Coronation Anniversary",
-  event_subtitle: "Ogiame Atuwatse III, Olu of Warri Kingdom",
+  event_subtitle: "Ògíame Atúwàtse III, CFR, Olu of Warri Kingdom",
   event_date: "",
   event_time: "10:00 AM",
   venue_name: "Royal Palace Grounds",
   venue_address: "Warri, Delta State, Nigeria",
   dress_code: "Traditional Royal Attire / Black Tie",
-  invitation_body: "By command of His Royal Majesty, you are graciously requested to attend the 5th Coronation Anniversary Ceremony in honour of Ogiame Atuwatse III, Olu of Warri Kingdom.",
+  invitation_body: "By command of His Royal Majesty, you are graciously requested to attend the 5th Coronation Anniversary Ceremony in honour of Ògíame Atúwàtse III, CFR, Olu of Warri Kingdom.",
   rsvp_deadline: "",
   contact_name: "Protocol Office",
   contact_phone: "",

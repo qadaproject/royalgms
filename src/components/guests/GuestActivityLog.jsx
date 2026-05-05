@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import {
-  Send, Truck, CheckCircle2, Bell, MapPin, ShieldCheck, Clock
+  Send, Truck, CheckCircle2, Bell, MapPin, ShieldCheck, Clock, Mail, MessageSquare
 } from "lucide-react";
 
 const EVENT_ICONS = {
@@ -12,14 +12,39 @@ const EVENT_ICONS = {
   notification_sent: { icon: Bell, color: "text-purple-600", bg: "bg-purple-500/10" },
   zone_assigned: { icon: MapPin, color: "text-rose-600", bg: "bg-rose-500/10" },
   protocol_validated: { icon: ShieldCheck, color: "text-accent", bg: "bg-accent/10" },
+  notification_email: { icon: Mail, color: "text-indigo-600", bg: "bg-indigo-500/10" },
+  notification_sms: { icon: MessageSquare, color: "text-teal-600", bg: "bg-teal-500/10" },
 };
 
 export default function GuestActivityLog({ guestId }) {
-  const { data: logs = [], isLoading } = useQuery({
+  const { data: activityLogs = [], isLoading: loadingActivity } = useQuery({
     queryKey: ["activityLogs", guestId],
     queryFn: () => base44.entities.GuestActivityLog.filter({ guest_id: guestId }, "-created_date", 50),
     enabled: !!guestId,
   });
+
+  const { data: notifLogs = [], isLoading: loadingNotif } = useQuery({
+    queryKey: ["notifLogs", guestId],
+    queryFn: () => base44.entities.NotificationLog.filter({ guest_id: guestId }, "-created_date", 50),
+    enabled: !!guestId,
+  });
+
+  const isLoading = loadingActivity || loadingNotif;
+
+  // Merge and sort both logs chronologically (newest first)
+  const allEntries = [
+    ...activityLogs.map((log) => ({ ...log, _source: "activity" })),
+    ...notifLogs.map((log) => ({
+      id: `notif-${log.id}`,
+      _source: "notification",
+      event_type: log.channel === "SMS" ? "notification_sms" : "notification_email",
+      description: `${log.channel} notification ${log.status === "Sent" ? "delivered" : "failed"} · ${log.channel}`,
+      new_value: log.status,
+      old_value: null,
+      performed_by: null,
+      created_date: log.created_date,
+    })),
+  ].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
 
   if (isLoading) {
     return (
@@ -29,7 +54,7 @@ export default function GuestActivityLog({ guestId }) {
     );
   }
 
-  if (logs.length === 0) {
+  if (allEntries.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <Clock className="w-8 h-8 mx-auto mb-2 opacity-30" />
@@ -41,10 +66,8 @@ export default function GuestActivityLog({ guestId }) {
 
   return (
     <div className="relative space-y-0">
-      {/* Timeline line */}
       <div className="absolute left-5 top-0 bottom-0 w-px bg-border" />
-
-      {logs.map((log) => {
+      {allEntries.map((log) => {
         const cfg = EVENT_ICONS[log.event_type] || { icon: Clock, color: "text-muted-foreground", bg: "bg-muted" };
         const Icon = cfg.icon;
         return (

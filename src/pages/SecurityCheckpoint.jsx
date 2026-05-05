@@ -116,7 +116,7 @@ export default function SecurityCheckpoint() {
         <RoyalCrest size="sm" />
         <div>
           <p className="text-[#c9a84c] text-xs uppercase tracking-widest font-semibold">Security Checkpoint</p>
-          <p className="text-white/50 text-[10px]">Ogiame Atuwatse III — 5th Coronation</p>
+          <p className="text-white/50 text-[10px]">Ògíame Atúwàtse III, CFR — 5th Coronation</p>
         </div>
         <div className="ml-auto flex items-center gap-3">
           <DailySummaryDownload guests={allGuests.length ? allGuests : []} />

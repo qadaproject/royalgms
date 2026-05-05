@@ -38,7 +38,7 @@ export default function Dashboard() {
     <div>
       <PageHeader
         title="Dashboard"
-        subtitle="5th Coronation Anniversary — Ogiame Atuwatse III"
+        subtitle="5th Coronation Anniversary — Ògíame Atúwàtse III, CFR"
       />
 
       {/* Stats Grid */}

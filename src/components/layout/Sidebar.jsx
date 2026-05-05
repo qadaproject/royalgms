@@ -21,8 +21,8 @@ const navItems = [
   { path: "/seating", label: "Seating & Protocol", icon: Armchair, roles: ["admin", "chairman", "protocol_liaison"] },
   { path: "/notifications", label: "Notifications", icon: Bell, roles: ["admin", "chairman", "data_manager"] },
   { path: "/reports", label: "Reports", icon: BarChart3, roles: ["admin", "chairman", "data_manager"] },
-  { path: "/checkpoint", label: "Security Checkpoint", icon: Shield, roles: ["admin", "security"] },
   { path: "/settings", label: "Event Settings", icon: Settings, roles: ["admin", "chairman"] },
+  { path: "/checkpoint", label: "Security Checkpoint", icon: Shield, roles: ["admin", "security"] },
 ];
 
 export default function Sidebar({ user }) {

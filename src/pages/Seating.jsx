@@ -10,6 +10,8 @@ import ZoneFormDialog from "../components/seating/ZoneFormDialog";
 import AssignGuestDialog from "../components/seating/AssignGuestDialog";
 import SeatingChartView from "../components/seating/SeatingChartView";
 import FloorPlanView from "../components/seating/FloorPlanView";
+import SeatingWaitlist from "../components/seating/SeatingWaitlist";
+import SeatingPDFExport from "../components/seating/SeatingPDFExport";
 
 export default function Seating() {
   const [zoneDialogOpen, setZoneDialogOpen] = useState(false);
@@ -73,6 +75,7 @@ export default function Seating() {
     <div>
       <PageHeader title="Seating & Protocol" subtitle="Manage zones and assign guests">
         <div className="flex items-center gap-2">
+          <SeatingPDFExport zones={zones} guests={guests} />
           <div className="flex rounded-lg border border-border overflow-hidden">
             <button
               onClick={() => setViewMode("cards")}
@@ -114,20 +117,23 @@ export default function Seating() {
       ) : viewMode === "chart" ? (
         <SeatingChartView zones={zones} guests={guests} />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {zones.map((zone) => {
-            const assigned = guests.filter((g) => g.seating_zone === zone.name && g.rsvp_status === "Accepted");
-            return (
-              <ZoneCard
-                key={zone.id}
-                zone={zone}
-                assignedGuests={assigned}
-                onEdit={() => { setEditZone(zone); setZoneDialogOpen(true); }}
-                onAssign={() => setAssignZone(zone)}
-              />
-            );
-          })}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
+            {zones.map((zone) => {
+              const assigned = guests.filter((g) => g.seating_zone === zone.name && g.rsvp_status === "Accepted");
+              return (
+                <ZoneCard
+                  key={zone.id}
+                  zone={zone}
+                  assignedGuests={assigned}
+                  onEdit={() => { setEditZone(zone); setZoneDialogOpen(true); }}
+                  onAssign={() => setAssignZone(zone)}
+                />
+              );
+            })}
+          </div>
+          <SeatingWaitlist guests={guests} zones={zones} />
+        </>
       )}
 
       <ZoneFormDialog

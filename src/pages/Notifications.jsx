@@ -20,12 +20,12 @@ function buildRSVPLink(guest) {
 
 function buildEmailBody(guest) {
   const link = buildRSVPLink(guest);
-  return `Your Royal Highness / Your Excellency / Distinguished Guest,\n\nThe Royal Palace of Ogiame Atuwatse III, CFR., The Olu of Warri, formally requests the honour of your presence at the 5th Coronation Anniversary celebrations.\n\nPlease confirm your attendance via your secure personal RSVP portal:\n\n${link}\n\nYour timely response will enable the Protocol Office to make adequate arrangements.\n\nPresented with the highest regard,\nThe Royal Protocol Office\nAghofen, Warri Kingdom`;
+  return `Your Royal Highness / Your Excellency / Distinguished Guest,\n\nThe Royal Palace of Ògíame Atúwàtse III, CFR, The Olu of Warri, formally requests the honour of your presence at the 5th Coronation Anniversary celebrations.\n\nPlease confirm your attendance via your secure personal RSVP portal:\n\n${link}\n\nYour timely response will enable the Protocol Office to make adequate arrangements.\n\nPresented with the highest regard,\nThe Royal Protocol Office\nAghofen, Warri Kingdom`;
 }
 
 function buildSMSBody(guest) {
   const link = buildRSVPLink(guest);
-  return `Royal RSVP: ${guest.formal_salutation || "Esteemed Guest"} ${guest.full_name}, you are cordially invited to the 5th Coronation Anniversary of Ogiame Atuwatse III, CFR. Kindly confirm via: ${link}`;
+  return `Royal RSVP: ${guest.formal_salutation || "Esteemed Guest"} ${guest.full_name}, you are cordially invited to the 5th Coronation Anniversary of Ògíame Atúwàtse III, CFR. Kindly confirm via: ${link}`;
 }
 
 export default function Notifications() {
@@ -73,7 +73,7 @@ export default function Notifications() {
         const to = guest.email || guest.contact_person_email;
         await base44.integrations.Core.SendEmail({
           to,
-          subject: `Royal RSVP — 5th Coronation Anniversary of Ogiame Atuwatse III, CFR.`,
+          subject: `Royal RSVP — 5th Coronation Anniversary of Ògíame Atúwàtse III, CFR`,
           body: emailBody,
           from_name: "Royal Protocol Office — Warri Kingdom",
         }).catch(() => { success = false; });

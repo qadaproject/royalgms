@@ -69,7 +69,7 @@ export default function RSVPPortal() {
         </div>
         <p className="text-[#c9a84c] text-xs uppercase tracking-[0.3em] mb-2">The Palace of</p>
         <h1 className="font-heading text-3xl sm:text-4xl font-semibold text-[#f5ede0] tracking-wide">
-          Ògíame Atúwàtse III, CFR.
+          Ògíame Atúwàtse III, CFR
         </h1>
         <p className="text-[#c9a84c]/80 text-sm mt-1 tracking-wide">The Olu of Warri</p>
         <div className="w-24 h-px bg-[#c9a84c]/40 mx-auto mt-4" />
