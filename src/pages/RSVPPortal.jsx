@@ -26,12 +26,7 @@ export default function RSVPPortal() {
 
   useEffect(() => {
     if (!token) { setNotFound(true); setLoading(false); return; }
-    // Try rsvp_token first (new unguessable format), then fall back to qr_code for legacy links
-    base44.entities.Guest.filter({ rsvp_token: token }, "-created_date", 1)
-      .then((results) => {
-        if (results && results.length > 0) return results;
-        return base44.entities.Guest.filter({ qr_code: token }, "-created_date", 1);
-      })
+    base44.entities.Guest.filter({ qr_code: token }, "-created_date", 1)
       .then((results) => {
         if (results && results.length > 0) {
           const g = results[0];

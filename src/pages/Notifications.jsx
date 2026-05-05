@@ -14,9 +14,8 @@ import { format } from "date-fns";
 const APP_URL = window.location.origin;
 
 function buildRSVPLink(guest) {
-  // Use the dedicated rsvp_token if available, fall back to qr_code for legacy guests
-  const token = guest.rsvp_token || guest.qr_code;
-  return `${APP_URL}/rsvp?token=${token}`;
+  // Use qr_code (10-char alphanumeric) as the RSVP link token
+  return `${APP_URL}/rsvp?token=${guest.qr_code}`;
 }
 
 function buildEmailBody(guest) {
@@ -51,7 +50,7 @@ export default function Notifications() {
   });
 
   const sentGuestIds = new Set(logs.map((l) => l.guest_id));
-  const pendingGuests = guests.filter((g) => g.rsvp_status === "Pending" && (g.rsvp_token || g.qr_code));
+  const pendingGuests = guests.filter((g) => g.rsvp_status === "Pending" && g.qr_code);
 
   const logMutation = useMutation({
     mutationFn: (data) => base44.entities.NotificationLog.create(data),
@@ -59,8 +58,8 @@ export default function Notifications() {
   });
 
   const sendNotification = async (guest, ch) => {
-    if (!guest.rsvp_token && !guest.qr_code) {
-      toast.error(`${guest.full_name} has no invitation token. Re-save the guest to generate one.`);
+    if (!guest.qr_code) {
+      toast.error(`${guest.full_name} has no QR token. Re-save the guest to generate one.`);
       return;
     }
     setSending((prev) => ({ ...prev, [guest.id]: true }));

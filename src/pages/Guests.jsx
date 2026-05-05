@@ -74,11 +74,9 @@ export default function Guests() {
       updateMutation.mutate({ id: editGuest.id, data: form });
     } else {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-      // 10-char uppercase alphanumeric admission token (for physical check-in / QR)
+      // 10-char uppercase alphanumeric token used for both QR check-in and RSVP link
       const qrCode = Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-      // 32-char unguessable random RSVP token (for invitation link URL)
-      const rsvpToken = Array.from({ length: 32 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-      createMutation.mutate({ ...form, qr_code: qrCode, rsvp_token: rsvpToken });
+      createMutation.mutate({ ...form, qr_code: qrCode, rsvp_token: qrCode });
     }
   };
 
