@@ -88,7 +88,11 @@
     },
     "qr_code": {
       "type": "string",
-      "description": "Unique QR code identifier"
+      "description": "Unique 10-char alphanumeric admission token for physical check-in (e.g. X4KR2TBW9A)"
+    },
+    "rsvp_token": {
+      "type": "string",
+      "description": "Separate unguessable random token used in RSVP portal URL \u2014 never shown publicly"
     },
     "protocol_validated": {
       "type": "boolean",
