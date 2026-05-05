@@ -1,0 +1,67 @@
+{
+  "name": "EventSettings",
+  "type": "object",
+  "properties": {
+    "event_name": {
+      "type": "string",
+      "description": "Full event name"
+    },
+    "event_subtitle": {
+      "type": "string",
+      "description": "Subtitle or theme"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Primary event date"
+    },
+    "event_time": {
+      "type": "string",
+      "description": "e.g. 10:00 AM"
+    },
+    "venue_name": {
+      "type": "string",
+      "description": "Name of venue"
+    },
+    "venue_address": {
+      "type": "string",
+      "description": "Full venue address"
+    },
+    "dress_code": {
+      "type": "string",
+      "description": "e.g. Black Tie, Traditional Attire"
+    },
+    "invitation_body": {
+      "type": "string",
+      "description": "Body text used in invitations"
+    },
+    "rsvp_deadline": {
+      "type": "string",
+      "format": "date",
+      "description": "RSVP deadline"
+    },
+    "contact_name": {
+      "type": "string",
+      "description": "Protocol office contact name"
+    },
+    "contact_phone": {
+      "type": "string",
+      "description": "Protocol office phone"
+    },
+    "contact_email": {
+      "type": "string",
+      "description": "Protocol office email"
+    },
+    "footer_note": {
+      "type": "string",
+      "description": "Footer text on invitations"
+    },
+    "additional_venues": {
+      "type": "string",
+      "description": "Additional venue details (JSON or plain text)"
+    }
+  },
+  "required": [
+    "event_name"
+  ]
+}

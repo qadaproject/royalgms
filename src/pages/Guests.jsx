@@ -8,6 +8,7 @@ import PageHeader from "../components/shared/PageHeader";
 import GuestTable from "../components/guests/GuestTable";
 import GuestFilters from "../components/guests/GuestFilters";
 import GuestFormDialog from "../components/guests/GuestFormDialog";
+import GuestPrintMenu from "../components/guests/GuestPrintMenu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +33,11 @@ export default function Guests() {
   const { data: guests = [], isLoading } = useQuery({
     queryKey: ["guests"],
     queryFn: () => base44.entities.Guest.list("-created_date", 500),
+  });
+
+  const { data: invitations = [] } = useQuery({
+    queryKey: ["invitations"],
+    queryFn: () => base44.entities.Invitation.list("-created_date", 500),
   });
 
   const createMutation = useMutation({
@@ -67,8 +73,9 @@ export default function Guests() {
     if (editGuest?.id) {
       updateMutation.mutate({ id: editGuest.id, data: form });
     } else {
-      // Generate a unique QR code identifier
-      const qrCode = `RGMS-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+      // Generate 10-char uppercase alphanumeric admission token
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      const qrCode = Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
       createMutation.mutate({ ...form, qr_code: qrCode });
     }
   };
@@ -86,6 +93,7 @@ export default function Guests() {
   return (
     <div>
       <PageHeader title="Guest Registry" subtitle={`${guests.length} dignitaries registered`}>
+        <GuestPrintMenu guests={filteredGuests} invitations={invitations} />
         <Button onClick={() => { setEditGuest(null); setDialogOpen(true); }}>
           <Plus className="w-4 h-4 mr-2" />
           Add Guest

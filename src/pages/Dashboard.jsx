@@ -10,6 +10,7 @@ import NoShowAlerts from "../components/dashboard/NoShowAlerts";
 import TierRSVPChart from "../components/dashboard/TierRSVPChart";
 import ZoneCapacityLive from "../components/dashboard/ZoneCapacityLive";
 import ArrivalTracker from "../components/dashboard/ArrivalTracker";
+import VIPCheckInAlerts from "../components/dashboard/VIPCheckInAlerts";
 
 export default function Dashboard() {
   const { data: guests = [] } = useQuery({
@@ -80,6 +81,8 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-6">
         <RecentActivity guests={guests} invitations={invitations} />
       </div>
+
+      <VIPCheckInAlerts guests={guests} />
     </div>
   );
 }

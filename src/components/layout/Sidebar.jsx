@@ -9,6 +9,7 @@ import {
   Crown,
   Bell,
   Shield,
+  Settings,
 } from "lucide-react";
 import RoyalCrest from "./RoyalCrest";
 import { base44 } from "@/api/base44Client";
@@ -21,6 +22,7 @@ const navItems = [
   { path: "/notifications", label: "Notifications", icon: Bell, roles: ["admin", "chairman", "data_manager"] },
   { path: "/reports", label: "Reports", icon: BarChart3, roles: ["admin", "chairman", "data_manager"] },
   { path: "/checkpoint", label: "Security Checkpoint", icon: Shield, roles: ["admin", "security"] },
+  { path: "/settings", label: "Event Settings", icon: Settings, roles: ["admin", "chairman"] },
 ];
 
 export default function Sidebar({ user }) {

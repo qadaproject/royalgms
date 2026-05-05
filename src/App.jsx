@@ -14,11 +14,11 @@ import Reports from './pages/Reports';
 import Notifications from './pages/Notifications';
 import SecurityCheckpoint from './pages/SecurityCheckpoint';
 import RSVPPortal from './pages/RSVPPortal';
+import EventSettings from './pages/EventSettings';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -27,18 +27,15 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Handle authentication errors
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
       navigateToLogin();
       return null;
     }
   }
 
-  // Render the main app
   return (
     <Routes>
       <Route path="/rsvp" element={<RSVPPortal />} />
@@ -50,15 +47,14 @@ const AuthenticatedApp = () => {
         <Route path="/seating" element={<Seating />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/notifications" element={<Notifications />} />
+        <Route path="/settings" element={<EventSettings />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 };
 
-
 function App() {
-
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>

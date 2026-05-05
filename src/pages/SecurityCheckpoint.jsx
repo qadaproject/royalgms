@@ -7,6 +7,7 @@ import { Camera, Search, CheckCircle2, XCircle, AlertTriangle, Shield, Users, Ma
 import { Switch } from "@/components/ui/switch";
 import RoyalCrest from "../components/layout/RoyalCrest";
 import CategoryBadge from "../components/shared/CategoryBadge";
+import DailySummaryDownload from "../components/checkpoint/DailySummaryDownload";
 
 const statusConfig = {
   Accepted: { icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/30", label: "CLEARED FOR ENTRY" },
@@ -16,6 +17,7 @@ const statusConfig = {
 };
 
 export default function SecurityCheckpoint() {
+  const [allGuests, setAllGuests] = useState([]);
   const [query, setQuery] = useState("");
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
@@ -35,10 +37,11 @@ export default function SecurityCheckpoint() {
     setResult(null);
     try {
       // Try exact QR code match first
-      let results = await base44.entities.Guest.filter({ qr_code: code.trim() }, "-created_date", 1);
+      let results = await base44.entities.Guest.filter({ qr_code: code.trim().toUpperCase() }, "-created_date", 1);
       // If no result, try fetching all and filtering by name
       if (!results || results.length === 0) {
         const all = await base44.entities.Guest.list("-created_date", 500);
+        setAllGuests(all);
         const q = code.trim().toLowerCase();
         results = all.filter(
           (g) =>
@@ -82,6 +85,11 @@ export default function SecurityCheckpoint() {
     setScanning(false);
   };
 
+  // Load all guests on mount for daily summary
+  useEffect(() => {
+    base44.entities.Guest.list("-created_date", 500).then(setAllGuests).catch(() => {});
+  }, []);
+
   useEffect(() => () => stopCamera(), []);
 
   const cfg = result ? (statusConfig[result.rsvp_status] || statusConfig["Pending"]) : null;
@@ -110,9 +118,12 @@ export default function SecurityCheckpoint() {
           <p className="text-[#c9a84c] text-xs uppercase tracking-widest font-semibold">Security Checkpoint</p>
           <p className="text-white/50 text-[10px]">Ogiame Atuwatse III — 5th Coronation</p>
         </div>
-        <div className="ml-auto flex items-center gap-2 text-[#c9a84c]">
-          <Shield className="w-4 h-4" />
-          <span className="text-[10px] uppercase tracking-wider">ACTIVE</span>
+        <div className="ml-auto flex items-center gap-3">
+          <DailySummaryDownload guests={allGuests.length ? allGuests : []} />
+          <div className="flex items-center gap-2 text-[#c9a84c]">
+            <Shield className="w-4 h-4" />
+            <span className="text-[10px] uppercase tracking-wider">ACTIVE</span>
+          </div>
         </div>
       </header>
 

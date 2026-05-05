@@ -2,19 +2,20 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Plus, LayoutGrid, Map } from "lucide-react";
+import { Plus, LayoutGrid, Map, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import PageHeader from "../components/shared/PageHeader";
 import ZoneCard from "../components/seating/ZoneCard";
 import ZoneFormDialog from "../components/seating/ZoneFormDialog";
 import AssignGuestDialog from "../components/seating/AssignGuestDialog";
 import SeatingChartView from "../components/seating/SeatingChartView";
+import FloorPlanView from "../components/seating/FloorPlanView";
 
 export default function Seating() {
   const [zoneDialogOpen, setZoneDialogOpen] = useState(false);
   const [editZone, setEditZone] = useState(null);
   const [assignZone, setAssignZone] = useState(null);
-  const [viewMode, setViewMode] = useState("cards"); // "cards" | "chart"
+  const [viewMode, setViewMode] = useState("cards"); // "cards" | "chart" | "floorplan"
 
   const queryClient = useQueryClient();
 
@@ -85,6 +86,12 @@ export default function Seating() {
             >
               <Map className="w-3.5 h-3.5" /> Chart View
             </button>
+            <button
+              onClick={() => setViewMode("floorplan")}
+              className={`px-3 py-1.5 text-xs flex items-center gap-1.5 transition-colors ${viewMode === "floorplan" ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              <Building2 className="w-3.5 h-3.5" /> Floor Plan
+            </button>
           </div>
           <Button onClick={() => { setEditZone(null); setZoneDialogOpen(true); }}>
             <Plus className="w-4 h-4 mr-2" />
@@ -102,6 +109,8 @@ export default function Seating() {
           <p className="text-lg font-heading">No seating zones yet</p>
           <p className="text-sm mt-1">Create your first zone to start assigning guests</p>
         </div>
+      ) : viewMode === "floorplan" ? (
+        <FloorPlanView zones={zones} guests={guests} />
       ) : viewMode === "chart" ? (
         <SeatingChartView zones={zones} guests={guests} />
       ) : (
