@@ -22,7 +22,7 @@ const CATEGORY_COLORS = {
   "G - General":    { accent: "#2a2a2a", bg: "#f8f8f8", border: "#888888" },
 };
 
-const LOGO_URL = "https://media.base44.com/images/public/69f83e971133ed44e3fc81f6/a46b1eb03_atuwatseiii.png";
+const LOGO_URL = "https://media.base44.com/images/public/69f83e971133ed44e3fc81f6/d9072c6be_atuwatseiii.png";
 
 function buildPrintHTML(selected, invitations, guests) {
   const guestMap = Object.fromEntries(guests.map((g) => [g.id, g]));

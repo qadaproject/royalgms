@@ -9,7 +9,7 @@ export default function RoyalCrest({ size = "md" }) {
   return (
     <div className={`${sizes[size]} relative flex items-center justify-center shrink-0`}>
       <img
-        src="https://atuwatseiii.com/images/logo.png"
+        src="https://media.base44.com/images/public/69f83e971133ed44e3fc81f6/d9072c6be_atuwatseiii.png"
         alt="Royal Crest – Ogiame Atuwatse III"
         className="w-full h-full object-contain"
         onError={(e) => {

@@ -86,7 +86,7 @@ function buildInvitationHTML(guest, invitation, template) {
         <div class="corner bl"></div>
         <div class="corner br"></div>
 
-        <div class="crest">♛</div>
+        <div class="crest"><img src="https://media.base44.com/images/public/69f83e971133ed44e3fc81f6/d9072c6be_atuwatseiii.png" style="width:110px;height:110px;object-fit:contain;" alt="Royal Crest" /></div>
         <div class="org">Royal Protocol Management System</div>
         <div class="org" style="font-size:9px; margin-top:2px; color:#999;">Ogiame Atuwatse III · 5th Coronation Anniversary</div>
         <hr class="divider" />
