@@ -77,7 +77,7 @@ export default function GuestTable({ guests, onEdit, onDelete }) {
                 <p className="text-xs text-muted-foreground">{guest.contact_person_name || "—"}</p>
               </TableCell>
               <TableCell className="text-right">
-                <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center justify-end gap-1">
                   <Button variant="ghost" size="icon" className="h-7 w-7 text-accent" title="Copy RSVP Link" onClick={() => copyRSVPLink(guest)}>
                     <Link2 className="w-3.5 h-3.5" />
                   </Button>
