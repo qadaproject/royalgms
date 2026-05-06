@@ -131,12 +131,7 @@ function InvitationCard({ guest, eventSettings, qrImgUrl }) {
             {eventSettings.event_time || "TBC"}
           </span>
         </div>
-        {eventSettings.dress_code && (
-          <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
-            <span style={{ color: "#c9a84c", fontSize: 10, letterSpacing: "0.25em", textTransform: "uppercase", minWidth: 44, fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>Attire</span>
-            <span style={{ color: "#f5ede0", fontSize: 14, fontWeight: 500 }}>{eventSettings.dress_code}</span>
-          </div>
-        )}
+
       </div>
 
       <div style={s.goldLine} />
@@ -172,7 +167,7 @@ function InvitationCard({ guest, eventSettings, qrImgUrl }) {
 
       {/* === FOOTER === */}
       <div style={{ textAlign: "center", paddingTop: 16 }}>
-        <p style={{ color: "#f5ede044", fontSize: 9, letterSpacing: "0.15em", textTransform: "uppercase", margin: 0, fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>
+        <p style={{ color: "#f5ede044", fontSize: 9, letterSpacing: "0.05em", margin: 0, fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>
           This invitation is non-transferable. Please present upon arrival at the security checkpoint.
         </p>
       </div>
