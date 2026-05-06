@@ -59,6 +59,22 @@ export default function Invitations() {
           old_value: prev.delivery_status,
           new_value: data.delivery_status,
         }).catch(() => {});
+
+        // Auto-send email when status changes to "Delivered"
+        if (data.delivery_status === "Delivered") {
+          base44.entities.Guest.filter({ id: prev.guest_id }, "-created_date", 1)
+            .then(async ([guest]) => {
+              if (!guest?.email) return;
+              const link = `${window.location.origin}/rsvp?token=${guest.qr_code}`;
+              await base44.integrations.Core.SendEmail({
+                to: guest.email,
+                subject: `Your Royal Invitation has been dispatched`,
+                body: `Dear ${guest.formal_salutation || ""} ${guest.full_name},\n\nYour official invitation to the 5th Coronation Anniversary of Ògíame Atúwàtse III, CFR has been dispatched.\n\nPlease confirm your attendance via your personal RSVP link:\n${link}\n\nThe Royal Protocol Office\nWarri Kingdom`,
+              });
+              toast.success(`Invitation email sent to ${guest.full_name}`);
+            })
+            .catch(() => {});
+        }
       }
     },
   });

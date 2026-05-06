@@ -15,6 +15,8 @@ import Notifications from './pages/Notifications';
 import SecurityCheckpoint from './pages/SecurityCheckpoint';
 import RSVPPortal from './pages/RSVPPortal';
 import EventSettings from './pages/EventSettings';
+import InvitationManager from './pages/InvitationManager';
+import InviteDetail from './pages/InviteDetail';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -39,11 +41,13 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/rsvp" element={<RSVPPortal />} />
+      <Route path="/invite-detail" element={<InviteDetail />} />
       <Route path="/checkpoint" element={<SecurityCheckpoint />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/guests" element={<Guests />} />
         <Route path="/invitations" element={<Invitations />} />
+        <Route path="/invitation-manager" element={<InvitationManager />} />
         <Route path="/seating" element={<Seating />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/notifications" element={<Notifications />} />

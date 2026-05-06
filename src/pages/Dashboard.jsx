@@ -10,6 +10,7 @@ import NoShowAlerts from "../components/dashboard/NoShowAlerts";
 import TierRSVPChart from "../components/dashboard/TierRSVPChart";
 import ZoneCapacityLive from "../components/dashboard/ZoneCapacityLive";
 import ArrivalTracker from "../components/dashboard/ArrivalTracker";
+import EventCountdown from "../components/dashboard/EventCountdown";
 
 export default function Dashboard() {
   const { data: guests = [] } = useQuery({
@@ -40,6 +41,8 @@ export default function Dashboard() {
         title="Dashboard"
         subtitle="5th Coronation Anniversary — Ògíame Atúwàtse III, CFR"
       />
+
+      <EventCountdown />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">

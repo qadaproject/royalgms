@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LayoutDashboard, Users, Send, Armchair, BarChart3, Bell, Shield, Settings } from "lucide-react";
+import { Menu, X, LayoutDashboard, Users, Send, Armchair, BarChart3, Bell, Shield, Settings, Mail } from "lucide-react";
 import RoyalCrest from "./RoyalCrest";
 
 const navItems = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
   { path: "/guests", label: "Guests", icon: Users },
+  { path: "/invitation-manager", label: "Invitations", icon: Mail },
   { path: "/invitations", label: "Dispatch", icon: Send },
   { path: "/seating", label: "Seating", icon: Armchair },
   { path: "/notifications", label: "Notifications", icon: Bell },
