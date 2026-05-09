@@ -9,6 +9,7 @@ import GuestTable from "../components/guests/GuestTable";
 import GuestFilters from "../components/guests/GuestFilters";
 import GuestFormDialog from "../components/guests/GuestFormDialog";
 import GuestPrintMenu from "../components/guests/GuestPrintMenu";
+import BulkRSVPAction from "../components/guests/BulkRSVPAction";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +28,7 @@ export default function Guests() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editGuest, setEditGuest] = useState(null);
   const [deleteGuest, setDeleteGuest] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   const queryClient = useQueryClient();
 
@@ -69,6 +71,25 @@ export default function Guests() {
     },
   });
 
+  const handleToggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const handleToggleAll = (visibleGuests) => {
+    const allSelected = visibleGuests.every((g) => selectedIds.has(g.id));
+    setSelectedIds(allSelected ? new Set() : new Set(visibleGuests.map((g) => g.id)));
+  };
+
+  const handleBulkRSVP = async (ids, newStatus) => {
+    await Promise.all(ids.map((id) => base44.entities.Guest.update(id, { rsvp_status: newStatus })));
+    queryClient.invalidateQueries({ queryKey: ["guests"] });
+    setSelectedIds(new Set());
+  };
+
   const handleSave = (form) => {
     if (editGuest?.id) {
       updateMutation.mutate({ id: editGuest.id, data: form });
@@ -109,6 +130,13 @@ export default function Guests() {
         setStatus={setStatus}
       />
 
+      <BulkRSVPAction
+        selectedIds={selectedIds}
+        guests={guests}
+        onUpdate={handleBulkRSVP}
+        onClearSelection={() => setSelectedIds(new Set())}
+      />
+
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
           <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -118,6 +146,9 @@ export default function Guests() {
           guests={filteredGuests}
           onEdit={(guest) => { setEditGuest(guest); setDialogOpen(true); }}
           onDelete={(guest) => setDeleteGuest(guest)}
+          selectedIds={selectedIds}
+          onToggleSelect={handleToggleSelect}
+          onToggleAll={handleToggleAll}
         />
       )}
 

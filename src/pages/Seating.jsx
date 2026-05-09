@@ -12,6 +12,7 @@ import SeatingChartView from "../components/seating/SeatingChartView";
 import FloorPlanView from "../components/seating/FloorPlanView";
 import SeatingWaitlist from "../components/seating/SeatingWaitlist";
 import SeatingPDFExport from "../components/seating/SeatingPDFExport";
+import ZoneOccupancySummary from "../components/seating/ZoneOccupancySummary";
 
 export default function Seating() {
   const [zoneDialogOpen, setZoneDialogOpen] = useState(false);
@@ -118,6 +119,7 @@ export default function Seating() {
         <SeatingChartView zones={zones} guests={guests} />
       ) : (
         <>
+          <ZoneOccupancySummary zones={zones} guests={guests} />
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
             {zones.map((zone) => {
               const assigned = guests.filter((g) => g.seating_zone === zone.name && g.rsvp_status === "Accepted");

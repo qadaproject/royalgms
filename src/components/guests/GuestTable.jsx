@@ -1,5 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Pencil, Trash2, ShieldCheck, ShieldAlert, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import CategoryBadge from "../shared/CategoryBadge";
@@ -12,7 +13,10 @@ function copyRSVPLink(guest) {
   toast.success("RSVP link copied");
 }
 
-export default function GuestTable({ guests, onEdit, onDelete }) {
+export default function GuestTable({ guests, onEdit, onDelete, selectedIds = new Set(), onToggleSelect, onToggleAll }) {
+  const allSelected = guests.length > 0 && guests.every((g) => selectedIds.has(g.id));
+  const someSelected = guests.some((g) => selectedIds.has(g.id));
+
   if (guests.length === 0) {
     return (
       <div className="text-center py-16 text-muted-foreground">
@@ -27,6 +31,14 @@ export default function GuestTable({ guests, onEdit, onDelete }) {
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/50">
+            <TableHead className="w-10">
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={() => onToggleAll && onToggleAll(guests)}
+                aria-label="Select all"
+                className={someSelected && !allSelected ? "opacity-50" : ""}
+              />
+            </TableHead>
             <TableHead className="text-[10px] uppercase tracking-wider font-semibold">Guest</TableHead>
             <TableHead className="text-[10px] uppercase tracking-wider font-semibold">Category</TableHead>
             <TableHead className="text-[10px] uppercase tracking-wider font-semibold">RSVP</TableHead>
@@ -37,7 +49,14 @@ export default function GuestTable({ guests, onEdit, onDelete }) {
         </TableHeader>
         <TableBody>
           {guests.map((guest) => (
-            <TableRow key={guest.id} className="group hover:bg-muted/30 transition-colors">
+            <TableRow key={guest.id} className={`group hover:bg-muted/30 transition-colors ${selectedIds.has(guest.id) ? "bg-accent/5" : ""}`}>
+              <TableCell className="w-10">
+                <Checkbox
+                  checked={selectedIds.has(guest.id)}
+                  onCheckedChange={() => onToggleSelect && onToggleSelect(guest.id)}
+                  aria-label={`Select ${guest.full_name}`}
+                />
+              </TableCell>
               <TableCell>
                 <div>
                   <p className="text-sm font-medium">

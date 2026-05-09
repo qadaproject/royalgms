@@ -17,13 +17,21 @@ export default function ReminderWorkflow({ guests, invitations }) {
   const [sentIds, setSentIds] = useState(new Set());
   const [sending, setSending] = useState(false);
 
+  // EVENT DATE — update this to match the actual event
+  const EVENT_DATE = new Date("2025-07-12");
+  const daysUntilEvent = differenceInDays(EVENT_DATE, new Date());
+  const withinOneWeek = daysUntilEvent >= 0 && daysUntilEvent <= 7;
+
   // Find guests who:
   // 1. Have rsvp_status === "Pending"
-  // 2. Have a delivered invitation older than 5 days
+  // 2. Either: within 1 week of event (auto-trigger), OR have delivered invitation older than 5 days
   // 3. Have an email address
   const eligibleGuests = guests.filter((g) => {
     if (g.rsvp_status !== "Pending") return false;
     if (!g.email && !g.contact_person_email) return false;
+    // Auto-trigger within 1 week of event
+    if (withinOneWeek) return true;
+    // Otherwise require delivered invitation older than 5 days
     const inv = invitations.find((i) => i.guest_id === g.id && i.delivery_status === "Delivered");
     if (!inv) return false;
     const days = getDaysUnresponded(inv);
@@ -31,7 +39,7 @@ export default function ReminderWorkflow({ guests, invitations }) {
   }).map((g) => {
     const inv = invitations.find((i) => i.guest_id === g.id && i.delivery_status === "Delivered");
     return { ...g, _daysWaiting: getDaysUnresponded(inv), _inv: inv };
-  }).sort((a, b) => b._daysWaiting - a._daysWaiting);
+  }).sort((a, b) => (b._daysWaiting ?? 0) - (a._daysWaiting ?? 0));
 
   const sendReminder = async (guest) => {
     const email = guest.email || guest.contact_person_email;
@@ -105,7 +113,9 @@ Office of His Royal Majesty, Ogiame Atuwatse III
           <>
             <p className="text-xs text-muted-foreground mb-3 flex items-center gap-1">
               <AlertTriangle className="w-3 h-3 text-amber-400" />
-              Guests with delivered invitations older than 5 days who haven't responded
+              {withinOneWeek
+                ? `⚡ Event in ${daysUntilEvent} day(s) — all pending guests flagged for reminder`
+                : "Guests with delivered invitations older than 5 days who haven't responded"}
             </p>
 
             <div className="space-y-2 mb-4 max-h-64 overflow-y-auto pr-1">

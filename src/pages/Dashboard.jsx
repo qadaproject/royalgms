@@ -11,6 +11,7 @@ import TierRSVPChart from "../components/dashboard/TierRSVPChart";
 import ZoneCapacityLive from "../components/dashboard/ZoneCapacityLive";
 import ArrivalTracker from "../components/dashboard/ArrivalTracker";
 import EventCountdown from "../components/dashboard/EventCountdown";
+import CategoryRSVPWidget from "../components/dashboard/CategoryRSVPWidget";
 
 export default function Dashboard() {
   const { data: guests = [] } = useQuery({
@@ -62,6 +63,11 @@ export default function Dashboard() {
       {/* Tier RSVP Chart */}
       <div className="grid grid-cols-1 gap-6 mb-6">
         <TierRSVPChart guests={guests} invitations={invitations} />
+      </div>
+
+      {/* Category RSVP Breakdown */}
+      <div className="grid grid-cols-1 gap-6 mb-6">
+        <CategoryRSVPWidget guests={guests} />
       </div>
 
       {/* Live Zone Capacity + Alerts */}
