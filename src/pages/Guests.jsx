@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 import PageHeader from "../components/shared/PageHeader";
 import GuestTable from "../components/guests/GuestTable";
@@ -10,6 +10,7 @@ import GuestFilters from "../components/guests/GuestFilters";
 import GuestFormDialog from "../components/guests/GuestFormDialog";
 import GuestPrintMenu from "../components/guests/GuestPrintMenu";
 import BulkRSVPAction from "../components/guests/BulkRSVPAction";
+import GuestImportDialog from "../components/guests/GuestImportDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +30,7 @@ export default function Guests() {
   const [editGuest, setEditGuest] = useState(null);
   const [deleteGuest, setDeleteGuest] = useState(null);
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [importOpen, setImportOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -84,6 +86,11 @@ export default function Guests() {
     setSelectedIds(allSelected ? new Set() : new Set(visibleGuests.map((g) => g.id)));
   };
 
+  const handleImportGuests = async (guestRows) => {
+    await Promise.all(guestRows.map((row) => base44.entities.Guest.create(row)));
+    queryClient.invalidateQueries({ queryKey: ["guests"] });
+  };
+
   const handleBulkRSVP = async (ids, newStatus) => {
     await Promise.all(ids.map((id) => base44.entities.Guest.update(id, { rsvp_status: newStatus })));
     queryClient.invalidateQueries({ queryKey: ["guests"] });
@@ -115,6 +122,10 @@ export default function Guests() {
     <div>
       <PageHeader title="Guest Registry" subtitle={`${guests.length} dignitaries registered`}>
         <GuestPrintMenu guests={filteredGuests} invitations={invitations} />
+        <Button variant="outline" onClick={() => setImportOpen(true)}>
+          <Upload className="w-4 h-4 mr-2" />
+          Import Excel
+        </Button>
         <Button onClick={() => { setEditGuest(null); setDialogOpen(true); }}>
           <Plus className="w-4 h-4 mr-2" />
           Add Guest
@@ -151,6 +162,12 @@ export default function Guests() {
           onToggleAll={handleToggleAll}
         />
       )}
+
+      <GuestImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onImport={handleImportGuests}
+      />
 
       <GuestFormDialog
         open={dialogOpen}
