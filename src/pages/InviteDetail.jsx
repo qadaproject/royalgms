@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Loader2, AlertTriangle, CheckCircle2, MapPin, Calendar, Clock, Shirt } from "lucide-react";
+import { Loader2, AlertTriangle, CheckCircle2, MapPin, Calendar, Clock, Shirt, Printer } from "lucide-react";
 import RoyalCrest from "../components/layout/RoyalCrest";
 import CategoryBadge from "../components/shared/CategoryBadge";
+import InviteDetailPrintSidebar from "../components/invitations/InviteDetailPrintSidebar";
 
 const rsvpColors = {
   Accepted: "text-emerald-400 bg-emerald-400/10 border-emerald-400/30",
@@ -19,6 +20,7 @@ export default function InviteDetail() {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [printOpen, setPrintOpen] = useState(false);
 
   useEffect(() => {
     if (!token) { setNotFound(true); setLoading(false); return; }
@@ -54,8 +56,24 @@ export default function InviteDetail() {
 
   return (
     <div className="min-h-screen bg-[#1a0a06] text-[#f5ede0]">
+      <InviteDetailPrintSidebar
+        guest={guest}
+        settings={settings}
+        open={printOpen}
+        onClose={() => setPrintOpen(false)}
+      />
+
       {/* Header */}
       <header className="text-center py-10 px-4 border-b border-[#c9a84c]/20">
+        <div className="flex justify-end px-4 pt-2 absolute top-4 right-4">
+          <button
+            onClick={() => setPrintOpen(true)}
+            className="flex items-center gap-2 text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/10 transition-colors rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            Print
+          </button>
+        </div>
         <div className="flex justify-center mb-4">
           <RoyalCrest size="xl" />
         </div>
