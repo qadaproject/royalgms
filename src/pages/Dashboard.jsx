@@ -20,13 +20,13 @@ export default function Dashboard() {
 
   const { data: guests = [] } = useQuery({
     queryKey: ["guests"],
-    queryFn: () => base44.entities.Guest.list("-created_date", 500),
+    queryFn: () => base44.entities.Guest.list("-created_date", 10000),
     refetchInterval: 10000,
   });
 
   const { data: invitations = [] } = useQuery({
     queryKey: ["invitations"],
-    queryFn: () => base44.entities.Invitation.list("-created_date", 500),
+    queryFn: () => base44.entities.Invitation.list("-created_date", 10000),
   });
 
   const { data: zones = [] } = useQuery({
