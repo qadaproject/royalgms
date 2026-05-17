@@ -32,7 +32,7 @@ const COLUMN_LABELS = {
   notes: "Notes",
 };
 
-const VALID_CATEGORIES = ["A - Royal", "B - Federal", "C - State", "D - Corporate", "E - Diplomatic", "F - Traditional", "G - General"];
+const VALID_CATEGORIES = ["A - Royal", "B - Federal", "C - State", "D - Corporate", "E - Diplomatic", "F - Traditional", "G - General", "H - Socials", "I - Communities", "J - Chiefs"];
 const VALID_RSVP = ["Pending", "Accepted", "Declined", "Proxy"];
 
 function generateToken() {
