@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Plus, Upload } from "lucide-react";
+import { Plus, Upload, Download } from "lucide-react";
 import { toast } from "sonner";
 import PageHeader from "../components/shared/PageHeader";
 import GuestTable from "../components/guests/GuestTable";
@@ -97,6 +97,33 @@ export default function Guests() {
     setSelectedIds(new Set());
   };
 
+  const handleExportCSV = () => {
+    const cols = [
+      "full_name", "formal_salutation", "official_title", "post_nominals",
+      "category", "rsvp_status", "email", "phone",
+      "contact_person_name", "contact_person_phone", "contact_person_email",
+      "seating_zone", "seat_number", "security_detail_size",
+      "arrival_details", "dietary_requirements", "medical_alerts",
+      "special_requirements", "protocol_validated", "notes", "qr_code",
+    ];
+    const header = cols.join(",");
+    const rows = filteredGuests.map((g) =>
+      cols.map((c) => {
+        const val = g[c] ?? "";
+        const str = String(val).replace(/"/g, '""');
+        return str.includes(",") || str.includes('"') || str.includes("\n") ? `"${str}"` : str;
+      }).join(",")
+    );
+    const csv = [header, ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `guest-registry-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleSave = (form) => {
     if (editGuest?.id) {
       updateMutation.mutate({ id: editGuest.id, data: form });
@@ -121,6 +148,10 @@ export default function Guests() {
   return (
     <div>
       <PageHeader title="Guest Registry" subtitle={`${guests.length} dignitaries registered`}>
+        <Button variant="outline" onClick={handleExportCSV}>
+          <Download className="w-4 h-4 mr-2" />
+          Export CSV
+        </Button>
         <GuestPrintMenu guests={filteredGuests} invitations={invitations} />
         <Button variant="outline" onClick={() => setImportOpen(true)}>
           <Upload className="w-4 h-4 mr-2" />

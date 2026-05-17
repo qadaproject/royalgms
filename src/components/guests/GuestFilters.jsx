@@ -11,6 +11,9 @@ const categories = [
   "E - Diplomatic",
   "F - Traditional",
   "G - General",
+  "H - Itsekiri Socials",
+  "I - Itsekiri Communities",
+  "J - Itsekiri Chiefs",
 ];
 
 const statuses = ["All Status", "Pending", "Accepted", "Declined", "Proxy"];

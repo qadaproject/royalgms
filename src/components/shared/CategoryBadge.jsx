@@ -8,6 +8,9 @@ const categoryStyles = {
   "E - Diplomatic": "bg-rose-500/10 text-rose-700 border-rose-500/20",
   "F - Traditional": "bg-orange-500/10 text-orange-700 border-orange-500/20",
   "G - General": "bg-slate-500/10 text-slate-700 border-slate-500/20",
+  "H - Itsekiri Socials": "bg-teal-500/10 text-teal-700 border-teal-500/20",
+  "I - Itsekiri Communities": "bg-cyan-500/10 text-cyan-700 border-cyan-500/20",
+  "J - Itsekiri Chiefs": "bg-amber-500/10 text-amber-800 border-amber-500/20",
 };
 
 export default function CategoryBadge({ category, compact }) {
