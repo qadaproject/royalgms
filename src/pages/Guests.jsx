@@ -36,7 +36,7 @@ export default function Guests() {
 
   const { data: guests = [], isLoading } = useQuery({
     queryKey: ["guests"],
-    queryFn: () => base44.entities.Guest.list("-created_date", 500),
+    queryFn: () => base44.entities.Guest.list("-created_date", 1000),
   });
 
   const { data: invitations = [] } = useQuery({
@@ -87,7 +87,12 @@ export default function Guests() {
   };
 
   const handleImportGuests = async (guestRows) => {
-    await Promise.all(guestRows.map((row) => base44.entities.Guest.create(row)));
+    // Process in batches of 10 with concurrency to avoid overwhelming the API
+    const BATCH_SIZE = 10;
+    for (let i = 0; i < guestRows.length; i += BATCH_SIZE) {
+      const batch = guestRows.slice(i, i + BATCH_SIZE);
+      await Promise.all(batch.map((row) => base44.entities.Guest.create(row)));
+    }
     queryClient.invalidateQueries({ queryKey: ["guests"] });
   };
 

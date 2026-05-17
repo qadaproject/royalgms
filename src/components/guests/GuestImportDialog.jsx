@@ -2,7 +2,8 @@ import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Upload, Download, CheckCircle2, AlertTriangle, X, FileSpreadsheet, Loader2 } from "lucide-react";
+import { Upload, Download, CheckCircle2, X, FileSpreadsheet, Loader2 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
 const COLUMNS = [
   "formal_salutation", "full_name", "official_title", "post_nominals", "category",
@@ -115,6 +116,7 @@ export default function GuestImportDialog({ open, onOpenChange, onImport }) {
   const [errors, setErrors] = useState({});
   const [fileName, setFileName] = useState("");
   const [importing, setImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState(0);
   const [done, setDone] = useState(false);
   const [importResult, setImportResult] = useState(null);
   const fileRef = useRef();
@@ -148,6 +150,7 @@ export default function GuestImportDialog({ open, onOpenChange, onImport }) {
 
   const handleImport = async () => {
     setImporting(true);
+    setImportProgress(0);
     const prepared = validRows.map((row) => {
       const token = generateToken();
       return {
@@ -159,7 +162,17 @@ export default function GuestImportDialog({ open, onOpenChange, onImport }) {
         rsvp_token: token,
       };
     });
-    await onImport(prepared);
+
+    // Batch upload: 10 at a time, update progress after each batch
+    const BATCH_SIZE = 10;
+    let uploaded = 0;
+    for (let i = 0; i < prepared.length; i += BATCH_SIZE) {
+      const batch = prepared.slice(i, i + BATCH_SIZE);
+      await Promise.all(batch.map((row) => base44.entities.Guest.create(row)));
+      uploaded += batch.length;
+      setImportProgress(Math.round((uploaded / prepared.length) * 100));
+    }
+
     setImporting(false);
     setDone(true);
     setImportResult({ success: prepared.length, skipped: invalidCount });
@@ -326,6 +339,18 @@ export default function GuestImportDialog({ open, onOpenChange, onImport }) {
               </div>
             </details>
 
+            {importing && (
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Uploading guests in background…</span>
+                  <span>{importProgress}%</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div className="bg-accent h-2 rounded-full transition-all duration-300" style={{ width: `${importProgress}%` }} />
+                </div>
+              </div>
+            )}
+
             {rows.length > 0 && (
               <div className="flex justify-end gap-3 pt-2 border-t">
                 <Button variant="outline" onClick={reset}>Clear</Button>
@@ -334,7 +359,7 @@ export default function GuestImportDialog({ open, onOpenChange, onImport }) {
                   disabled={importing || validRows.length === 0}
                 >
                   {importing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                  Import {validRows.length} Guest{validRows.length !== 1 ? "s" : ""}
+                  {importing ? `Uploading… ${importProgress}%` : `Import ${validRows.length} Guest${validRows.length !== 1 ? "s" : ""}`}
                 </Button>
               </div>
             )}
