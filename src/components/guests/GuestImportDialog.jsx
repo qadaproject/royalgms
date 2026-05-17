@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Upload, Download, CheckCircle2, X, FileSpreadsheet, Loader2 } from "lucide-react";
+import { Upload, Download, CheckCircle2, X, FileSpreadsheet, Loader2, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const COLUMNS = [
@@ -115,6 +115,8 @@ export default function GuestImportDialog({ open, onOpenChange, onImport, existi
   const [rows, setRows] = useState([]);
   const [errors, setErrors] = useState({});
   const [duplicateIndices, setDuplicateIndices] = useState(new Set());
+  const [duplicateDetails, setDuplicateDetails] = useState([]); // [{rowIndex, importedName, matchedName, matchField, matchValue}]
+  const [showDuplicates, setShowDuplicates] = useState(false);
   const [fileName, setFileName] = useState("");
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
@@ -136,18 +138,32 @@ export default function GuestImportDialog({ open, onOpenChange, onImport, existi
         if (errs.length) rowErrors[i] = errs;
       });
 
-      // Detect duplicates by full_name (case-insensitive)
-      const existingNames = new Set(existingGuests.map((g) => g.full_name?.toLowerCase().trim()));
+      // Detect duplicates by email or phone
+      const existingEmails = new Map();
+      const existingPhones = new Map();
+      existingGuests.forEach((g) => {
+        if (g.email?.trim()) existingEmails.set(g.email.toLowerCase().trim(), g.full_name);
+        if (g.phone?.trim()) existingPhones.set(g.phone.replace(/\s+/g, "").trim(), g.full_name);
+      });
+
       const dupSet = new Set();
+      const dupDetails = [];
       parsed.forEach((row, i) => {
-        if (row.full_name && existingNames.has(row.full_name.toLowerCase().trim())) {
+        const email = row.email?.toLowerCase().trim();
+        const phone = row.phone?.replace(/\s+/g, "").trim();
+        if (email && existingEmails.has(email)) {
           dupSet.add(i);
+          dupDetails.push({ rowIndex: i, importedName: row.full_name, matchedName: existingEmails.get(email), matchField: "Email", matchValue: row.email });
+        } else if (phone && existingPhones.has(phone)) {
+          dupSet.add(i);
+          dupDetails.push({ rowIndex: i, importedName: row.full_name, matchedName: existingPhones.get(phone), matchField: "Phone", matchValue: row.phone });
         }
       });
 
       setRows(parsed);
       setErrors(rowErrors);
       setDuplicateIndices(dupSet);
+      setDuplicateDetails(dupDetails);
     };
     reader.readAsText(file);
   };
@@ -195,6 +211,8 @@ export default function GuestImportDialog({ open, onOpenChange, onImport, existi
     setRows([]);
     setErrors({});
     setDuplicateIndices(new Set());
+    setDuplicateDetails([]);
+    setShowDuplicates(false);
     setFileName("");
     setDone(false);
     setImportResult(null);
@@ -300,6 +318,54 @@ export default function GuestImportDialog({ open, onOpenChange, onImport, existi
                         <span className="font-semibold">Row {parseInt(idx) + 2}:</span> {errs.join(", ")}
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* Duplicates panel */}
+                {duplicateCount > 0 && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg overflow-hidden">
+                    <button
+                      className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-blue-100 transition-colors"
+                      onClick={() => setShowDuplicates((v) => !v)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-blue-600" />
+                        <span className="text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                          {duplicateCount} Duplicate{duplicateCount !== 1 ? "s" : ""} Detected — will be skipped
+                        </span>
+                      </div>
+                      {showDuplicates ? <ChevronUp className="w-3.5 h-3.5 text-blue-500" /> : <ChevronDown className="w-3.5 h-3.5 text-blue-500" />}
+                    </button>
+                    {showDuplicates && (
+                      <div className="border-t border-blue-200 max-h-48 overflow-y-auto">
+                        <table className="text-xs w-full">
+                          <thead className="bg-blue-100/60">
+                            <tr>
+                              <th className="text-left px-3 py-1.5 font-semibold text-blue-800">Row</th>
+                              <th className="text-left px-3 py-1.5 font-semibold text-blue-800">Imported Name</th>
+                              <th className="text-left px-3 py-1.5 font-semibold text-blue-800">Matched Field</th>
+                              <th className="text-left px-3 py-1.5 font-semibold text-blue-800">Value</th>
+                              <th className="text-left px-3 py-1.5 font-semibold text-blue-800">Existing Guest</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {duplicateDetails.map((d, i) => (
+                              <tr key={i} className="border-t border-blue-100">
+                                <td className="px-3 py-1.5 text-blue-700">{d.rowIndex + 2}</td>
+                                <td className="px-3 py-1.5 font-medium text-blue-900">{d.importedName || "—"}</td>
+                                <td className="px-3 py-1.5">
+                                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${d.matchField === "Email" ? "bg-violet-100 text-violet-700" : "bg-cyan-100 text-cyan-700"}`}>
+                                    {d.matchField}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-1.5 text-blue-700 font-mono">{d.matchValue}</td>
+                                <td className="px-3 py-1.5 text-blue-800">{d.matchedName || "—"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
                 )}
 
