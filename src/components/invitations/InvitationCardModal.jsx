@@ -23,6 +23,7 @@ function InvitationCard({ guest, eventSettings, qrImgUrl }) {
     fontFamily: "'Cormorant Garamond', Georgia, serif",
     position: "relative",
     maxWidth: "600px",
+    width: "100%",
     margin: "0 auto",
     boxSizing: "border-box",
   };
@@ -50,7 +51,7 @@ function InvitationCard({ guest, eventSettings, qrImgUrl }) {
   });
 
   return (
-    <div style={card}>
+    <div style={card} className="invite-card">
       {/* Corner ornaments */}
       <div style={corner(12, undefined, undefined, 12)} />
       <div style={corner(12, 12, undefined, undefined)} />
@@ -178,12 +179,18 @@ export default function InvitationCardModal({ open, onOpenChange, guest, eventSe
       <html><head><title>Invitation — ${guest.full_name}</title>
       <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
       <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; padding: 24px; background: #0d0300; display:flex; justify-content:center; align-items:flex-start; min-height:100vh; }
-        @page { size: A5 portrait; margin: 10mm; }
-        @media print { body { background:#0d0300; print-color-adjust: exact; -webkit-print-color-adjust: exact; padding: 0; } }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100%; }
+        body { background: #0d0300; display: flex; justify-content: center; align-items: center; padding: 0; }
+        @page { size: A4 portrait; margin: 8mm; }
+        @media print {
+          html, body { width: 100%; height: 100%; }
+          body { background: #3d0a06 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; padding: 0; margin: 0; }
+          .invite-card { max-width: 100% !important; width: 100% !important; min-height: calc(100vh - 0px) !important; page-break-inside: avoid; }
+        }
+        .invite-card { max-width: 600px; width: 100%; margin: 0 auto; }
       </style></head>
-      <body>${content}</body></html>
+      <body><div class="invite-card">${content}</div></body></html>
     `);
     win.document.close();
     setTimeout(() => { win.print(); }, 800);

@@ -17,6 +17,7 @@ import RSVPPortal from './pages/RSVPPortal';
 import EventSettings from './pages/EventSettings';
 import InvitationManager from './pages/InvitationManager';
 import InviteDetail from './pages/InviteDetail';
+import CheckInScanner from './pages/CheckInScanner';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -43,6 +44,7 @@ const AuthenticatedApp = () => {
       <Route path="/rsvp" element={<RSVPPortal />} />
       <Route path="/invite-detail" element={<InviteDetail />} />
       <Route path="/checkpoint" element={<SecurityCheckpoint />} />
+      <Route path="/scanner" element={<CheckInScanner />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/guests" element={<Guests />} />

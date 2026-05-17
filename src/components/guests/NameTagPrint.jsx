@@ -19,17 +19,21 @@ const CATEGORY_COLORS = {
 function buildNameTagHTML(selectedGuests) {
   const tags = selectedGuests.map((g) => {
     const colors = CATEGORY_COLORS[g.category] || CATEGORY_COLORS["G - General"];
+    const seatLabel = [g.seating_zone, g.seat_number].filter(Boolean).join(" · ");
     return `
     <div class="tag" style="border-top:5px solid ${colors.accent}; background:${colors.light};">
       <div class="tag-header" style="color:${colors.accent};">
         <img src="${LOGO_URL}" class="tag-logo" alt="Crest" />
-        <span>${g.category || ""}</span>
+        <span>5th Coronation Anniversary</span>
       </div>
+      <div style="width:60px;height:1px;background:${colors.accent}40;margin:0 auto 8px;"></div>
       <div class="tag-salutation" style="color:${colors.accent};">${g.formal_salutation || ""}</div>
       <div class="tag-name">${g.full_name}</div>
       ${g.post_nominals ? `<div class="tag-nominals" style="color:${colors.accent};">${g.post_nominals}</div>` : ""}
       ${g.official_title ? `<div class="tag-title">${g.official_title}</div>` : ""}
-      ${g.seating_zone ? `<div class="tag-zone" style="background:${colors.accent}; color:#fff;">Zone: ${g.seating_zone}</div>` : ""}
+      <div style="width:60px;height:1px;background:${colors.accent}40;margin:6px auto;"></div>
+      <div class="tag-category" style="color:${colors.accent}; border:1px solid ${colors.accent}40;">${g.category || ""}</div>
+      ${seatLabel ? `<div class="tag-zone" style="background:${colors.accent}; color:#fff;">${seatLabel}</div>` : ""}
       ${g.qr_code ? `<img src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent(g.qr_code)}" class="tag-qr" alt="QR" />` : ""}
     </div>`;
   }).join("");
@@ -49,9 +53,11 @@ function buildNameTagHTML(selectedGuests) {
     .tag-name { font-size:20px; font-weight:700; text-align:center; letter-spacing:0.02em;
       font-family:'Trajan Pro',serif; color:#1a0a06; margin:2px 0; }
     .tag-nominals { font-size:10px; font-weight:700; letter-spacing:0.12em; margin-bottom:4px; }
-    .tag-title { font-size:11px; color:#666; font-style:italic; text-align:center; margin-bottom:6px; }
+    .tag-title { font-size:11px; color:#666; font-style:italic; text-align:center; margin-bottom:4px; }
+    .tag-category { font-size:9px; letter-spacing:0.12em; text-transform:uppercase; font-weight:700;
+      padding:2px 10px; border-radius:10px; margin-bottom:4px; }
     .tag-zone { font-size:9px; letter-spacing:0.12em; text-transform:uppercase; font-weight:700;
-      padding:3px 10px; border-radius:12px; margin-top:6px; margin-bottom:6px; }
+      padding:3px 10px; border-radius:12px; margin-top:4px; margin-bottom:6px; }
     .tag-qr { width:50px; height:50px; margin-top:6px; }
     @media print {
       body { background:white; }

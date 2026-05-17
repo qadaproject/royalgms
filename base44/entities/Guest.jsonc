@@ -82,6 +82,10 @@
       "type": "string",
       "description": "Assigned seating zone"
     },
+    "seat_number": {
+      "type": "string",
+      "description": "Assigned table and seat within zone e.g. Table1-Seat3"
+    },
     "special_requirements": {
       "type": "string",
       "description": "High-level security clearance or cultural etiquette notes"

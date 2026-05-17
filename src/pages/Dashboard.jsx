@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, CheckCircle2, Clock, Send, AlertTriangle, Crown } from "lucide-react";
+import { Users, CheckCircle2, Clock, Send, AlertTriangle, LayoutDashboard, Shield } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import StatCard from "../components/shared/StatCard";
 import DashboardRSVPChart from "../components/dashboard/RSVPChart";
@@ -12,8 +13,11 @@ import ZoneCapacityLive from "../components/dashboard/ZoneCapacityLive";
 import ArrivalTracker from "../components/dashboard/ArrivalTracker";
 import EventCountdown from "../components/dashboard/EventCountdown";
 import CategoryRSVPWidget from "../components/dashboard/CategoryRSVPWidget";
+import SecurityActivityFeed from "../components/dashboard/SecurityActivityFeed";
 
 export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState("overview");
+
   const { data: guests = [] } = useQuery({
     queryKey: ["guests"],
     queryFn: () => base44.entities.Guest.list("-created_date", 500),
@@ -43,6 +47,26 @@ export default function Dashboard() {
         subtitle="5th Coronation Anniversary — Ògíame Atúwàtse III, CFR"
       />
 
+      {/* Tab switcher */}
+      <div className="flex gap-1 mb-6 border-b border-border">
+        <button
+          onClick={() => setActiveTab("overview")}
+          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${activeTab === "overview" ? "border-accent text-accent" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+        >
+          <LayoutDashboard className="w-3.5 h-3.5" /> Overview
+        </button>
+        <button
+          onClick={() => setActiveTab("security")}
+          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${activeTab === "security" ? "border-accent text-accent" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+        >
+          <Shield className="w-3.5 h-3.5" /> Security Activity
+        </button>
+      </div>
+
+      {activeTab === "security" ? (
+        <SecurityActivityFeed />
+      ) : (
+      <>
       <EventCountdown />
 
       {/* Stats Grid */}
@@ -89,6 +113,8 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-6">
         <RecentActivity guests={guests} invitations={invitations} />
       </div>
+      </>
+      )}
 
     </div>
   );
