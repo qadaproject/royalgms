@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GuestActivityLog from "./GuestActivityLog";
 
-const categories = ["A - Royal", "B - Federal", "C - State", "D - Corporate", "E - Diplomatic", "F - Traditional", "G - General", "H - Itsekiri Socials", "I - Itsekiri Communities", "J - Itsekiri Chiefs"];
+const categories = ["A - Royal", "B - Federal", "C - State", "D - Corporate", "E - Diplomatic", "F - Traditional", "G - General", "H - Socials", "I - Communities", "J - Chiefs"];
 const salutations = ["His Imperial Majesty", "His Majesty", "His Royal Highness", "His Royal Majesty", "Her Royal Majesty", "His Excellency", "Her Excellency", "Senator", "Pastor", "Rt. Hon.", "Hon.", "Chief", "Dr.", "Prof.", "Engr.", "Barr.", "Alhaji", "Chief (Mrs.)", "Mr.", "Mrs.", "Ms."];
 
 const emptyGuest = {

@@ -28,9 +28,9 @@
         "E - Diplomatic",
         "F - Traditional",
         "G - General",
-        "H - Itsekiri Socials",
-        "I - Itsekiri Communities",
-        "J - Itsekiri Chiefs"
+        "H - Socials",
+        "I - Communities",
+        "J - Chiefs"
       ],
       "description": "Hierarchical category of the guest"
     },
