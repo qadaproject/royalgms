@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Pencil, Trash2, ShieldCheck, ShieldAlert, Link2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Pencil, Trash2, ShieldCheck, ShieldAlert, Link2, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { toast } from "sonner";
 import CategoryBadge from "../shared/CategoryBadge";
 import StatusBadge from "../shared/StatusBadge";
+import GuestViewModal from "./GuestViewModal";
 
 const PAGE_SIZE = 20;
 
@@ -57,6 +58,7 @@ function Pagination({ page, totalPages, onPage }) {
 
 export default function GuestTable({ guests, onEdit, onDelete, selectedIds = new Set(), onToggleSelect, onToggleAll }) {
   const [page, setPage] = useState(1);
+  const [viewGuest, setViewGuest] = useState(null);
 
   // Reset to page 1 whenever the guest list changes (filter applied)
   useEffect(() => { setPage(1); }, [guests.length]);
@@ -78,6 +80,8 @@ export default function GuestTable({ guests, onEdit, onDelete, selectedIds = new
   }
 
   return (
+    <>
+    <GuestViewModal guest={viewGuest} open={!!viewGuest} onOpenChange={(v) => { if (!v) setViewGuest(null); }} />
     <div className="space-y-2">
       {/* Top pagination */}
       <div className="border rounded-lg bg-muted/20">
@@ -154,6 +158,9 @@ export default function GuestTable({ guests, onEdit, onDelete, selectedIds = new
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" title="View Details" onClick={() => setViewGuest(guest)}>
+                      <Eye className="w-3.5 h-3.5" />
+                    </Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7 text-accent" title="Copy RSVP Link" onClick={() => copyRSVPLink(guest)}>
                       <Link2 className="w-3.5 h-3.5" />
                     </Button>
@@ -176,5 +183,6 @@ export default function GuestTable({ guests, onEdit, onDelete, selectedIds = new
         <Pagination page={safePage} totalPages={totalPages} onPage={setPage} />
       </div>
     </div>
+    </>
   );
 }

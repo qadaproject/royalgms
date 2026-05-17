@@ -111,9 +111,10 @@ function validateRow(row, index) {
   return errors;
 }
 
-export default function GuestImportDialog({ open, onOpenChange, onImport }) {
+export default function GuestImportDialog({ open, onOpenChange, onImport, existingGuests = [] }) {
   const [rows, setRows] = useState([]);
   const [errors, setErrors] = useState({});
+  const [duplicateIndices, setDuplicateIndices] = useState(new Set());
   const [fileName, setFileName] = useState("");
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
@@ -134,8 +135,19 @@ export default function GuestImportDialog({ open, onOpenChange, onImport }) {
         const errs = validateRow(row, i);
         if (errs.length) rowErrors[i] = errs;
       });
+
+      // Detect duplicates by full_name (case-insensitive)
+      const existingNames = new Set(existingGuests.map((g) => g.full_name?.toLowerCase().trim()));
+      const dupSet = new Set();
+      parsed.forEach((row, i) => {
+        if (row.full_name && existingNames.has(row.full_name.toLowerCase().trim())) {
+          dupSet.add(i);
+        }
+      });
+
       setRows(parsed);
       setErrors(rowErrors);
+      setDuplicateIndices(dupSet);
     };
     reader.readAsText(file);
   };
@@ -145,8 +157,9 @@ export default function GuestImportDialog({ open, onOpenChange, onImport }) {
     handleFile(e.dataTransfer.files[0]);
   };
 
-  const validRows = rows.filter((_, i) => !errors[i]);
+  const validRows = rows.filter((_, i) => !errors[i] && !duplicateIndices.has(i));
   const invalidCount = Object.keys(errors).length;
+  const duplicateCount = duplicateIndices.size;
 
   const handleImport = async () => {
     setImporting(true);
@@ -175,12 +188,13 @@ export default function GuestImportDialog({ open, onOpenChange, onImport }) {
 
     setImporting(false);
     setDone(true);
-    setImportResult({ success: prepared.length, skipped: invalidCount });
+    setImportResult({ success: prepared.length, skipped: invalidCount, duplicates: duplicateCount });
   };
 
   const reset = () => {
     setRows([]);
     setErrors({});
+    setDuplicateIndices(new Set());
     setFileName("");
     setDone(false);
     setImportResult(null);
@@ -204,6 +218,9 @@ export default function GuestImportDialog({ open, onOpenChange, onImport }) {
               <span className="text-emerald-600 font-semibold">{importResult?.success} guests</span> imported successfully.
               {importResult?.skipped > 0 && (
                 <> &nbsp;<span className="text-amber-600 font-semibold">{importResult.skipped} rows</span> skipped due to errors.</>
+              )}
+              {importResult?.duplicates > 0 && (
+                <> &nbsp;<span className="text-blue-600 font-semibold">{importResult.duplicates} duplicates</span> skipped.</>
               )}
             </p>
             <div className="flex gap-3 justify-center mt-4">
@@ -259,14 +276,18 @@ export default function GuestImportDialog({ open, onOpenChange, onImport }) {
                 </div>
 
                 {/* Summary */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
                     <p className="text-2xl font-bold text-emerald-700">{validRows.length}</p>
                     <p className="text-xs text-emerald-600 font-medium">Ready to import</p>
                   </div>
                   <div className={`${invalidCount > 0 ? "bg-amber-50 border-amber-200" : "bg-muted/40 border-border"} border rounded-lg p-3 text-center`}>
                     <p className={`text-2xl font-bold ${invalidCount > 0 ? "text-amber-700" : "text-muted-foreground"}`}>{invalidCount}</p>
-                    <p className={`text-xs font-medium ${invalidCount > 0 ? "text-amber-600" : "text-muted-foreground"}`}>Rows with errors (skipped)</p>
+                    <p className={`text-xs font-medium ${invalidCount > 0 ? "text-amber-600" : "text-muted-foreground"}`}>Errors (skipped)</p>
+                  </div>
+                  <div className={`${duplicateCount > 0 ? "bg-blue-50 border-blue-200" : "bg-muted/40 border-border"} border rounded-lg p-3 text-center`}>
+                    <p className={`text-2xl font-bold ${duplicateCount > 0 ? "text-blue-700" : "text-muted-foreground"}`}>{duplicateCount}</p>
+                    <p className={`text-xs font-medium ${duplicateCount > 0 ? "text-blue-600" : "text-muted-foreground"}`}>Duplicates (skipped)</p>
                   </div>
                 </div>
 

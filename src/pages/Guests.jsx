@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Plus, Upload, Download } from "lucide-react";
+import { Plus, Upload, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import PageHeader from "../components/shared/PageHeader";
 import GuestTable from "../components/guests/GuestTable";
@@ -11,6 +11,7 @@ import GuestFormDialog from "../components/guests/GuestFormDialog";
 import GuestPrintMenu from "../components/guests/GuestPrintMenu";
 import BulkRSVPAction from "../components/guests/BulkRSVPAction";
 import GuestImportDialog from "../components/guests/GuestImportDialog";
+import DeleteAllGuestsDialog from "../components/guests/DeleteAllGuestsDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +32,7 @@ export default function Guests() {
   const [deleteGuest, setDeleteGuest] = useState(null);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [importOpen, setImportOpen] = useState(false);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -87,13 +89,22 @@ export default function Guests() {
   };
 
   const handleImportGuests = async (guestRows) => {
-    // Process in batches of 10 with concurrency to avoid overwhelming the API
     const BATCH_SIZE = 10;
     for (let i = 0; i < guestRows.length; i += BATCH_SIZE) {
       const batch = guestRows.slice(i, i + BATCH_SIZE);
       await Promise.all(batch.map((row) => base44.entities.Guest.create(row)));
     }
     queryClient.invalidateQueries({ queryKey: ["guests"] });
+  };
+
+  const handleDeleteAll = async () => {
+    const BATCH_SIZE = 10;
+    for (let i = 0; i < guests.length; i += BATCH_SIZE) {
+      const batch = guests.slice(i, i + BATCH_SIZE);
+      await Promise.all(batch.map((g) => base44.entities.Guest.delete(g.id)));
+    }
+    queryClient.invalidateQueries({ queryKey: ["guests"] });
+    toast.success("All guests deleted");
   };
 
   const handleBulkRSVP = async (ids, newStatus) => {
@@ -157,6 +168,10 @@ export default function Guests() {
           <Download className="w-4 h-4 mr-2" />
           Export CSV
         </Button>
+        <Button variant="outline" className="text-destructive border-destructive/40 hover:bg-destructive/10" onClick={() => setDeleteAllOpen(true)}>
+          <Trash2 className="w-4 h-4 mr-2" />
+          Delete All
+        </Button>
         <GuestPrintMenu guests={filteredGuests} invitations={invitations} />
         <Button variant="outline" onClick={() => setImportOpen(true)}>
           <Upload className="w-4 h-4 mr-2" />
@@ -203,6 +218,14 @@ export default function Guests() {
         open={importOpen}
         onOpenChange={setImportOpen}
         onImport={handleImportGuests}
+        existingGuests={guests}
+      />
+
+      <DeleteAllGuestsDialog
+        open={deleteAllOpen}
+        onOpenChange={setDeleteAllOpen}
+        totalCount={guests.length}
+        onConfirm={handleDeleteAll}
       />
 
       <GuestFormDialog
