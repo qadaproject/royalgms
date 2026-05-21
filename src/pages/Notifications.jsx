@@ -23,9 +23,8 @@ function buildEmailBody(guest) {
   return `Your Royal Highness / Your Excellency / Distinguished Guest,\n\nThe Royal Palace of Ògíame Atúwàtse III, CFR, The Olu of Warri, formally requests the honour of your presence at the 5th Coronation Anniversary celebrations.\n\nPlease confirm your attendance via your secure personal RSVP portal:\n\n${link}\n\nYour timely response will enable the Protocol Office to make adequate arrangements.\n\nPresented with the highest regard,\nThe Royal Protocol Office\nAghofen, Warri Kingdom`;
 }
 
-function buildSMSBody(guest) {
-  const link = buildRSVPLink(guest);
-  return `Royal RSVP: ${guest.formal_salutation || "Esteemed Guest"} ${guest.full_name}, you are cordially invited to the 5th Coronation Anniversary of Ògíame Atúwàtse III, CFR. Kindly confirm via: ${link}`;
+function buildInviteLink(guest) {
+  return `${APP_URL}/invite-detail?token=${guest.qr_code}`;
 }
 
 export default function Notifications() {
@@ -65,7 +64,7 @@ export default function Notifications() {
     setSending((prev) => ({ ...prev, [guest.id]: true }));
 
     const emailBody = buildEmailBody(guest);
-    const smsBody = buildSMSBody(guest);
+
     let success = true;
 
     if (ch === "Email" || ch === "Both") {
@@ -80,6 +79,18 @@ export default function Notifications() {
       }
     }
 
+    if (ch === "SMS" || ch === "Both") {
+      const phone = guest.phone || guest.contact_person_phone;
+      if (phone) {
+        const inviteLink = buildInviteLink(guest);
+        await base44.functions.invoke("sendSMS", {
+          phone,
+          name: `${guest.formal_salutation || ""} ${guest.full_name}`.trim(),
+          invitationLink: inviteLink,
+        }).catch(() => { success = false; });
+      }
+    }
+
     await logMutation.mutateAsync({
       guest_id: guest.id,
       guest_name: guest.full_name,
@@ -87,7 +98,7 @@ export default function Notifications() {
       guest_phone: guest.phone || guest.contact_person_phone || "",
       channel: ch,
       status: success ? "Sent" : "Failed",
-      message_preview: ch === "Email" || ch === "Both" ? emailBody.substring(0, 200) : smsBody.substring(0, 200),
+      message_preview: emailBody.substring(0, 200),
       rsvp_token: guest.qr_code,
     });
 
