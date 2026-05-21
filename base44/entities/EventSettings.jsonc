@@ -35,6 +35,18 @@
       "type": "string",
       "description": "Body text used in invitations"
     },
+    "email_template": {
+      "type": "string",
+      "description": "Email notification body. Use {{name}} for guest name and {{link}} for invitation link."
+    },
+    "sms_template": {
+      "type": "string",
+      "description": "SMS/WhatsApp notification body. Use {{name}} for guest name and {{link}} for invitation link."
+    },
+    "email_subject": {
+      "type": "string",
+      "description": "Subject line for email notifications"
+    },
     "rsvp_deadline": {
       "type": "string",
       "format": "date",

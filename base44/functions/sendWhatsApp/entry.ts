@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { phone, messageBody } = await req.json();
+    const { phone, messageBody, templateCode, parameters, buttonParameters, headerParameters } = await req.json();
 
     if (!phone) {
       return Response.json({ error: 'Phone number is required' }, { status: 400 });
@@ -24,21 +24,24 @@ Deno.serve(async (req) => {
       formattedPhone = "234" + formattedPhone;
     }
 
-    const formData = new FormData();
-    formData.append("token", token);
-    formData.append("senderID", "OGIAME III");
-    formData.append("recipients", formattedPhone);
-    formData.append("message", messageBody);
+    const body = new URLSearchParams();
+    body.append("token", token);
+    body.append("recipient", formattedPhone);
+    body.append("template_code", templateCode || "");
+    body.append("parameters", parameters || messageBody || "");
+    body.append("button_parameters", buttonParameters || "");
+    body.append("header_parameters", headerParameters || "");
 
-    const response = await fetch("https://my.kudisms.net/api/corporate", {
+    const response = await fetch("https://my.kudisms.net/api/whatsapp", {
       method: "POST",
-      body: formData,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      return Response.json({ error: "SMS provider error", details: result }, { status: 500 });
+      return Response.json({ error: "WhatsApp provider error", details: result }, { status: 500 });
     }
 
     return Response.json({ success: true, result });

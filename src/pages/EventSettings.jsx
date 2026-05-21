@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Save, CalendarDays, MapPin, Mail, FileText } from "lucide-react";
+import { Save, CalendarDays, MapPin, Mail, FileText, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import PageHeader from "../components/shared/PageHeader";
 
@@ -19,6 +19,9 @@ const defaults = {
   venue_address: "Warri, Delta State, Nigeria",
   dress_code: "Traditional Royal Attire / Black Tie",
   invitation_body: "By command of His Royal Majesty, you are graciously requested to attend the 5th Coronation Anniversary Ceremony in honour of Ògíame Atúwàtse III, CFR, Olu of Warri Kingdom.",
+  email_subject: "Royal RSVP — 5th Coronation Anniversary of Ògíame Atúwàtse III, CFR",
+  email_template: "Your Royal Highness / Your Excellency / Distinguished Guest,\n\nThe Royal Palace of Ògíame Atúwàtse III, CFR, The Olu of Warri, formally requests the honour of your presence at the 5th Coronation Anniversary celebrations.\n\nDear {{name}},\n\nPlease download your personalized invitation via the link below:\n{{link}}\n\nYour timely response will enable the Protocol Office to make adequate arrangements.\n\nPresented with the highest regard,\nThe Royal Protocol Office\nAghofen, Warri Kingdom",
+  sms_template: "Hello {{name}}, you are cordially invited to the 5th Coronation Anniversary of Ogiame Atuwatse III, CFR. Download your invitation: {{link}}",
   rsvp_deadline: "",
   contact_name: "Protocol Office",
   contact_phone: "",
@@ -137,6 +140,29 @@ export default function EventSettings() {
             <div>
               <Label className="text-xs">Footer Note</Label>
               <Textarea value={form.footer_note} onChange={(e) => update("footer_note", e.target.value)} className="h-20" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Notification Templates */}
+        <Card>
+          <CardHeader className="pb-3 flex flex-row items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-accent" />
+            <CardTitle className="font-heading text-lg">Notification Message Templates</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-xs text-muted-foreground">Use <code className="bg-muted px-1 rounded">{"{{name}}"}</code> for guest name and <code className="bg-muted px-1 rounded">{"{{link}}"}</code> for invitation link. These will be auto-substituted when sending.</p>
+            <div>
+              <Label className="text-xs">Email Subject</Label>
+              <Input value={form.email_subject || ""} onChange={(e) => update("email_subject", e.target.value)} placeholder="Email subject line..." />
+            </div>
+            <div>
+              <Label className="text-xs">Email Body Template</Label>
+              <Textarea value={form.email_template || ""} onChange={(e) => update("email_template", e.target.value)} className="h-40" placeholder="Email body... use {{name}} and {{link}}" />
+            </div>
+            <div>
+              <Label className="text-xs">SMS / WhatsApp Template</Label>
+              <Textarea value={form.sms_template || ""} onChange={(e) => update("sms_template", e.target.value)} className="h-24" placeholder="SMS/WhatsApp body... use {{name}} and {{link}}" />
             </div>
           </CardContent>
         </Card>

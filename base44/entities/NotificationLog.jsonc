@@ -19,7 +19,9 @@
       "enum": [
         "Email",
         "SMS",
-        "Both"
+        "WhatsApp",
+        "Email + SMS",
+        "Email + WhatsApp"
       ]
     },
     "status": {
