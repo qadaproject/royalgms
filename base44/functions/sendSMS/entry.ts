@@ -10,11 +10,12 @@ Deno.serve(async (req) => {
 
     const { phone, messageBody } = await req.json();
 
-    if (!phone) {
-      return Response.json({ error: 'Phone number is required' }, { status: 400 });
+    if (!phone || !messageBody) {
+      return Response.json({ error: 'Phone and messageBody are required' }, { status: 400 });
     }
 
     const token = Deno.env.get("KUDISMS_API_TOKEN");
+    const senderID = Deno.env.get("KUDISMS_SENDER_ID") || "OGIAME";
 
     // Format phone: ensure it starts with 234 (Nigeria)
     let formattedPhone = phone.replace(/\D/g, "");
@@ -26,7 +27,7 @@ Deno.serve(async (req) => {
 
     const formData = new FormData();
     formData.append("token", token);
-    formData.append("senderID", "OGIAME III");
+    formData.append("senderID", senderID);
     formData.append("recipients", formattedPhone);
     formData.append("message", messageBody);
 
@@ -35,10 +36,12 @@ Deno.serve(async (req) => {
       body: formData,
     });
 
-    const result = await response.json();
+    const text = await response.text();
+    let result;
+    try { result = JSON.parse(text); } catch { result = { raw: text }; }
 
-    if (!response.ok) {
-      return Response.json({ error: "SMS provider error", details: result }, { status: 500 });
+    if (result.status === "error") {
+      return Response.json({ error: result.msg || "SMS provider error", details: result }, { status: 500 });
     }
 
     return Response.json({ success: true, result });
