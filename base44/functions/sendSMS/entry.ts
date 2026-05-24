@@ -30,8 +30,9 @@ Deno.serve(async (req) => {
     formData.append("senderID", senderID);
     formData.append("recipients", formattedPhone);
     formData.append("message", messageBody);
+    formData.append("gateway", "2");
 
-    const response = await fetch("https://my.kudisms.net/api/corporate", {
+    const response = await fetch("https://my.kudisms.net/api/sms", {
       method: "POST",
       body: formData,
     });
