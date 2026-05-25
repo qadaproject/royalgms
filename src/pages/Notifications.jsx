@@ -26,20 +26,96 @@ function applyTemplate(template, guest) {
     .replace(/\{\{link\}\}/g, link);
 }
 
-const DEFAULT_EMAIL_TEMPLATE = `Your Royal Highness / Your Excellency / Distinguished Guest,
+function formatPhone(phone) {
+  if (!phone) return null;
+  let p = phone.toString().replace(/\D/g, "");
+  if (p.startsWith("234") && p.length === 13) return p;
+  if (p.startsWith("0") && p.length === 11) return "234" + p.slice(1);
+  if (!p.startsWith("234")) return "234" + p;
+  return p;
+}
 
-The Royal Palace of Ògíame Atúwàtse III, CFR, The Olu of Warri, formally requests the honour of your presence at the 5th Coronation Anniversary celebrations.
+function buildHtmlEmail(guest, bodyText, eventSettings) {
+  const name = `${guest.formal_salutation || ""} ${guest.full_name}`.trim();
+  const link = buildInviteLink(guest);
+  const eventName = eventSettings.event_name || "5th Coronation Anniversary of Ògíame Atúwàtse III, CFR";
+  const eventDate = eventSettings.event_date ? new Date(eventSettings.event_date).toLocaleDateString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "";
+  const venue = eventSettings.venue_name || "";
+  const contactPhone = eventSettings.contact_phone || "";
+  const contactEmail = eventSettings.contact_email || "";
 
-Dear {{name}},
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${eventName}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f5f0e8;font-family:'Georgia',serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f0e8;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border-radius:4px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
 
-Please download your personalized invitation via the link below:
-{{link}}
+        <!-- Header -->
+        <tr>
+          <td style="background-color:#5c1a1a;padding:32px 40px;text-align:center;">
+            <p style="margin:0 0 6px 0;color:#c9a84c;font-size:10px;letter-spacing:4px;text-transform:uppercase;font-family:'Arial',sans-serif;">Royal Protocol Office</p>
+            <h1 style="margin:0;color:#f5f0e8;font-size:22px;font-weight:400;letter-spacing:2px;font-family:'Georgia',serif;">WARRI KINGDOM</h1>
+            <div style="margin:12px auto 0;width:60px;height:1px;background:#c9a84c;"></div>
+            <p style="margin:10px 0 0;color:#c9a84c;font-size:11px;letter-spacing:2px;font-family:'Arial',sans-serif;">OFFICIAL INVITATION</p>
+          </td>
+        </tr>
 
-Your timely response will enable the Protocol Office to make adequate arrangements.
+        <!-- Gold divider -->
+        <tr><td style="height:4px;background:linear-gradient(90deg,#c9a84c,#e8d08a,#c9a84c);"></td></tr>
 
-Presented with the highest regard,
-The Royal Protocol Office
-Aghofen, Warri Kingdom`;
+        <!-- Body -->
+        <tr>
+          <td style="padding:40px 40px 32px;color:#1a0a06;">
+            <p style="margin:0 0 20px;color:#7a5c1e;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-family:'Arial',sans-serif;">Your Invitation</p>
+            <p style="margin:0 0 16px;font-size:16px;color:#2d1a0a;line-height:1.6;">Your Royal Highness / Your Excellency / Distinguished Guest,</p>
+            <p style="margin:0 0 16px;font-size:15px;color:#3d2a1a;line-height:1.8;">The Royal Palace of <strong>Ògíame Atúwàtse III, CFR</strong>, The Olu of Warri, formally requests the honour of your presence at the <strong>${eventName}</strong>.</p>
+            <p style="margin:0 0 24px;font-size:15px;color:#3d2a1a;line-height:1.8;">Dear <strong>${name}</strong>,</p>
+            ${eventDate ? `<table cellpadding="0" cellspacing="0" style="margin:0 0 24px;background:#fdf6e3;border-left:3px solid #c9a84c;border-radius:0 4px 4px 0;width:100%;"><tr><td style="padding:12px 16px;"><p style="margin:0;font-size:12px;color:#7a5c1e;letter-spacing:2px;text-transform:uppercase;font-family:'Arial',sans-serif;">Date &amp; Venue</p><p style="margin:4px 0 0;font-size:14px;color:#2d1a0a;font-weight:bold;">${eventDate}</p>${venue ? `<p style="margin:2px 0 0;font-size:13px;color:#5a3a1a;">${venue}</p>` : ""}</td></tr></table>` : ""}
+            <p style="margin:0 0 28px;font-size:14px;color:#3d2a1a;line-height:1.8;">Please access your personalised invitation and RSVP using the secure link below. Your timely response will enable the Protocol Office to make adequate arrangements.</p>
+
+            <!-- CTA Button -->
+            <table cellpadding="0" cellspacing="0" style="margin:0 0 32px;">
+              <tr>
+                <td style="background:#5c1a1a;border-radius:2px;padding:0;">
+                  <a href="${link}" style="display:inline-block;padding:14px 32px;color:#f5f0e8;font-family:'Arial',sans-serif;font-size:13px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;text-decoration:none;">View My Invitation</a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0 0 8px;font-size:12px;color:#888;font-family:'Arial',sans-serif;">If the button above does not work, copy and paste this link into your browser:</p>
+            <p style="margin:0 0 32px;font-size:11px;color:#c9a84c;word-break:break-all;font-family:'Arial',sans-serif;">${link}</p>
+
+            <p style="margin:0;font-size:14px;color:#3d2a1a;line-height:1.8;">Presented with the highest regard,<br/><strong>The Royal Protocol Office</strong><br/><span style="color:#7a5c1e;font-size:13px;">Aghofen, Warri Kingdom</span></p>
+          </td>
+        </tr>
+
+        <!-- Gold divider -->
+        <tr><td style="height:2px;background:linear-gradient(90deg,#c9a84c,#e8d08a,#c9a84c);"></td></tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#1a0a06;padding:24px 40px;text-align:center;">
+            <p style="margin:0 0 6px;color:#c9a84c;font-size:10px;letter-spacing:3px;text-transform:uppercase;font-family:'Arial',sans-serif;">Royal Protocol Office</p>
+            <p style="margin:0 0 10px;color:#888;font-size:10px;font-family:'Arial',sans-serif;">Aghofen, Warri Kingdom, Delta State, Nigeria</p>
+            ${contactPhone || contactEmail ? `<p style="margin:0;color:#666;font-size:10px;font-family:'Arial',sans-serif;">${contactPhone ? `Tel: ${contactPhone}` : ""}${contactPhone && contactEmail ? " &nbsp;|&nbsp; " : ""}${contactEmail ? `Email: ${contactEmail}` : ""}</p>` : ""}
+            <p style="margin:12px 0 0;color:#444;font-size:9px;font-family:'Arial',sans-serif;">This is an official communication from the Royal Palace. Please do not reply to this email.</p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+const DEFAULT_EMAIL_TEMPLATE = `{{name}}`; // placeholder — HTML is generated via buildHtmlEmail
 
 const DEFAULT_SMS_TEMPLATE = `Hello {{name}}, you are cordially invited to the 5th Coronation Anniversary of Ogiame Atuwatse III, CFR. Download your invitation: {{link}}`;
 const DEFAULT_EMAIL_SUBJECT = `Royal RSVP — 5th Coronation Anniversary of Ògíame Atúwàtse III, CFR`;
@@ -121,17 +197,19 @@ export default function Notifications() {
     if (ch === "Email" || ch === "Email + SMS" || ch === "Email + WhatsApp") {
       const to = guest.email || guest.contact_person_email;
       if (to) {
+        const htmlBody = buildHtmlEmail(guest, emailBody, eventSettings);
         await base44.integrations.Core.SendEmail({
           to,
           subject: emailSubject,
-          body: emailBody,
+          body: htmlBody,
           from_name: "Royal Protocol Office — Warri Kingdom",
         }).catch(() => { success = false; });
       }
     }
 
     if (ch === "SMS" || ch === "Email + SMS") {
-      const phone = guest.phone || guest.contact_person_phone;
+      const rawPhone = guest.phone || guest.contact_person_phone;
+      const phone = formatPhone(rawPhone);
       if (phone) {
         await base44.functions.invoke("sendSMS", {
           phone,
@@ -141,7 +219,8 @@ export default function Notifications() {
     }
 
     if (ch === "WhatsApp" || ch === "Email + WhatsApp") {
-      const phone = guest.phone || guest.contact_person_phone;
+      const rawPhone = guest.phone || guest.contact_person_phone;
+      const phone = formatPhone(rawPhone);
       if (phone) {
         await base44.functions.invoke("sendWhatsApp", {
           phone,

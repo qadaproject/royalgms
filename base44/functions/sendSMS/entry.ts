@@ -17,24 +17,28 @@ Deno.serve(async (req) => {
     const token = Deno.env.get("KUDISMS_API_TOKEN");
     const senderID = Deno.env.get("KUDISMS_SENDER_ID") || "OGIAME";
 
-    // Format phone: ensure it starts with 234 (Nigeria)
-    let formattedPhone = phone.replace(/\D/g, "");
-    if (formattedPhone.startsWith("0")) {
+    // Normalize to 234XXXXXXXXXX format
+    let formattedPhone = phone.toString().replace(/\D/g, "");
+    if (formattedPhone.startsWith("234") && formattedPhone.length === 13) {
+      // already correct
+    } else if (formattedPhone.startsWith("0") && formattedPhone.length === 11) {
       formattedPhone = "234" + formattedPhone.slice(1);
     } else if (!formattedPhone.startsWith("234")) {
       formattedPhone = "234" + formattedPhone;
     }
 
-    const formData = new FormData();
-    formData.append("token", token);
-    formData.append("senderID", senderID);
-    formData.append("recipients", formattedPhone);
-    formData.append("message", messageBody);
-    formData.append("gateway", "2");
+    // Use URL-encoded form body (more reliable than FormData for this API)
+    const params = new URLSearchParams();
+    params.append("token", token);
+    params.append("senderID", senderID);
+    params.append("recipients", formattedPhone);
+    params.append("message", messageBody);
+    params.append("gateway", "2");
 
     const response = await fetch("https://my.kudisms.net/api/sms", {
       method: "POST",
-      body: formData,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString(),
     });
 
     const text = await response.text();
