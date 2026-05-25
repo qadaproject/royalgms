@@ -14,7 +14,7 @@ const rsvpColors = {
 
 export default function InviteDetail() {
   const urlParams = new URLSearchParams(window.location.search);
-  const token = urlParams.get("token");
+  const token = urlParams.get("ref") || urlParams.get("token");
 
   const [guest, setGuest] = useState(null);
   const [settings, setSettings] = useState(null);

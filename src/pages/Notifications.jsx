@@ -15,7 +15,7 @@ import { format } from "date-fns";
 const APP_URL = window.location.origin;
 
 function buildInviteLink(guest) {
-  return `${APP_URL}/invite-detail?token=${guest.qr_code}`;
+  return `${APP_URL}/invite-detail?ref=${guest.qr_code}`;
 }
 
 function applyTemplate(template, guest) {
@@ -211,10 +211,16 @@ export default function Notifications() {
       const rawPhone = guest.phone || guest.contact_person_phone;
       const phone = formatPhone(rawPhone);
       if (phone) {
-        await base44.functions.invoke("sendSMS", {
-          phone,
-          messageBody: smsBody,
-        }).catch(() => { success = false; });
+        try {
+          const res = await base44.functions.invoke("sendSMS", { phone, messageBody: smsBody });
+          if (res?.data?.error || res?.data?.result?.status === "error") {
+            success = false;
+          }
+        } catch {
+          success = false;
+        }
+      } else {
+        success = false;
       }
     }
 

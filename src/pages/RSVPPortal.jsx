@@ -10,7 +10,7 @@ import RoyalCrest from "../components/layout/RoyalCrest";
 
 export default function RSVPPortal() {
   const urlParams = new URLSearchParams(window.location.search);
-  const token = urlParams.get("token");
+  const token = urlParams.get("ref") || urlParams.get("token");
 
   const [guest, setGuest] = useState(null);
   const [loading, setLoading] = useState(true);
