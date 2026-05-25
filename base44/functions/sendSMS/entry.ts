@@ -1,13 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { phone, messageBody } = await req.json();
 
     if (!phone || !messageBody) {
@@ -17,7 +9,11 @@ Deno.serve(async (req) => {
     const token = Deno.env.get("KUDISMS_API_TOKEN");
     const senderID = Deno.env.get("KUDISMS_SENDER_ID") || "OGIAME";
 
-    // Normalize to 234XXXXXXXXXX format
+    if (!token) {
+      return Response.json({ error: 'KUDISMS_API_TOKEN not configured' }, { status: 500 });
+    }
+
+    // Normalize to 234XXXXXXXXXX (13 digits)
     let formattedPhone = phone.toString().replace(/\D/g, "");
     if (formattedPhone.startsWith("234") && formattedPhone.length === 13) {
       // already correct
@@ -27,21 +23,15 @@ Deno.serve(async (req) => {
       formattedPhone = "234" + formattedPhone;
     }
 
-    // Use URL-encoded form body (more reliable than FormData for this API)
-    const params = new URLSearchParams();
-    params.append("token", token);
-    params.append("senderID", senderID);
-    params.append("recipients", formattedPhone);
-    params.append("message", messageBody);
-    params.append("gateway", "2");
+    console.log(`Sending SMS to: ${formattedPhone}, senderID: ${senderID}`);
 
-    const response = await fetch("https://my.kudisms.net/api/sms", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: params.toString(),
-    });
+    // Use GET with query params (confirmed working per KudiSMS docs)
+    const url = `https://my.kudisms.net/api/sms?token=${encodeURIComponent(token)}&senderID=${encodeURIComponent(senderID)}&recipients=${encodeURIComponent(formattedPhone)}&message=${encodeURIComponent(messageBody)}&gateway=2`;
 
+    const response = await fetch(url);
     const text = await response.text();
+    console.log(`KudiSMS response: ${text}`);
+
     let result;
     try { result = JSON.parse(text); } catch { result = { raw: text }; }
 
@@ -51,6 +41,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ success: true, result });
   } catch (error) {
+    console.error(`sendSMS error: ${error.message}`);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
