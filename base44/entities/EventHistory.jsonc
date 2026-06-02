@@ -1,0 +1,61 @@
+{
+  "name": "EventHistory",
+  "type": "object",
+  "properties": {
+    "event_name": {
+      "type": "string",
+      "description": "Name of the concluded event"
+    },
+    "event_subtitle": {
+      "type": "string"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "event_time": {
+      "type": "string"
+    },
+    "venue_name": {
+      "type": "string"
+    },
+    "venue_address": {
+      "type": "string"
+    },
+    "total_invited": {
+      "type": "number",
+      "description": "Total number of invited guests"
+    },
+    "total_attended": {
+      "type": "number",
+      "description": "Guests who checked in / attended"
+    },
+    "rsvp_accepted": {
+      "type": "number"
+    },
+    "rsvp_declined": {
+      "type": "number"
+    },
+    "rsvp_pending": {
+      "type": "number"
+    },
+    "rsvp_proxy": {
+      "type": "number"
+    },
+    "category_breakdown": {
+      "type": "string",
+      "description": "JSON string of category counts"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Admin notes about the event"
+    },
+    "archived_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_name",
+    "event_date"
+  ]
+}

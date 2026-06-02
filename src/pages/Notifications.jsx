@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bell, Send, Mail, MessageSquare, CheckCircle2, Loader2, RefreshCw, Search, Phone } from "lucide-react";
+import { Bell, Send, Mail, MessageSquare, CheckCircle2, Loader2, RefreshCw, Search, Phone, AlertTriangle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import PageHeader from "../components/shared/PageHeader";
 import CategoryBadge from "../components/shared/CategoryBadge";
@@ -149,10 +150,26 @@ export default function Notifications() {
 
   const eventSettings = settings[0] || {};
 
-  // Count sends per guest
+  const [confirmGuest, setConfirmGuest] = useState(null); // { guest, channel }
+
+  // Count SUCCESSFUL sends per guest per channel
+  const sendCountByGuestChannel = useMemo(() => {
+    const counts = {};
+    for (const log of logs) {
+      if (log.status !== "Sent") continue;
+      if (!counts[log.guest_id]) counts[log.guest_id] = { Email: 0, SMS: 0, WhatsApp: 0 };
+      const ch = log.channel || "";
+      if (ch.includes("Email")) counts[log.guest_id].Email = (counts[log.guest_id].Email || 0) + 1;
+      if (ch.includes("SMS")) counts[log.guest_id].SMS = (counts[log.guest_id].SMS || 0) + 1;
+      if (ch.includes("WhatsApp")) counts[log.guest_id].WhatsApp = (counts[log.guest_id].WhatsApp || 0) + 1;
+    }
+    return counts;
+  }, [logs]);
+
   const sendCountByGuest = useMemo(() => {
     const counts = {};
     for (const log of logs) {
+      if (log.status !== "Sent") continue;
       counts[log.guest_id] = (counts[log.guest_id] || 0) + 1;
     }
     return counts;
@@ -334,8 +351,6 @@ export default function Notifications() {
           ) : (
             <div className="space-y-2">
               {filteredGuests.map((g) => {
-                const alreadySent = sentGuestIds.has(g.id);
-                const sendCount = sendCountByGuest[g.id] || 0;
                 const hasEmail = !!(g.email || g.contact_person_email);
                 const hasPhone = !!(g.phone || g.contact_person_phone);
                 return (
@@ -354,32 +369,30 @@ export default function Notifications() {
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {sendCount > 0 && (
-                        <Badge variant="outline" className="text-[9px] text-muted-foreground border-border">
-                          ×{sendCount} sent
-                        </Badge>
-                      )}
-                      {alreadySent && (
-                        <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-500/30 bg-emerald-500/5">
-                          Notified
-                        </Badge>
-                      )}
-                      <Button
-                        size="sm"
-                        variant={alreadySent ? "outline" : "default"}
-                        className="h-8 text-xs"
-                        disabled={!!sending[g.id]}
-                        onClick={() => sendNotification(g, channel)}
-                      >
-                        {sending[g.id] ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : alreadySent ? (
-                          <><RefreshCw className="w-3 h-3 mr-1" /> Resend</>
-                        ) : (
-                          <><Send className="w-3 h-3 mr-1" /> Send</>
-                        )}
-                      </Button>
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                      {/* Per-channel counters */}
+                      <div className="flex items-center gap-1">
+                        {[
+                          { ch: "Email", icon: <Mail className="w-3 h-3" />, color: "text-blue-600 border-blue-400/30 bg-blue-500/5" },
+                          { ch: "SMS", icon: <MessageSquare className="w-3 h-3" />, color: "text-amber-600 border-amber-400/30 bg-amber-500/5" },
+                          { ch: "WhatsApp", icon: <Phone className="w-3 h-3" />, color: "text-green-600 border-green-400/30 bg-green-500/5" },
+                        ].map(({ ch, icon, color }) => {
+                          const cnt = sendCountByGuestChannel[g.id]?.[ch] || 0;
+                          return (
+                            <button
+                              key={ch}
+                              title={`Send ${ch}`}
+                              disabled={!!sending[g.id]}
+                              onClick={() => setConfirmGuest({ guest: g, channel: ch })}
+                              className={`flex items-center gap-1 rounded-md px-2 py-1 border text-[10px] font-medium transition-all hover:opacity-80 disabled:opacity-40 ${color}`}
+                            >
+                              {icon}
+                              <span>{cnt}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {sending[g.id] && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
                     </div>
                   </div>
                 );
@@ -415,6 +428,34 @@ export default function Notifications() {
           )}
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={!!confirmGuest} onOpenChange={(o) => { if (!o) setConfirmGuest(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-lg flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-accent" /> Confirm Send
+            </DialogTitle>
+          </DialogHeader>
+          {confirmGuest && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                You are about to send a <strong>{confirmGuest.channel}</strong> notification to:
+              </p>
+              <div className="bg-muted/30 rounded-lg p-3">
+                <p className="font-semibold text-sm">{confirmGuest.guest.formal_salutation} {confirmGuest.guest.full_name}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{confirmGuest.channel === "Email" ? (confirmGuest.guest.email || confirmGuest.guest.contact_person_email || "No email") : (confirmGuest.guest.phone || confirmGuest.guest.contact_person_phone || "No phone")}</p>
+              </div>
+              <div className="flex gap-3">
+                <Button variant="outline" className="flex-1" onClick={() => setConfirmGuest(null)}>Cancel</Button>
+                <Button className="flex-1" onClick={() => { const { guest: g, channel: ch } = confirmGuest; setConfirmGuest(null); sendNotification(g, ch); }}>
+                  <Send className="w-3.5 h-3.5 mr-1.5" /> Send Now
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

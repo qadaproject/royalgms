@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Save, CalendarDays, MapPin, Mail, FileText, MessageSquare } from "lucide-react";
+import { Save, CalendarDays, MapPin, Mail, FileText, MessageSquare, History } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import PageHeader from "../components/shared/PageHeader";
 
@@ -61,6 +62,11 @@ export default function EventSettings() {
   return (
     <div>
       <PageHeader title="Event Settings" subtitle="Configure event details used across invitations and reports">
+        <Button variant="outline" asChild>
+          <Link to="/event-history">
+            <History className="w-4 h-4 mr-2" /> Event History
+          </Link>
+        </Button>
         <Button onClick={() => saveMutation.mutate(form)} disabled={saveMutation.isPending}>
           <Save className="w-4 h-4 mr-2" />
           {saveMutation.isPending ? "Saving..." : "Save Settings"}

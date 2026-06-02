@@ -18,6 +18,12 @@ import EventSettings from './pages/EventSettings';
 import InvitationManager from './pages/InvitationManager';
 import InviteDetail from './pages/InviteDetail';
 import CheckInScanner from './pages/CheckInScanner';
+import HomePage from './pages/HomePage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
+import ItineraryPage from './pages/ItineraryPage';
+import GuestUpdateLog from './pages/GuestUpdateLog';
+import EventHistoryPage from './pages/EventHistoryPage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -41,6 +47,10 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
+      <Route path="/home" element={<HomePage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/contact" element={<ContactPage />} />
+      <Route path="/itinerary" element={<ItineraryPage />} />
       <Route path="/rsvp" element={<RSVPPortal />} />
       <Route path="/invite-detail" element={<InviteDetail />} />
       <Route path="/checkpoint" element={<SecurityCheckpoint />} />
@@ -54,6 +64,8 @@ const AuthenticatedApp = () => {
         <Route path="/reports" element={<Reports />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/settings" element={<EventSettings />} />
+        <Route path="/guest-update-log" element={<GuestUpdateLog />} />
+        <Route path="/event-history" element={<EventHistoryPage />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
