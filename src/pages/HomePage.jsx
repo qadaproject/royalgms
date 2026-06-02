@@ -84,7 +84,7 @@ export default function HomePage() {
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(https://atuwatseiii.com/images/slider/ogiame-throne-2.jpg)` }}
+          style={{ backgroundImage: `url(https://media.base44.com/images/public/69f83e971133ed44e3fc81f6/a3290d03c_bg.png)` }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0d0603]/50 via-[#0d0603]/40 to-[#0d0603]/90" />
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">

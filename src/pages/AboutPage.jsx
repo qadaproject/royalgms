@@ -42,7 +42,7 @@ export default function AboutPage() {
       {/* Hero */}
       <div className="relative pt-16">
         <div className="relative h-64 sm:h-80 overflow-hidden">
-          <img src="https://atuwatseiii.com/images/slider/ogiame-throne-2.jpg" alt="Ogiame" className="w-full h-full object-cover object-top" />
+          <img src="https://media.base44.com/images/public/69f83e971133ed44e3fc81f6/510346d93_about2.jpg" alt="Ogiame Atuwatse III, CFR, The Olu of Warri" className="w-full h-full object-cover object-top" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0d0603]/60 to-[#0d0603]" />
           <div className="absolute bottom-8 left-0 right-0 text-center">
             <p className="text-[#c9a84c] text-[10px] uppercase tracking-[0.4em] font-sans mb-2">About the Event</p>
@@ -64,7 +64,7 @@ export default function AboutPage() {
             </div>
           </div>
           <div className="rounded-2xl overflow-hidden border border-[#c9a84c]/20">
-            <img src="https://atuwatseiii.com/images/slider/ogiame-throne-2.jpg" alt="Ogiame Atuwatse III" className="w-full object-cover" />
+            <img src="https://media.base44.com/images/public/69f83e971133ed44e3fc81f6/510346d93_about2.jpg" alt="Ogiame Atuwatse III, CFR, The Olu of Warri" className="w-full object-cover" />
           </div>
         </div>
 
