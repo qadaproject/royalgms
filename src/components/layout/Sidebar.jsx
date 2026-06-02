@@ -18,7 +18,7 @@ import RoyalCrest from "./RoyalCrest";
 import { base44 } from "@/api/base44Client";
 
 const navItems = [
-  { path: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "chairman", "data_manager", "dispatch_unit", "protocol_liaison", "security"] },
+  { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "chairman", "data_manager", "dispatch_unit", "protocol_liaison", "security"] },
   { path: "/guests", label: "Guest Registry", icon: Users, roles: ["admin", "chairman", "data_manager", "protocol_liaison"] },
   { path: "/invitation-manager", label: "Invitations", icon: Mail, roles: ["admin", "chairman", "data_manager", "dispatch_unit", "protocol_liaison"] },
   { path: "/invitations", label: "Dispatch Tracker", icon: Send, roles: ["admin", "data_manager", "dispatch_unit"] },
@@ -28,7 +28,7 @@ const navItems = [
   { path: "/settings", label: "Event Settings", icon: Settings, roles: ["admin", "chairman"] },
   { path: "/guest-update-log", label: "Guest Update Log", icon: ClipboardList, roles: ["admin", "chairman", "data_manager"] },
   { path: "/checkpoint", label: "Security Checkpoint", icon: Shield, roles: ["admin", "security"] },
-  { path: "/home", label: "Public Homepage", icon: Globe, roles: ["admin", "chairman"] },
+  { path: "/", label: "Public Homepage", icon: Globe, roles: ["admin", "chairman"] },
 ];
 
 export default function Sidebar({ user }) {

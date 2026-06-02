@@ -47,7 +47,7 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
-      <Route path="/home" element={<HomePage />} />
+      <Route path="/" element={<HomePage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/itinerary" element={<ItineraryPage />} />
@@ -56,7 +56,7 @@ const AuthenticatedApp = () => {
       <Route path="/checkpoint" element={<SecurityCheckpoint />} />
       <Route path="/scanner" element={<CheckInScanner />} />
       <Route element={<AppLayout />}>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/guests" element={<Guests />} />
         <Route path="/invitations" element={<Invitations />} />
         <Route path="/invitation-manager" element={<InvitationManager />} />
