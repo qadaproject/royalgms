@@ -5,6 +5,9 @@ import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
 
 const AuthContext = createContext();
 
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'Admin123$&';
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -13,9 +16,21 @@ export const AuthProvider = ({ children }) => {
   const [authError, setAuthError] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
+  const [isAdminMode, setIsAdminMode] = useState(false);
 
   useEffect(() => {
-    checkAppState();
+    // Check if admin is already logged in from localStorage
+    const adminToken = localStorage.getItem('adminToken');
+    if (adminToken === 'authenticated') {
+      setUser({ id: 'admin', name: 'Admin', role: 'admin' });
+      setIsAuthenticated(true);
+      setIsAdminMode(true);
+      setIsLoadingAuth(false);
+      setIsLoadingPublicSettings(false);
+      setAuthChecked(true);
+    } else {
+      checkAppState();
+    }
   }, []);
 
   const checkAppState = async () => {
@@ -114,9 +129,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginAdmin = (username, password) => {
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      setUser({ id: 'admin', name: 'Admin', role: 'admin' });
+      setIsAuthenticated(true);
+      setIsAdminMode(true);
+      localStorage.setItem('adminToken', 'authenticated');
+      return true;
+    }
+    return false;
+  };
+
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
+    setIsAdminMode(false);
+    localStorage.removeItem('adminToken');
     
     if (shouldRedirect) {
       // Use the SDK's logout method which handles token cleanup and redirect
@@ -141,10 +169,12 @@ export const AuthProvider = ({ children }) => {
       authError,
       appPublicSettings,
       authChecked,
+      isAdminMode,
       logout,
       navigateToLogin,
       checkUserAuth,
-      checkAppState
+      checkAppState,
+      loginAdmin
     }}>
       {children}
     </AuthContext.Provider>

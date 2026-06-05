@@ -24,6 +24,18 @@ import ContactPage from './pages/ContactPage';
 import ItineraryPage from './pages/ItineraryPage';
 import GuestUpdateLog from './pages/GuestUpdateLog';
 import EventHistoryPage from './pages/EventHistoryPage';
+import Login from './pages/Login';
+
+const ProtectedRoute = ({ element }) => {
+  const { isAuthenticated, isAdminMode } = useAuth();
+  
+  if (!isAuthenticated && !isAdminMode) {
+    window.location.href = '/login';
+    return null;
+  }
+  
+  return element;
+};
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -47,6 +59,7 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
+      <Route path="/login" element={<Login />} />
       <Route path="/" element={<HomePage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
@@ -56,16 +69,16 @@ const AuthenticatedApp = () => {
       <Route path="/checkpoint" element={<SecurityCheckpoint />} />
       <Route path="/scanner" element={<CheckInScanner />} />
       <Route element={<AppLayout />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/guests" element={<Guests />} />
-        <Route path="/invitations" element={<Invitations />} />
-        <Route path="/invitation-manager" element={<InvitationManager />} />
-        <Route path="/seating" element={<Seating />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/settings" element={<EventSettings />} />
-        <Route path="/guest-update-log" element={<GuestUpdateLog />} />
-        <Route path="/event-history" element={<EventHistoryPage />} />
+        <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
+        <Route path="/guests" element={<ProtectedRoute element={<Guests />} />} />
+        <Route path="/invitations" element={<ProtectedRoute element={<Invitations />} />} />
+        <Route path="/invitation-manager" element={<ProtectedRoute element={<InvitationManager />} />} />
+        <Route path="/seating" element={<ProtectedRoute element={<Seating />} />} />
+        <Route path="/reports" element={<ProtectedRoute element={<Reports />} />} />
+        <Route path="/notifications" element={<ProtectedRoute element={<Notifications />} />} />
+        <Route path="/settings" element={<ProtectedRoute element={<EventSettings />} />} />
+        <Route path="/guest-update-log" element={<ProtectedRoute element={<GuestUpdateLog />} />} />
+        <Route path="/event-history" element={<ProtectedRoute element={<EventHistoryPage />} />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
