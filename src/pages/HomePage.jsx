@@ -64,6 +64,9 @@ export default function HomePage() {
                 {l.label}
               </Link>
             ))}
+            <Link to="/login" className="ml-4 px-4 py-2 bg-[#c9a84c] hover:bg-[#b8963e] text-[#0d0603] font-semibold text-xs uppercase tracking-[0.15em] rounded-lg font-sans transition-colors">
+              Admin Login
+            </Link>
           </div>
           <button className="md:hidden text-[#f5ede0]" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -76,6 +79,9 @@ export default function HomePage() {
                 {l.label}
               </Link>
             ))}
+            <Link to="/login" onClick={() => setMenuOpen(false)} className="block px-4 py-2 bg-[#c9a84c] hover:bg-[#b8963e] text-[#0d0603] font-semibold text-sm uppercase tracking-widest rounded-lg font-sans transition-colors text-center mt-4">
+              Admin Login
+            </Link>
           </div>
         )}
       </nav>
