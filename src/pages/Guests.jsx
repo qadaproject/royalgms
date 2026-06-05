@@ -141,13 +141,27 @@ export default function Guests() {
   };
 
   const handleSave = (form) => {
+    // Validate required fields
+    if (!form.full_name || !form.full_name.trim()) {
+      toast.error("Full name is required");
+      return;
+    }
+    if (!form.category) {
+      toast.error("Category is required");
+      return;
+    }
+
     if (editGuest?.id) {
       updateMutation.mutate({ id: editGuest.id, data: form });
     } else {
-      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-      // 10-char uppercase alphanumeric token used for both QR check-in and RSVP link
-      const qrCode = Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-      createMutation.mutate({ ...form, qr_code: qrCode, rsvp_token: qrCode });
+      // Generate unique tokens for new guests
+      const token = () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const newGuest = {
+        ...form,
+        qr_code: token(),
+        rsvp_token: token(),
+      };
+      createMutation.mutate(newGuest);
     }
   };
 
