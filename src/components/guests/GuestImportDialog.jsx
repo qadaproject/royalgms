@@ -3,13 +3,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Download, CheckCircle2, X, FileSpreadsheet, Loader2, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { guestService } from "@/lib/supabaseClient";
+import { toast } from "sonner";
 
 const COLUMNS = [
   "formal_salutation", "full_name", "official_title", "post_nominals", "category",
   "email", "phone", "contact_person_name", "contact_person_phone", "contact_person_email",
   "rsvp_status", "dietary_requirements", "medical_alerts", "security_detail_size",
-  "arrival_details", "seating_zone", "special_requirements", "notes",
+  "arrival_details", "seating_zone", "seat_number", "special_requirements", "protocol_validated", "notes",
 ];
 
 const COLUMN_LABELS = {
@@ -29,7 +30,9 @@ const COLUMN_LABELS = {
   security_detail_size: "Security Detail Size",
   arrival_details: "Arrival Details",
   seating_zone: "Seating Zone",
+  seat_number: "Seat Number",
   special_requirements: "Special Requirements",
+  protocol_validated: "Protocol Validated",
   notes: "Notes",
 };
 
@@ -37,8 +40,7 @@ const VALID_CATEGORIES = ["A - Royal", "B - Federal", "C - State", "D - Corporat
 const VALID_RSVP = ["Pending", "Accepted", "Declined", "Proxy"];
 
 function generateToken() {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  return Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
 function downloadTemplate() {
@@ -70,32 +72,56 @@ function parseCSV(text) {
   const lines = text.trim().split("\n");
   if (lines.length < 2) return [];
 
+  // Parse CSV with proper quoted field handling
+  const parseRow = (line) => {
+    const values = [];
+    let current = "";
+    let inQuote = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      
+      if (char === '"') {
+        if (inQuote && line[i + 1] === '"') {
+          // Handle escaped quotes
+          current += '"';
+          i++;
+        } else {
+          inQuote = !inQuote;
+        }
+      } else if (char === "," && !inQuote) {
+        values.push(current.trim());
+        current = "";
+      } else {
+        current += char;
+      }
+    }
+    values.push(current.trim());
+    return values;
+  };
+
   // Parse header row — match to our COLUMN_LABELS
-  const headerRow = lines[0].split(",").map((h) => h.replace(/^"|"$/g, "").trim());
+  const headerValues = parseRow(lines[0]);
   const labelToKey = {};
   Object.entries(COLUMN_LABELS).forEach(([key, label]) => {
     labelToKey[label.replace(" *", "").toLowerCase()] = key;
   });
 
-  const colIndices = headerRow.map((h) => labelToKey[h.toLowerCase()] || null);
+  const colIndices = headerValues.map((h) => labelToKey[h.toLowerCase()] || null);
 
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue;
-    // Handle quoted fields with commas
-    const values = [];
-    let inQuote = false, cur = "";
-    for (const ch of line) {
-      if (ch === '"') { inQuote = !inQuote; }
-      else if (ch === "," && !inQuote) { values.push(cur); cur = ""; }
-      else { cur += ch; }
-    }
-    values.push(cur);
-
+    
+    const values = parseRow(line);
     const row = {};
     colIndices.forEach((key, idx) => {
-      if (key) row[key] = (values[idx] || "").trim();
+      if (key) {
+        const val = (values[idx] || "").trim();
+        // Remove surrounding quotes if present
+        row[key] = val.replace(/^"|"$/g, "");
+      }
     });
     rows.push(row);
   }
@@ -186,25 +212,34 @@ export default function GuestImportDialog({ open, onOpenChange, onImport, existi
         ...row,
         rsvp_status: row.rsvp_status || "Pending",
         security_detail_size: parseInt(row.security_detail_size) || 0,
-        protocol_validated: false,
+        protocol_validated: row.protocol_validated ? (row.protocol_validated.toLowerCase() === 'true') : false,
         qr_code: token,
         rsvp_token: token,
       };
     });
 
-    // Batch upload: 10 at a time, update progress after each batch
-    const BATCH_SIZE = 10;
-    let uploaded = 0;
-    for (let i = 0; i < prepared.length; i += BATCH_SIZE) {
-      const batch = prepared.slice(i, i + BATCH_SIZE);
-      await Promise.all(batch.map((row) => base44.entities.Guest.create(row)));
-      uploaded += batch.length;
-      setImportProgress(Math.round((uploaded / prepared.length) * 100));
-    }
+    try {
+      // Use Supabase bulk insert instead of Base44
+      const { data, error } = await guestService.bulkCreateGuests(prepared);
+      
+      if (error) {
+        toast.error(`Import failed: ${error.message}`);
+        setImporting(false);
+        return;
+      }
 
-    setImporting(false);
-    setDone(true);
-    setImportResult({ success: prepared.length, skipped: invalidCount, duplicates: duplicateCount });
+      setImporting(false);
+      setDone(true);
+      setImportResult({ 
+        success: data?.length || prepared.length, 
+        skipped: invalidCount, 
+        duplicates: duplicateCount 
+      });
+      toast.success(`Successfully imported ${data?.length || prepared.length} guests`);
+    } catch (err) {
+      toast.error(`Import error: ${err.message}`);
+      setImporting(false);
+    }
   };
 
   const reset = () => {
