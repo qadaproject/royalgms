@@ -9,18 +9,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'to, subject, and html are required' }, { status: 400 });
     }
 
-    const apiKey = Deno.env.get("RESEND_API_KEY");
-    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL");
+    const apiKey = Deno.env.get("BREVO_API_KEY");
+    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL"); // reuse existing sender email secret
 
     if (!apiKey || !fromEmail) {
-      return Response.json({ error: 'RESEND_API_KEY and RESEND_FROM_EMAIL secrets must be set.' }, { status: 400 });
+      return Response.json({ error: 'BREVO_API_KEY and RESEND_FROM_EMAIL secrets must be set.' }, { status: 400 });
     }
 
-    // Sanitize from_name — remove special chars that trigger spam filters
     const safeName = from_name
       ? from_name.replace(/[—–\-|]/g, "").replace(/\s+/g, " ").trim()
-      : null;
-    const fromField = safeName ? `${safeName} <${fromEmail}>` : fromEmail;
+      : "Royal Protocol Office";
 
     // Generate plain-text fallback by stripping HTML tags
     const text = html
@@ -29,30 +27,25 @@ Deno.serve(async (req) => {
       .replace(/\s{2,}/g, "\n")
       .trim();
 
-    const response = await fetch("https://api.resend.com/emails", {
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${apiKey}`,
+        "api-key": apiKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: fromField,
-        to: [to],
+        sender: { name: safeName, email: fromEmail },
+        to: [{ email: to }],
         subject,
-        html,
-        text,
-        reply_to: fromEmail,
-        headers: {
-          "X-Priority": "3",
-          "X-Mailer": "Royal Protocol Office Mailer",
-        },
+        htmlContent: html,
+        textContent: text,
       }),
     });
 
     const result = await response.json();
 
-    if (!response.ok || result.statusCode >= 400) {
-      return Response.json({ error: result.message || "Resend API error", details: result }, { status: 500 });
+    if (!response.ok) {
+      return Response.json({ error: result.message || "Brevo API error", details: result }, { status: 500 });
     }
 
     return Response.json({ success: true, result });
