@@ -45,29 +45,31 @@ export default function ReminderWorkflow({ guests, invitations }) {
     const email = guest.email || guest.contact_person_email;
     const recipientName = guest.email ? `${guest.formal_salutation || ""} ${guest.full_name}` : guest.contact_person_name;
 
-    await base44.integrations.Core.SendEmail({
+    const htmlBody = `<!DOCTYPE html><html><body style="font-family:Georgia,serif;background:#f5f0e8;padding:32px;">
+<table width="600" style="max-width:600px;margin:0 auto;background:#fff;border-radius:4px;overflow:hidden;">
+<tr><td style="background:#5c1a1a;padding:28px 40px;text-align:center;">
+<p style="margin:0 0 4px;color:#c9a84c;font-size:10px;letter-spacing:4px;text-transform:uppercase;font-family:Arial,sans-serif;">Royal Protocol Office</p>
+<h1 style="margin:0;color:#f5f0e8;font-size:20px;font-weight:400;letter-spacing:2px;">WARRI KINGDOM</h1>
+</td></tr>
+<tr><td style="height:3px;background:linear-gradient(90deg,#c9a84c,#e8d08a,#c9a84c);"></td></tr>
+<tr><td style="padding:36px 40px;color:#1a0a06;">
+<p style="margin:0 0 16px;font-size:15px;line-height:1.8;">Dear <strong>${recipientName}</strong>,</p>
+<p style="margin:0 0 16px;font-size:14px;line-height:1.8;color:#3d2a1a;">On behalf of the Royal Protocol Office, we write as a cordial reminder that your RSVP for the <strong>5th Coronation Anniversary Ceremony</strong> of His Royal Majesty, Ogiame Atuwatse III, CFR, Olu of Warri Kingdom, is yet to be received.</p>
+${guest.qr_code ? `<p style="margin:0 0 16px;font-size:14px;color:#3d2a1a;">Your admission token: <strong style="color:#5c1a1a;letter-spacing:2px;">${guest.qr_code}</strong></p>` : ""}
+<p style="margin:0 0 24px;font-size:14px;color:#3d2a1a;">Kindly confirm your attendance at your earliest convenience.</p>
+<p style="margin:0;font-size:14px;color:#3d2a1a;">Yours faithfully,<br/><strong>Royal Protocol Office</strong><br/><span style="color:#7a5c1e;font-size:13px;">Office of His Royal Majesty, Ogiame Atuwatse III, CFR</span></p>
+</td></tr>
+<tr><td style="height:2px;background:linear-gradient(90deg,#c9a84c,#e8d08a,#c9a84c);"></td></tr>
+<tr><td style="background:#1a0a06;padding:20px 40px;text-align:center;">
+<p style="margin:0;color:#888;font-size:10px;font-family:Arial,sans-serif;">Aghofen, Warri Kingdom, Delta State, Nigeria</p>
+</td></tr>
+</table></body></html>`;
+
+    await base44.functions.invoke("sendEmail", {
       to: email,
-      subject: `RSVP Reminder — 5th Coronation Anniversary of Ogiame Atuwatse III`,
-      body: `
-Dear ${recipientName},
-
-On behalf of the Royal Protocol Office, we write as a cordial reminder that your RSVP for the 5th Coronation Anniversary Ceremony of His Royal Majesty, Ogiame Atuwatse III, Olu of Warri Kingdom, is yet to be received.
-
-Guest: ${guest.formal_salutation || ""} ${guest.full_name}${guest.post_nominals ? ", " + guest.post_nominals : ""}
-${guest.official_title ? "Title: " + guest.official_title + "\n" : ""}
-
-The ceremony is scheduled for Saturday, 12th July 2025 at the Royal Palace Grounds, Warri, Delta State.
-
-Kindly confirm your attendance at your earliest convenience by visiting your RSVP portal or contacting the Protocol Office.
-
-${guest.qr_code ? "Your admission token: " + guest.qr_code : ""}
-
-We look forward to your distinguished presence.
-
-Yours faithfully,
-Royal Protocol Office
-Office of His Royal Majesty, Ogiame Atuwatse III
-      `.trim(),
+      subject: `RSVP Reminder — 5th Coronation Anniversary of Ogiame Atuwatse III, CFR`,
+      html: htmlBody,
+      from_name: "Royal Protocol Office — Warri Kingdom",
     });
   };
 

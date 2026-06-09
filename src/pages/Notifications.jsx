@@ -217,12 +217,17 @@ export default function Notifications() {
       const uniqueRecipients = [...new Set(emailRecipients)];
       if (uniqueRecipients.length > 0) {
         for (const to of uniqueRecipients) {
-          await base44.integrations.Core.SendEmail({
-            to,
-            subject: emailSubject,
-            body: htmlBody,
-            from_name: "Royal Protocol Office — Warri Kingdom",
-          }).catch(() => { success = false; });
+          try {
+            const res = await base44.functions.invoke("sendEmail", {
+              to,
+              subject: emailSubject,
+              html: htmlBody,
+              from_name: "Royal Protocol Office — Warri Kingdom",
+            });
+            if (res?.data?.error) success = false;
+          } catch {
+            success = false;
+          }
         }
       } else {
         success = false;
