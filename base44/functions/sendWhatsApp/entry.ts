@@ -1,8 +1,11 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-// NOTE: KudiSMS WhatsApp API requires a pre-approved template_code.
-// The messageBody is passed as the "parameters" field to fill template variables.
-// Set KUDISMS_WHATSAPP_TEMPLATE in environment variables with your approved template code.
+// Meta WhatsApp Business API
+// Template: invitation_notices
+// Variables: {{1}} = name, {{2}} = link
+// WABA ID: 115025707150672
+// Phone Number ID must be set as WHATSAPP_PHONE_NUMBER_ID secret
+// Access Token must be set as WHATSAPP_ACCESS_TOKEN secret
 
 Deno.serve(async (req) => {
   try {
@@ -12,20 +15,20 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { phone, messageBody } = await req.json();
+    const { phone, name, link } = await req.json();
 
-    if (!phone || !messageBody) {
-      return Response.json({ error: 'Phone and messageBody are required' }, { status: 400 });
+    if (!phone || !name || !link) {
+      return Response.json({ error: 'phone, name, and link are required' }, { status: 400 });
     }
 
-    const token = Deno.env.get("KUDISMS_API_TOKEN");
-    const templateCode = Deno.env.get("KUDISMS_WHATSAPP_TEMPLATE") || "";
+    const accessToken = Deno.env.get("WHATSAPP_ACCESS_TOKEN");
+    const phoneNumberId = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
 
-    if (!templateCode) {
-      return Response.json({ error: 'KUDISMS_WHATSAPP_TEMPLATE secret is not set. Please add your approved WhatsApp template code in app secrets.' }, { status: 400 });
+    if (!accessToken || !phoneNumberId) {
+      return Response.json({ error: 'WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID secrets must be set.' }, { status: 400 });
     }
 
-    // Format phone: ensure it starts with 234 (Nigeria)
+    // Format phone: ensure it starts with 234 (Nigeria), no + prefix for Meta API
     let formattedPhone = phone.replace(/\D/g, "");
     if (formattedPhone.startsWith("0")) {
       formattedPhone = "234" + formattedPhone.slice(1);
@@ -33,26 +36,38 @@ Deno.serve(async (req) => {
       formattedPhone = "234" + formattedPhone;
     }
 
-    const body = new URLSearchParams();
-    body.append("token", token);
-    body.append("recipient", formattedPhone);
-    body.append("template_code", templateCode);
-    body.append("parameters", messageBody);
-    body.append("button_parameters", "");
-    body.append("header_parameters", "");
+    const payload = {
+      messaging_product: "whatsapp",
+      to: formattedPhone,
+      type: "template",
+      template: {
+        name: "invitation_notices",
+        language: { code: "en" },
+        components: [
+          {
+            type: "body",
+            parameters: [
+              { type: "text", text: name },
+              { type: "text", text: link },
+            ],
+          },
+        ],
+      },
+    };
 
-    const response = await fetch("https://my.kudisms.net/api/whatsapp", {
+    const response = await fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/messages`, {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: body.toString(),
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
     });
 
-    const text = await response.text();
-    let result;
-    try { result = JSON.parse(text); } catch { result = { raw: text }; }
+    const result = await response.json();
 
-    if (result.status === "error") {
-      return Response.json({ error: result.msg || "WhatsApp provider error", details: result }, { status: 500 });
+    if (!response.ok || result.error) {
+      return Response.json({ error: result.error?.message || "WhatsApp API error", details: result }, { status: 500 });
     }
 
     return Response.json({ success: true, result });

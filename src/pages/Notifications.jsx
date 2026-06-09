@@ -212,15 +212,20 @@ export default function Notifications() {
     let success = true;
 
     if (ch === "Email" || ch === "Email + SMS" || ch === "Email + WhatsApp") {
-      const to = guest.email || guest.contact_person_email;
-      if (to) {
-        const htmlBody = buildHtmlEmail(guest, emailBody, eventSettings);
-        await base44.integrations.Core.SendEmail({
-          to,
-          subject: emailSubject,
-          body: htmlBody,
-          from_name: "Royal Protocol Office — Warri Kingdom",
-        }).catch(() => { success = false; });
+      const htmlBody = buildHtmlEmail(guest, emailBody, eventSettings);
+      const emailRecipients = [guest.email, guest.contact_person_email].filter(Boolean);
+      const uniqueRecipients = [...new Set(emailRecipients)];
+      if (uniqueRecipients.length > 0) {
+        for (const to of uniqueRecipients) {
+          await base44.integrations.Core.SendEmail({
+            to,
+            subject: emailSubject,
+            body: htmlBody,
+            from_name: "Royal Protocol Office — Warri Kingdom",
+          }).catch(() => { success = false; });
+        }
+      } else {
+        success = false;
       }
     }
 
@@ -244,12 +249,16 @@ export default function Notifications() {
     if (ch === "WhatsApp" || ch === "Email + WhatsApp") {
       const rawPhone = guest.phone || guest.contact_person_phone;
       const phone = formatPhone(rawPhone);
+      const guestName = `${guest.formal_salutation || ""} ${guest.full_name}`.trim();
+      const inviteLink = buildInviteLink(guest);
       if (phone) {
         await base44.functions.invoke("sendWhatsApp", {
           phone,
-          messageBody: smsBody,
-          parameters: smsBody,
+          name: guestName,
+          link: inviteLink,
         }).catch(() => { success = false; });
+      } else {
+        success = false;
       }
     }
 
