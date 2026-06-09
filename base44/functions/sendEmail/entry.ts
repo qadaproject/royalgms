@@ -15,12 +15,12 @@ Deno.serve(async (req) => {
     }
 
     const apiKey = Deno.env.get("RESEND_API_KEY");
+    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL");
 
-    if (!apiKey) {
-      return Response.json({ error: 'RESEND_API_KEY secret must be set.' }, { status: 400 });
+    if (!apiKey || !fromEmail) {
+      return Response.json({ error: 'RESEND_API_KEY and RESEND_FROM_EMAIL secrets must be set.' }, { status: 400 });
     }
 
-    const fromEmail = "no-reply@royalgms.com";
     const fromField = from_name ? `${from_name} <${fromEmail}>` : fromEmail;
 
     const response = await fetch("https://api.resend.com/emails", {
