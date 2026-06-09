@@ -75,8 +75,9 @@ function buildHtmlEmail(guest, bodyText, eventSettings) {
           <td style="padding:40px 40px 32px;color:#1a0a06;">
             <p style="margin:0 0 20px;color:#7a5c1e;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-family:'Arial',sans-serif;">Your Invitation</p>
             <p style="margin:0 0 16px;font-size:16px;color:#2d1a0a;line-height:1.6;">Your Royal Highness / Your Excellency / Distinguished Guest,</p>
-            <p style="margin:0 0 16px;font-size:15px;color:#3d2a1a;line-height:1.8;">The Royal Palace of <strong>Ògíame Atúwàtse III, CFR</strong>, The Olu of Warri, formally requests the honour of your presence at the <strong>${eventName}</strong>.</p>
             <p style="margin:0 0 24px;font-size:15px;color:#3d2a1a;line-height:1.8;">Dear <strong>${name}</strong>,</p>
+            <p style="margin:0 0 16px;font-size:15px;color:#3d2a1a;line-height:1.8;">The Royal Palace of His Majesty, <strong>Ògíame Atúwàtse III, CFR</strong>, The Olu of Warri, formally requests the honour of your presence at the <strong>${eventName}</strong>.</p>
+            
             ${eventDate ? `<table cellpadding="0" cellspacing="0" style="margin:0 0 24px;background:#fdf6e3;border-left:3px solid #c9a84c;border-radius:0 4px 4px 0;width:100%;"><tr><td style="padding:12px 16px;"><p style="margin:0;font-size:12px;color:#7a5c1e;letter-spacing:2px;text-transform:uppercase;font-family:'Arial',sans-serif;">Date &amp; Venue</p><p style="margin:4px 0 0;font-size:14px;color:#2d1a0a;font-weight:bold;">${eventDate}</p>${venue ? `<p style="margin:2px 0 0;font-size:13px;color:#5a3a1a;">${venue}</p>` : ""}</td></tr></table>` : ""}
             <p style="margin:0 0 28px;font-size:14px;color:#3d2a1a;line-height:1.8;">Please access your personalised invitation and RSVP using the secure link below. Your timely response will enable the Protocol Office to make adequate arrangements.</p>
 
