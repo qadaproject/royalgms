@@ -16,7 +16,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'RESEND_API_KEY and RESEND_FROM_EMAIL secrets must be set.' }, { status: 400 });
     }
 
-    const fromField = from_name ? `${from_name} <${fromEmail}>` : fromEmail;
+    // Sanitize from_name — remove special chars that trigger spam filters
+    const safeName = from_name
+      ? from_name.replace(/[—–\-|]/g, "").replace(/\s+/g, " ").trim()
+      : null;
+    const fromField = safeName ? `${safeName} <${fromEmail}>` : fromEmail;
+
+    // Generate plain-text fallback by stripping HTML tags
+    const text = html
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s{2,}/g, "\n")
+      .trim();
 
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -29,6 +40,12 @@ Deno.serve(async (req) => {
         to: [to],
         subject,
         html,
+        text,
+        reply_to: fromEmail,
+        headers: {
+          "X-Priority": "3",
+          "X-Mailer": "Royal Protocol Office Mailer",
+        },
       }),
     });
 

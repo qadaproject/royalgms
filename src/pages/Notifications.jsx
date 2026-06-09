@@ -222,7 +222,7 @@ export default function Notifications() {
               to,
               subject: emailSubject,
               html: htmlBody,
-              from_name: "Royal Protocol Office — Warri Kingdom",
+              from_name: "Royal Protocol Office Warri Kingdom",
             });
             if (res?.data?.error) success = false;
           } catch {
