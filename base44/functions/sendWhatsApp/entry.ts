@@ -15,10 +15,19 @@ Deno.serve(async (req) => {
 
     const accessToken = Deno.env.get("WHATSAPP_ACCESS_TOKEN");
     const phoneNumberId = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
+    const appSecret = Deno.env.get("WHATSAPP_APP_SECRET");
 
-    if (!accessToken || !phoneNumberId) {
-      return Response.json({ error: 'WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID secrets must be set.' }, { status: 400 });
+    if (!accessToken || !phoneNumberId || !appSecret) {
+      return Response.json({ error: 'WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID, and WHATSAPP_APP_SECRET secrets must be set.' }, { status: 400 });
     }
+
+    // Generate appsecret_proof (HMAC-SHA256 of access token using app secret)
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(appSecret);
+    const messageData = encoder.encode(accessToken);
+    const cryptoKey = await crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const signatureBuffer = await crypto.subtle.sign("HMAC", cryptoKey, messageData);
+    const appsecretProof = Array.from(new Uint8Array(signatureBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
 
     // Format phone: ensure it starts with 234 (Nigeria), no + prefix for Meta API
     let formattedPhone = phone.replace(/\D/g, "");
@@ -47,7 +56,7 @@ Deno.serve(async (req) => {
       },
     };
 
-    const response = await fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/messages`, {
+    const response = await fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/messages?appsecret_proof=${appsecretProof}`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${accessToken}`,
