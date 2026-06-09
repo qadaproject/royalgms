@@ -177,6 +177,31 @@ export const guestService = {
       console.warn('[v0] Activity logging failed:', err.message);
     }
   },
+
+  // Fetch guest by RSVP token
+  async fetchGuestByRsvpToken(token) {
+    try {
+      if (!supabase) {
+        throw new Error('Supabase not initialized');
+      }
+
+      const { data, error } = await supabase
+        .from('guests')
+        .select('*')
+        .or(`rsvp_token.eq.${token},qr_code.eq.${token}`)
+        .limit(1);
+
+      if (error) {
+        console.error('[v0] Fetch guest by token error:', error);
+        return { data: null, error };
+      }
+
+      return { data, error: null };
+    } catch (err) {
+      console.error('[v0] Fetch guest by token exception:', err);
+      return { data: null, error: err };
+    }
+  },
 };
 
 // =====================================

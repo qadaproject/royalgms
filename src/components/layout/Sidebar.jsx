@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { useContext } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -15,7 +16,7 @@ import {
   Globe,
 } from "lucide-react";
 import RoyalCrest from "./RoyalCrest";
-import { base44 } from "@/api/base44Client";
+import { AuthContext } from "@/lib/AuthContext";
 
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "chairman", "data_manager", "dispatch_unit", "protocol_liaison", "security"] },
@@ -33,6 +34,7 @@ const navItems = [
 
 export default function Sidebar({ user }) {
   const location = useLocation();
+  const { logout } = useContext(AuthContext);
   const userRole = user?.role || "admin";
 
   const filteredItems = navItems.filter((item) =>
@@ -93,7 +95,7 @@ export default function Sidebar({ user }) {
           </div>
         </div>
         <button
-          onClick={() => base44.auth.logout()}
+          onClick={() => logout()}
           className="flex items-center gap-2 text-xs text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors w-full px-1"
         >
           <LogOut className="w-3.5 h-3.5" />

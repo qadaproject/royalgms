@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
 import { Menu, X, ChevronDown } from "lucide-react";
+import { guestService } from "@/lib/supabaseClient";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -37,9 +37,7 @@ export default function HomePage() {
   const eventTarget = new Date("2026-08-21T10:00:00+01:00"); // WAT = UTC+1
   const countdown = useCountdown(eventTarget);
 
-  useEffect(() => {
-    base44.entities.EventSettings.list("-created_date", 1).then((r) => setSettings(r[0] || null));
-  }, []);
+  // Settings will use default values from the timeline
 
   const timelineItems = [
     { label: "Date", value: settings?.event_date ? new Date(settings.event_date).toLocaleDateString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "Thursday, 20 August 2026", icon: "📅" },
@@ -195,21 +193,27 @@ function GuestTokenForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const t = token.trim().toUpperCase();
+    const t = token.trim();
     if (!t) return;
     setLoading(true);
     setError("");
     try {
-      const results = await base44.entities.Guest.filter({ qr_code: t }, "-created_date", 1);
-      if (results && results.length > 0) {
+      const { data, error } = await guestService.fetchGuestByRsvpToken(t);
+      if (error) {
+        setError("Unable to verify token. Please try again.");
+        setLoading(false);
+        return;
+      }
+      if (data && data.length > 0) {
         window.location.href = `/itinerary?ref=${t}`;
       } else {
         setError("Admission token not found. Please check and try again.");
+        setLoading(false);
       }
-    } catch {
+    } catch (err) {
       setError("Unable to verify token. Please try again.");
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

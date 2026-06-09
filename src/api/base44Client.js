@@ -1,13 +1,31 @@
-import { createClient } from '@base44/sdk';
-import { appParams } from '@/lib/app-params';
+// Compatibility stub for Base44 - provides no-op implementations
+// The app is now using Supabase for data storage
+// This stub prevents runtime errors from legacy Base44 imports
 
-const { appId, token, functionsVersion, appBaseUrl } = appParams;
-
-//Create a client with authentication required
-export const base44 = createClient({
-  appId: appId || '',
-  token: token || '',
-  functionsVersion: functionsVersion || 'v1',
-  serverUrl: appBaseUrl || '',
-  requiresAuth: false,
-});
+export const base44 = {
+  auth: {
+    me: async () => null,
+    logout: () => {},
+    redirectToLogin: () => window.location.href = '/login'
+  },
+  entities: {
+    Guest: {
+      create: async () => ({}),
+      filter: async () => [],
+      list: async () => [],
+      update: async () => ({})
+    },
+    EventSettings: {
+      list: async () => [],
+      create: async () => ({})
+    },
+    Invitation: {
+      filter: async () => [],
+      list: async () => [],
+      create: async () => ({})
+    },
+    GuestActivityLog: {
+      create: async () => ({})
+    }
+  }
+};
