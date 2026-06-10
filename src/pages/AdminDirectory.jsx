@@ -12,6 +12,7 @@ import {
 import DirectoryListingForm from "@/components/directory/admin/DirectoryListingForm";
 import DirectoryCategoryForm from "@/components/directory/admin/DirectoryCategoryForm";
 import GoogleImportTool from "@/components/directory/admin/GoogleImportTool";
+import CSVImportTool from "@/components/directory/admin/CSVImportTool";
 
 export default function AdminDirectory() {
   const [listings, setListings] = useState([]);
@@ -127,6 +128,7 @@ export default function AdminDirectory() {
           <TabsTrigger value="listings">Listings ({listings.length})</TabsTrigger>
           <TabsTrigger value="categories">Categories ({categories.length})</TabsTrigger>
           <TabsTrigger value="import">Google Import</TabsTrigger>
+          <TabsTrigger value="csv">CSV Import</TabsTrigger>
           <TabsTrigger value="submissions" className="relative">
             Submissions
             {pendingCount > 0 && <span className="ml-1.5 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 inline-flex items-center justify-center">{pendingCount}</span>}
@@ -235,6 +237,11 @@ export default function AdminDirectory() {
         {/* Google Import Tab */}
         <TabsContent value="import">
           <GoogleImportTool categories={categories} onImported={fetchAll} />
+        </TabsContent>
+
+        {/* CSV Import Tab */}
+        <TabsContent value="csv">
+          <CSVImportTool onImported={fetchAll} />
         </TabsContent>
 
         {/* Submissions Tab */}
