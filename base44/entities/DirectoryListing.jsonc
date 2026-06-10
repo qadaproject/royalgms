@@ -43,6 +43,10 @@
     "email": {
       "type": "string"
     },
+    "google_maps_url": {
+      "type": "string",
+      "description": "Direct Google Maps link to the business"
+    },
     "price_range": {
       "type": "string",
       "enum": [
@@ -83,6 +87,13 @@
       "items": {
         "type": "string"
       }
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Amenities/features e.g. WiFi, Pool, Gym, Parking, Breakfast"
     },
     "source": {
       "type": "string",

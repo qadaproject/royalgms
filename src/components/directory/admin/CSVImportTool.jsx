@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 
 const CSV_COLUMNS = [
   "name", "category", "description", "address", "city", "state",
-  "phone", "email", "website", "price_range", "opening_hours",
-  "latitude", "longitude", "rating", "photo_url", "tags", "is_featured"
+  "phone", "email", "website", "google_maps_url", "price_range", "opening_hours",
+  "latitude", "longitude", "rating", "photo_url", "tags", "features", "is_featured"
 ];
 
 const SAMPLE_ROWS = [
@@ -20,6 +20,7 @@ const SAMPLE_ROWS = [
     phone: "08012345678",
     email: "info@warrigrand.com",
     website: "https://warrigrand.com",
+    google_maps_url: "https://maps.google.com/?q=Warri+Grand+Hotel",
     price_range: "₦₦₦",
     opening_hours: "Mon-Sun 24hrs",
     latitude: "5.5167",
@@ -27,6 +28,7 @@ const SAMPLE_ROWS = [
     rating: "4.3",
     photo_url: "",
     tags: "hotel,accommodation,luxury",
+    features: "WiFi,Pool,Gym,Free Parking,Free Breakfast,AC,Bar,Spa,Generator",
     is_featured: "false",
   },
   {
@@ -39,6 +41,7 @@ const SAMPLE_ROWS = [
     phone: "07098765432",
     email: "",
     website: "",
+    google_maps_url: "https://maps.google.com/?q=Chicken+Republic+Effurun+Warri",
     price_range: "₦₦",
     opening_hours: "Mon-Sun 9am-10pm",
     latitude: "5.5340",
@@ -46,6 +49,7 @@ const SAMPLE_ROWS = [
     rating: "4.0",
     photo_url: "",
     tags: "restaurant,fast food,chicken",
+    features: "WiFi,AC,Parking",
     is_featured: "false",
   },
 ];
@@ -143,6 +147,8 @@ export default function CSVImportTool({ onImported }) {
         rating: row.rating ? parseFloat(row.rating) : 0,
         photo_url: row.photo_url?.trim() || null,
         tags: row.tags ? row.tags.split(",").map(t => t.trim()).filter(Boolean) : [],
+        features: row.features ? row.features.split(",").map(f => f.trim()).filter(Boolean) : [],
+        google_maps_url: row.google_maps_url?.trim() || null,
         is_featured: row.is_featured?.toLowerCase() === "true",
         status: "pending",
         source: "manual",
@@ -182,7 +188,7 @@ export default function CSVImportTool({ onImported }) {
             <div className="bg-muted/50 rounded-lg p-3 text-xs font-mono text-muted-foreground mb-3 overflow-x-auto">
               <span className="text-foreground font-semibold">Required columns: </span>name, category
               <br />
-              <span className="text-foreground font-semibold">Optional columns: </span>description, address, city, state, phone, email, website, price_range (₦/₦₦/₦₦₦/₦₦₦₦), opening_hours, latitude, longitude, rating, photo_url, tags (comma-separated), is_featured (true/false)
+              <span className="text-foreground font-semibold">Optional columns: </span>description, address, city, state, phone, email, website, google_maps_url, price_range (₦/₦₦/₦₦₦/₦₦₦₦), opening_hours, latitude, longitude, rating, photo_url, tags (comma-separated), features (comma-separated e.g. WiFi,Pool,Gym,Parking,Breakfast,AC,Bar,Spa,Generator,CCTV), is_featured (true/false)
             </div>
             <Button variant="outline" size="sm" onClick={downloadTemplate} className="gap-2">
               <Download className="w-4 h-4" />

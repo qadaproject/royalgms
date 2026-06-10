@@ -1,16 +1,20 @@
 import { Link } from "react-router-dom";
-import { MapPin, Star, Phone, Navigation, ExternalLink, Globe } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { MapPin, Star, Phone, Navigation, ExternalLink } from "lucide-react";
 
 const PRICE_COLORS = { "₦": "text-emerald-400", "₦₦": "text-yellow-400", "₦₦₦": "text-orange-400", "₦₦₦₦": "text-red-400" };
+
+const FEATURE_ICONS = {
+  "WiFi": "📶", "Pool": "🏊", "Gym": "🏋️", "Parking": "🅿️", "Free Parking": "🅿️",
+  "Breakfast": "🍳", "Free Breakfast": "🍳", "AC": "❄️", "Bar": "🍹",
+  "Restaurant": "🍽️", "Spa": "💆", "Generator": "⚡", "CCTV": "📹",
+};
 
 export default function DirectoryListingCard({ listing, userLocation, getDistance }) {
   const dist = listing.latitude && userLocation ? getDistance(userLocation.lat, userLocation.lng, listing.latitude, listing.longitude) : null;
   const detailUrl = `/directory/listing?id=${listing.id}`;
 
-  const mapsUrl = listing.latitude
-    ? `https://www.google.com/maps/dir/?api=1&destination=${listing.latitude},${listing.longitude}`
-    : null;
+  const mapsUrl = listing.google_maps_url ||
+    (listing.latitude ? `https://www.google.com/maps/search/?api=1&query=${listing.latitude},${listing.longitude}` : null);
 
   return (
     <div className="bg-[#1a0a06] border border-[#c9a84c]/10 rounded-xl overflow-hidden hover:border-[#c9a84c]/30 transition-all group">
@@ -65,9 +69,23 @@ export default function DirectoryListingCard({ listing, userLocation, getDistanc
         )}
 
         {dist && (
-          <div className="flex items-center gap-1.5 mb-3">
+          <div className="flex items-center gap-1.5 mb-2">
             <Navigation className="w-3 h-3 text-[#c9a84c]/50" />
             <span className="text-[#c9a84c]/70 text-xs font-sans">{dist} km away</span>
+          </div>
+        )}
+
+        {/* Features */}
+        {listing.features?.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {listing.features.slice(0, 4).map(f => (
+              <span key={f} className="text-[10px] font-sans px-1.5 py-0.5 rounded bg-[#c9a84c]/10 text-[#c9a84c]/70 border border-[#c9a84c]/15">
+                {FEATURE_ICONS[f] || "•"} {f}
+              </span>
+            ))}
+            {listing.features.length > 4 && (
+              <span className="text-[10px] font-sans px-1.5 py-0.5 rounded bg-[#c9a84c]/5 text-[#f5ede0]/30">+{listing.features.length - 4}</span>
+            )}
           </div>
         )}
 
@@ -78,7 +96,7 @@ export default function DirectoryListingCard({ listing, userLocation, getDistanc
           {mapsUrl && (
             <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
               className="px-3 border border-[#c9a84c]/20 hover:border-[#c9a84c]/50 text-[#f5ede0]/40 hover:text-[#c9a84c] text-xs py-2 rounded-lg font-sans transition-colors flex items-center gap-1">
-              <Navigation className="w-3 h-3" />
+              <ExternalLink className="w-3 h-3" />
             </a>
           )}
           {listing.phone && (

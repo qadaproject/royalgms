@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { MapPin, SlidersHorizontal, Plus } from "lucide-react";
+import { MapPin, SlidersHorizontal, Plus, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import DirectoryCategoryGrid from "@/components/directory/DirectoryCategoryGrid";
 import DirectoryListingCard from "@/components/directory/DirectoryListingCard";
 import DirectorySearchBar from "@/components/directory/DirectorySearchBar";
 import AddBusinessDialog from "@/components/directory/AddBusinessDialog";
+import DirectoryListingRow from "@/components/directory/DirectoryListingRow";
 
 export default function DirectoryPage() {
   const [categories, setCategories] = useState([]);
@@ -18,6 +19,7 @@ export default function DirectoryPage() {
   const [priceFilter, setPriceFilter] = useState("");
   const [userLocation, setUserLocation] = useState(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [viewMode, setViewMode] = useState("list");
 
   useEffect(() => {
     base44.entities.DirectoryCategory.filter({ is_active: true }, "sort_order", 50).then(setCategories);
@@ -116,6 +118,19 @@ export default function DirectoryPage() {
               <SlidersHorizontal className="w-3.5 h-3.5" />
               <span>Filter:</span>
             </div>
+            {/* View toggle */}
+            <div className="flex items-center gap-1 bg-[#1a0a06] border border-[#c9a84c]/20 rounded-lg p-1 ml-auto">
+              <button onClick={() => setViewMode("list")}
+                className={`p-1.5 rounded transition-colors ${viewMode === "list" ? "bg-[#c9a84c]/20 text-[#c9a84c]" : "text-[#f5ede0]/40 hover:text-[#c9a84c]"}`}
+                title="List view">
+                <List className="w-3.5 h-3.5" />
+              </button>
+              <button onClick={() => setViewMode("grid")}
+                className={`p-1.5 rounded transition-colors ${viewMode === "grid" ? "bg-[#c9a84c]/20 text-[#c9a84c]" : "text-[#f5ede0]/40 hover:text-[#c9a84c]"}`}
+                title="Grid view">
+                <LayoutGrid className="w-3.5 h-3.5" />
+              </button>
+            </div>
             {/* Sort */}
             <select value={sortBy} onChange={e => setSortBy(e.target.value)}
               className="bg-[#1a0a06] border border-[#c9a84c]/20 text-[#f5ede0]/70 text-xs rounded-lg px-3 py-1.5 font-sans">
@@ -143,7 +158,7 @@ export default function DirectoryPage() {
             {filteredListings.length} {selectedCategory?.name || "businesses"} found
           </p>
 
-          {/* Results grid */}
+          {/* Results */}
           {filteredListings.length === 0 ? (
             <div className="text-center py-20">
               <MapPin className="w-12 h-12 text-[#c9a84c]/30 mx-auto mb-4" />
@@ -153,10 +168,21 @@ export default function DirectoryPage() {
                 <Plus className="w-4 h-4 mr-2" /> Add a Business
               </Button>
             </div>
-          ) : (
+          ) : viewMode === "grid" ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredListings.map((item) => (
                 <DirectoryListingCard
+                  key={item.id}
+                  listing={item}
+                  userLocation={userLocation}
+                  getDistance={getDistance}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {filteredListings.map((item) => (
+                <DirectoryListingRow
                   key={item.id}
                   listing={item}
                   userLocation={userLocation}
