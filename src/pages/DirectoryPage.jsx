@@ -1,75 +1,34 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Search, MapPin, Star, Phone, Globe, Filter, SlidersHorizontal, Plus, Flag, ChevronRight, Navigation } from "lucide-react";
+import { MapPin, SlidersHorizontal, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import DirectoryCategoryGrid from "@/components/directory/DirectoryCategoryGrid";
 import DirectoryListingCard from "@/components/directory/DirectoryListingCard";
 import DirectorySearchBar from "@/components/directory/DirectorySearchBar";
 import AddBusinessDialog from "@/components/directory/AddBusinessDialog";
 
-const PRICE_LABELS = { "₦": "Budget", "₦₦": "Mid-range", "₦₦₦": "Premium", "₦₦₦₦": "Luxury" };
-
 export default function DirectoryPage() {
   const [categories, setCategories] = useState([]);
   const [listings, setListings] = useState([]);
-  const [googleResults, setGoogleResults] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("rating");
   const [priceFilter, setPriceFilter] = useState("");
   const [userLocation, setUserLocation] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState("all"); // all | google | manual
 
   useEffect(() => {
     base44.entities.DirectoryCategory.filter({ is_active: true }, "sort_order", 50).then(setCategories);
-    base44.entities.DirectoryListing.filter({ status: "active" }, "-rating", 100).then(setListings);
-    // Get user location
+    base44.entities.DirectoryListing.filter({ status: "active" }, "-rating", 200).then(setListings);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => setUserLocation({ lat: 5.5167, lng: 5.7500 }) // Default Warri
+        () => setUserLocation({ lat: 5.5167, lng: 5.7500 })
       );
     }
   }, []);
-
-  const handleSearch = useCallback(async (query, catName) => {
-    setLoading(true);
-    try {
-      const res = await base44.functions.invoke("placesSearch", {
-        query,
-        category: catName || selectedCategory?.name,
-        lat: userLocation?.lat,
-        lng: userLocation?.lng,
-      });
-      setGoogleResults(res.data?.places || []);
-      setActiveTab("google");
-    } catch (e) {
-      console.error(e);
-    }
-    setLoading(false);
-  }, [selectedCategory, userLocation]);
-
-  const handleCategoryClick = (cat) => {
-    setSelectedCategory(cat);
-    handleSearch("", cat.name);
-  };
-
-  // Filter manual listings
-  const filteredListings = listings.filter((l) => {
-    const matchCat = !selectedCategory || l.category === selectedCategory.name || l.category_id === selectedCategory.id;
-    const matchSearch = !searchQuery || l.name.toLowerCase().includes(searchQuery.toLowerCase()) || l.address?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchPrice = !priceFilter || l.price_range === priceFilter;
-    return matchCat && matchSearch && matchPrice;
-  }).sort((a, b) => {
-    if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
-    if (sortBy === "name") return a.name.localeCompare(b.name);
-    return 0;
-  });
 
   function getDistance(lat1, lng1, lat2, lng2) {
     if (!lat1 || !lat2) return null;
@@ -80,7 +39,26 @@ export default function DirectoryPage() {
     return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(1);
   }
 
-  const displayResults = activeTab === "google" ? googleResults : filteredListings;
+  const filteredListings = useMemo(() => {
+    return listings.filter((l) => {
+      const matchCat = !selectedCategory || l.category === selectedCategory.name || l.category_id === selectedCategory.id;
+      const q = searchQuery.toLowerCase();
+      const matchSearch = !q || l.name.toLowerCase().includes(q) || l.address?.toLowerCase().includes(q) || l.category?.toLowerCase().includes(q) || l.description?.toLowerCase().includes(q);
+      const matchPrice = !priceFilter || l.price_range === priceFilter;
+      return matchCat && matchSearch && matchPrice;
+    }).sort((a, b) => {
+      if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      if (sortBy === "distance") {
+        const da = getDistance(userLocation?.lat, userLocation?.lng, a.latitude, a.longitude);
+        const db = getDistance(userLocation?.lat, userLocation?.lng, b.latitude, b.longitude);
+        if (!da) return 1;
+        if (!db) return -1;
+        return parseFloat(da) - parseFloat(db);
+      }
+      return 0;
+    });
+  }, [listings, selectedCategory, searchQuery, priceFilter, sortBy, userLocation]);
 
   return (
     <div className="min-h-screen bg-[#0d0603] text-[#f5ede0]">
@@ -115,10 +93,8 @@ export default function DirectoryPage() {
             Discover hotels, restaurants, hospitals, markets, and more across Warri metropolis
           </p>
           <DirectorySearchBar
-            onSearch={handleSearch}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
-            loading={loading}
           />
         </div>
 
@@ -127,8 +103,8 @@ export default function DirectoryPage() {
           <DirectoryCategoryGrid
             categories={categories}
             selected={selectedCategory}
-            onSelect={handleCategoryClick}
-            onClear={() => { setSelectedCategory(null); setActiveTab("all"); setGoogleResults([]); }}
+            onSelect={setSelectedCategory}
+            onClear={() => setSelectedCategory(null)}
           />
         </div>
 
@@ -140,20 +116,12 @@ export default function DirectoryPage() {
               <SlidersHorizontal className="w-3.5 h-3.5" />
               <span>Filter:</span>
             </div>
-            {/* Tabs */}
-            <div className="flex gap-1 bg-[#1a0a06] rounded-lg p-1">
-              {[["all", "Saved Listings"], ["google", "Live Search"]].map(([val, label]) => (
-                <button key={val} onClick={() => setActiveTab(val)}
-                  className={`px-3 py-1 rounded text-xs font-sans transition-colors ${activeTab === val ? "bg-[#c9a84c] text-[#0d0603] font-bold" : "text-[#f5ede0]/50 hover:text-[#f5ede0]"}`}>
-                  {label}
-                </button>
-              ))}
-            </div>
             {/* Sort */}
             <select value={sortBy} onChange={e => setSortBy(e.target.value)}
               className="bg-[#1a0a06] border border-[#c9a84c]/20 text-[#f5ede0]/70 text-xs rounded-lg px-3 py-1.5 font-sans">
-              <option value="rating">Sort: Best Rated</option>
-              <option value="name">Sort: Name A-Z</option>
+              <option value="rating">Best Rated</option>
+              <option value="name">Name A–Z</option>
+              <option value="distance">Nearest First</option>
             </select>
             {/* Price filter */}
             {["₦", "₦₦", "₦₦₦", "₦₦₦₦"].map(p => (
@@ -165,36 +133,31 @@ export default function DirectoryPage() {
             {selectedCategory && (
               <Badge className="bg-[#c9a84c]/20 text-[#c9a84c] border-[#c9a84c]/30 gap-1">
                 {selectedCategory.icon} {selectedCategory.name}
-                <button onClick={() => { setSelectedCategory(null); setActiveTab("all"); }} className="ml-1 hover:text-white">×</button>
+                <button onClick={() => setSelectedCategory(null)} className="ml-1 hover:text-white">×</button>
               </Badge>
             )}
           </div>
 
           {/* Results count */}
           <p className="text-[#f5ede0]/30 text-xs font-sans mb-4 uppercase tracking-widest">
-            {loading ? "Searching..." : `${displayResults.length} ${selectedCategory?.name || "businesses"} found`}
+            {filteredListings.length} {selectedCategory?.name || "businesses"} found
           </p>
 
           {/* Results grid */}
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-64 bg-[#1a0a06] rounded-xl animate-pulse border border-[#c9a84c]/10" />
-              ))}
-            </div>
-          ) : displayResults.length === 0 ? (
+          {filteredListings.length === 0 ? (
             <div className="text-center py-20">
               <MapPin className="w-12 h-12 text-[#c9a84c]/30 mx-auto mb-4" />
-              <p className="text-[#f5ede0]/40 font-sans text-sm">No results found. Try a different search or category.</p>
-              <Button onClick={() => setShowAddDialog(true)} variant="outline" className="mt-4 border-[#c9a84c]/30 text-[#c9a84c]">
+              <p className="text-[#f5ede0]/40 font-sans text-sm mb-2">No results found.</p>
+              <p className="text-[#f5ede0]/25 font-sans text-xs mb-6">Try a different search or category, or submit your business for listing.</p>
+              <Button onClick={() => setShowAddDialog(true)} variant="outline" className="border-[#c9a84c]/30 text-[#c9a84c]">
                 <Plus className="w-4 h-4 mr-2" /> Add a Business
               </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {displayResults.map((item, i) => (
+              {filteredListings.map((item) => (
                 <DirectoryListingCard
-                  key={item.id || item.google_place_id || i}
+                  key={item.id}
                   listing={item}
                   userLocation={userLocation}
                   getDistance={getDistance}

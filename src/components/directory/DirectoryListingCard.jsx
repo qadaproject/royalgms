@@ -6,10 +6,7 @@ const PRICE_COLORS = { "₦": "text-emerald-400", "₦₦": "text-yellow-400", "
 
 export default function DirectoryListingCard({ listing, userLocation, getDistance }) {
   const dist = listing.latitude && userLocation ? getDistance(userLocation.lat, userLocation.lng, listing.latitude, listing.longitude) : null;
-  const isGoogle = listing.source === "google" || listing.google_place_id;
-  const detailUrl = isGoogle && !listing.id
-    ? `/directory/listing?place_id=${listing.google_place_id}`
-    : `/directory/listing?id=${listing.id}`;
+  const detailUrl = `/directory/listing?id=${listing.id}`;
 
   const mapsUrl = listing.latitude
     ? `https://www.google.com/maps/dir/?api=1&destination=${listing.latitude},${listing.longitude}`
