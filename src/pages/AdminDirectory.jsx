@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Edit2, Trash2, MapPin, Flag, CheckCircle2, XCircle, Globe, Building2, Tag, Star, AlertTriangle } from "lucide-react";
+import { Plus, Edit2, Trash2, MapPin, Flag, CheckCircle2, XCircle, Globe, Building2, Tag, Star, AlertTriangle, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +56,11 @@ export default function AdminDirectory() {
     fetchAll();
   };
 
+  const handleVerify = async (l) => {
+    await base44.entities.DirectoryListing.update(l.id, { status: "active" });
+    fetchAll();
+  };
+
   const handleToggleStatus = async (l) => {
     const next = l.status === "active" ? "suspended" : "active";
     await base44.entities.DirectoryListing.update(l.id, { status: next });
@@ -74,7 +79,7 @@ export default function AdminDirectory() {
         description: sub.business_description,
         city: "Warri",
         state: "Delta State",
-        status: "active",
+        status: "pending",
         source: "manual",
       });
     }
@@ -110,7 +115,7 @@ export default function AdminDirectory() {
         {[
           { label: "Total Listings", value: listings.length, icon: Building2, color: "text-primary" },
           { label: "Active", value: listings.filter(l => l.status === "active").length, icon: CheckCircle2, color: "text-emerald-600" },
-          { label: "Pending Reviews", value: pendingCount, icon: AlertTriangle, color: "text-amber-600" },
+          { label: "Awaiting Verification", value: listings.filter(l => l.status === "pending").length, icon: ShieldCheck, color: "text-amber-600" },
           { label: "Flag Reports", value: flagCount, icon: Flag, color: "text-red-500" },
         ].map(s => (
           <div key={s.label} className="bg-card border border-border rounded-xl p-4">
@@ -175,16 +180,24 @@ export default function AdminDirectory() {
                       <span className="text-xs text-muted-foreground truncate max-w-[200px] block">{l.address || "—"}</span>
                     </td>
                     <td className="p-3">
-                      <Badge variant={l.status === "active" ? "default" : "secondary"} className="text-xs">
-                        {l.status}
+                      <Badge
+                        variant={l.status === "active" ? "default" : "secondary"}
+                        className={`text-xs ${l.status === "pending" ? "bg-amber-100 text-amber-700 border-amber-200" : ""}`}
+                      >
+                        {l.status === "pending" ? "⏳ pending" : l.status}
                       </Badge>
                     </td>
                     <td className="p-3">
                       <div className="flex items-center justify-end gap-1">
+                        {l.status === "pending" && (
+                          <Button size="sm" variant="ghost" onClick={() => handleVerify(l)} title="Verify & publish" className="h-7 w-7 p-0 text-amber-500 hover:text-amber-600">
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
                         <Button size="sm" variant="ghost" onClick={() => handleToggleFeatured(l)} title={l.is_featured ? "Unfeature" : "Feature"} className="h-7 w-7 p-0">
                           <Star className={`w-3.5 h-3.5 ${l.is_featured ? "text-amber-500 fill-amber-500" : "text-muted-foreground"}`} />
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleToggleStatus(l)} title="Toggle status" className="h-7 w-7 p-0">
+                        <Button size="sm" variant="ghost" onClick={() => handleToggleStatus(l)} title="Toggle active/suspended" className="h-7 w-7 p-0">
                           {l.status === "active" ? <XCircle className="w-3.5 h-3.5 text-muted-foreground" /> : <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => { setEditingListing(l); setShowListingForm(true); }} className="h-7 w-7 p-0">

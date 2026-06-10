@@ -144,7 +144,7 @@ export default function CSVImportTool({ onImported }) {
         photo_url: row.photo_url?.trim() || null,
         tags: row.tags ? row.tags.split(",").map(t => t.trim()).filter(Boolean) : [],
         is_featured: row.is_featured?.toLowerCase() === "true",
-        status: "active",
+        status: "pending",
         source: "manual",
       };
       try {

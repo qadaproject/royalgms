@@ -100,7 +100,8 @@
         "pending",
         "suspended"
       ],
-      "default": "active"
+      "default": "pending",
+      "description": "pending = hidden from public until admin verifies; active = visible; suspended = hidden"
     },
     "is_featured": {
       "type": "boolean",
