@@ -1,0 +1,129 @@
+{
+  "name": "DirectoryListing",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Business name"
+    },
+    "category": {
+      "type": "string",
+      "description": "e.g. Hotel, Restaurant, Hospital"
+    },
+    "category_id": {
+      "type": "string",
+      "description": "Reference to DirectoryCategory"
+    },
+    "description": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string",
+      "default": "Warri"
+    },
+    "state": {
+      "type": "string",
+      "default": "Delta State"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "price_range": {
+      "type": "string",
+      "enum": [
+        "\u20a6",
+        "\u20a6\u20a6",
+        "\u20a6\u20a6\u20a6",
+        "\u20a6\u20a6\u20a6\u20a6"
+      ],
+      "description": "Budget to Luxury"
+    },
+    "opening_hours": {
+      "type": "string",
+      "description": "e.g. Mon-Fri 8am-10pm"
+    },
+    "photo_url": {
+      "type": "string"
+    },
+    "gallery_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "google_place_id": {
+      "type": "string",
+      "description": "Google Places ID for live data"
+    },
+    "rating": {
+      "type": "number",
+      "default": 0
+    },
+    "review_count": {
+      "type": "number",
+      "default": 0
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "google",
+        "manual",
+        "claimed"
+      ],
+      "default": "manual"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "pending",
+        "suspended"
+      ],
+      "default": "active"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "claimed_by_email": {
+      "type": "string"
+    },
+    "claimed_by_name": {
+      "type": "string"
+    },
+    "claim_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "pending",
+        "approved"
+      ],
+      "default": "none"
+    }
+  },
+  "required": [
+    "name",
+    "category"
+  ]
+}

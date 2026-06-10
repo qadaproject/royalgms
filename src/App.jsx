@@ -30,6 +30,9 @@ import VendorRegisterPage from './pages/VendorRegisterPage';
 import VendorDashboardPage from './pages/VendorDashboardPage';
 import AdminMarketplace from './pages/AdminMarketplace';
 import VerifyVendorEmail from './pages/VerifyVendorEmail';
+import DirectoryPage from './pages/DirectoryPage';
+import DirectoryListingDetail from './pages/DirectoryListingDetail';
+import AdminDirectory from './pages/AdminDirectory';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -66,6 +69,8 @@ const AuthenticatedApp = () => {
       <Route path="/marketplace/register" element={<VendorRegisterPage />} />
       <Route path="/marketplace/vendor-dashboard" element={<VendorDashboardPage />} />
       <Route path="/marketplace/verify-email" element={<VerifyVendorEmail />} />
+      <Route path="/directory" element={<DirectoryPage />} />
+      <Route path="/directory/listing" element={<DirectoryListingDetail />} />
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/guests" element={<Guests />} />
@@ -78,6 +83,7 @@ const AuthenticatedApp = () => {
         <Route path="/guest-update-log" element={<GuestUpdateLog />} />
         <Route path="/event-history" element={<EventHistoryPage />} />
         <Route path="/admin/marketplace" element={<AdminMarketplace />} />
+        <Route path="/admin/directory" element={<AdminDirectory />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

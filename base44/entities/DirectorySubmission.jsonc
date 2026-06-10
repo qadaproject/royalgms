@@ -1,0 +1,80 @@
+{
+  "name": "DirectorySubmission",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "add_request",
+        "claim_request",
+        "flag_report"
+      ],
+      "description": "Type of submission"
+    },
+    "listing_id": {
+      "type": "string",
+      "description": "For claim/flag \u2014 ref to DirectoryListing"
+    },
+    "listing_name": {
+      "type": "string"
+    },
+    "submitter_name": {
+      "type": "string"
+    },
+    "submitter_email": {
+      "type": "string"
+    },
+    "submitter_phone": {
+      "type": "string"
+    },
+    "business_name": {
+      "type": "string",
+      "description": "For add requests"
+    },
+    "business_category": {
+      "type": "string"
+    },
+    "business_address": {
+      "type": "string"
+    },
+    "business_phone": {
+      "type": "string"
+    },
+    "business_website": {
+      "type": "string"
+    },
+    "business_description": {
+      "type": "string"
+    },
+    "flag_reason": {
+      "type": "string",
+      "description": "Reason for reporting/flagging"
+    },
+    "claim_details": {
+      "type": "string",
+      "description": "How they verify ownership"
+    },
+    "update_details": {
+      "type": "string",
+      "description": "What info to update"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "resolved"
+      ],
+      "default": "pending"
+    },
+    "admin_notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "submitter_name",
+    "submitter_email"
+  ]
+}
