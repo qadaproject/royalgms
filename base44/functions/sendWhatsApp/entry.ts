@@ -4,16 +4,8 @@
 // Template code: 9115722281
 // Phone Number ID: 1150257071506724
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { phone, name, link } = await req.json();
 
     if (!phone || !name || !link) {
@@ -52,7 +44,7 @@ Deno.serve(async (req) => {
     const result = await response.json();
 
     if (!response.ok || result.status === "error" || result.success === false) {
-      return Response.json({ error: result.message || "KudiSMS WhatsApp API error", details: result }, { status: 500 });
+      return Response.json({ error: result.msg || result.message || "KudiSMS WhatsApp API error", details: result }, { status: 500 });
     }
 
     return Response.json({ success: true, result });
