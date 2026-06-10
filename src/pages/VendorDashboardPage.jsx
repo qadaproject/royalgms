@@ -1,0 +1,325 @@
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Store, Package, Star, Settings, Plus, Pencil, Trash2, ArrowLeft, Loader2, Upload, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
+import MarketplaceNav from "../components/marketplace/MarketplaceNav";
+import StarRating from "../components/marketplace/StarRating";
+
+export default function VendorDashboardPage() {
+  const [email, setEmail] = useState("");
+  const [lookupEmail, setLookupEmail] = useState("");
+  const [vendor, setVendor] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [productDialog, setProductDialog] = useState(null); // null | 'new' | product object
+  const [editSettings, setEditSettings] = useState(false);
+  const [settingsForm, setSettingsForm] = useState({});
+  const [productForm, setProductForm] = useState({ name: "", description: "", price: "", discount_percent: 0, unit: "", is_available: true });
+  const [uploadingImg, setUploadingImg] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: products = [], refetch: refetchProducts } = useQuery({
+    queryKey: ["my_products", vendor?.id],
+    queryFn: () => base44.entities.VendorProduct.filter({ vendor_id: vendor?.id }),
+    enabled: !!vendor?.id,
+  });
+
+  const { data: reviews = [] } = useQuery({
+    queryKey: ["my_reviews", vendor?.id],
+    queryFn: () => base44.entities.VendorReview.filter({ vendor_id: vendor?.id }),
+    enabled: !!vendor?.id,
+  });
+
+  const lookupVendor = async () => {
+    if (!lookupEmail.trim()) return;
+    setLoading(true);
+    const results = await base44.entities.Vendor.filter({ email: lookupEmail.trim() });
+    setLoading(false);
+    if (results.length > 0) setVendor(results[0]);
+    else toast.error("No business found with that email address.");
+  };
+
+  const saveProduct = async () => {
+    if (!productForm.name || !productForm.price) { toast.error("Name and price are required"); return; }
+    const data = { ...productForm, price: parseFloat(productForm.price), vendor_id: vendor.id, vendor_name: vendor.business_name };
+    if (productForm.discount_percent > 0) {
+      data.discounted_price = data.price * (1 - productForm.discount_percent / 100);
+    }
+    if (productDialog?.id) {
+      await base44.entities.VendorProduct.update(productDialog.id, data);
+      toast.success("Product updated");
+    } else {
+      await base44.entities.VendorProduct.create(data);
+      toast.success("Product added");
+    }
+    setProductDialog(null);
+    setProductForm({ name: "", description: "", price: "", discount_percent: 0, unit: "", is_available: true });
+    refetchProducts();
+  };
+
+  const deleteProduct = async (id) => {
+    await base44.entities.VendorProduct.delete(id);
+    toast.success("Product removed");
+    refetchProducts();
+  };
+
+  const saveSettings = async () => {
+    await base44.entities.Vendor.update(vendor.id, settingsForm);
+    setVendor(v => ({ ...v, ...settingsForm }));
+    setEditSettings(false);
+    toast.success("Settings saved");
+  };
+
+  const uploadProductImage = async (file) => {
+    setUploadingImg(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setProductForm(f => ({ ...f, image_urls: [...(f.image_urls || []), file_url] }));
+    setUploadingImg(false);
+  };
+
+  const statusBadge = (s) => {
+    const map = { Approved: "bg-emerald-100 text-emerald-700 border-emerald-300", Pending: "bg-amber-100 text-amber-700 border-amber-300", Rejected: "bg-red-100 text-red-700 border-red-300", Suspended: "bg-gray-100 text-gray-600 border-gray-300" };
+    const icons = { Approved: <CheckCircle className="w-3 h-3" />, Pending: <Clock className="w-3 h-3" />, Rejected: <XCircle className="w-3 h-3" />, Suspended: <XCircle className="w-3 h-3" /> };
+    return <Badge variant="outline" className={`gap-1 text-xs ${map[s] || ""}`}>{icons[s]}{s}</Badge>;
+  };
+
+  // Login screen
+  if (!vendor) return (
+    <div className="min-h-screen bg-background"><MarketplaceNav />
+      <div className="max-w-md mx-auto px-4 py-20">
+        <div className="text-center mb-8">
+          <Store className="w-14 h-14 mx-auto mb-4 text-primary" />
+          <h1 className="font-heading text-3xl font-semibold mb-2">Vendor Dashboard</h1>
+          <p className="text-muted-foreground text-sm">Enter your registered business email to access your dashboard.</p>
+        </div>
+        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+          <div className="space-y-1.5">
+            <Label>Business Email</Label>
+            <Input type="email" value={lookupEmail} onChange={e => setLookupEmail(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && lookupVendor()}
+              placeholder="your@business.com" />
+          </div>
+          <Button onClick={lookupVendor} disabled={loading} className="w-full">
+            {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Looking up...</> : "Access Dashboard"}
+          </Button>
+          <p className="text-center text-xs text-muted-foreground">
+            Not registered? <Link to="/marketplace/register" className="text-primary underline">Register here</Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-background"><MarketplaceNav />
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        <Link to="/marketplace" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Back to Marketplace
+        </Link>
+
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8 flex-wrap">
+          {vendor.logo_url && <img src={vendor.logo_url} alt="Logo" className="w-16 h-16 rounded-xl object-cover border border-border shadow" />}
+          <div className="flex-1">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              {statusBadge(vendor.approval_status)}
+              <Badge variant="outline" className="text-[10px]">{vendor.category_name}</Badge>
+            </div>
+            <h1 className="font-heading text-2xl font-semibold">{vendor.business_name}</h1>
+            <p className="text-sm text-muted-foreground">{vendor.email}</p>
+          </div>
+          {vendor.approval_status === "Approved" && (
+            <Button asChild variant="outline" size="sm">
+              <Link to={`/marketplace/vendor?id=${vendor.id}`}>View Public Listing</Link>
+            </Button>
+          )}
+        </div>
+
+        {vendor.approval_status === "Pending" && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-sm text-amber-700">
+            <strong>Pending Approval:</strong> Your listing is under review. You'll be notified once approved.
+          </div>
+        )}
+        {vendor.approval_status === "Rejected" && vendor.rejection_reason && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-sm text-red-700">
+            <strong>Application Rejected:</strong> {vendor.rejection_reason}
+          </div>
+        )}
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          {[
+            { label: "Products", value: products.length, icon: <Package className="w-5 h-5 text-primary" /> },
+            { label: "Reviews", value: reviews.length, icon: <Star className="w-5 h-5 text-amber-400" /> },
+            { label: "Avg. Rating", value: (vendor.average_rating || 0).toFixed(1), icon: <Star className="w-5 h-5 text-amber-400 fill-amber-400" /> },
+            { label: "Status", value: vendor.approval_status, icon: <Store className="w-5 h-5 text-primary" /> },
+          ].map(s => (
+            <div key={s.label} className="bg-card border border-border rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1">{s.icon}<span className="text-xs text-muted-foreground">{s.label}</span></div>
+              <p className="font-heading text-xl font-semibold">{s.value}</p>
+            </div>
+          ))}
+        </div>
+
+        <Tabs defaultValue="products">
+          <TabsList className="mb-6">
+            <TabsTrigger value="products"><Package className="w-4 h-4 mr-1" />Products/Services</TabsTrigger>
+            <TabsTrigger value="reviews"><Star className="w-4 h-4 mr-1" />Reviews</TabsTrigger>
+            <TabsTrigger value="settings"><Settings className="w-4 h-4 mr-1" />Settings</TabsTrigger>
+          </TabsList>
+
+          {/* Products */}
+          <TabsContent value="products">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading text-lg font-semibold">Your Listings</h2>
+              <Button size="sm" onClick={() => { setProductForm({ name: "", description: "", price: "", discount_percent: 0, unit: "", is_available: true, image_urls: [] }); setProductDialog("new"); }}>
+                <Plus className="w-4 h-4 mr-1" />Add Listing
+              </Button>
+            </div>
+            {products.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground border border-dashed border-border rounded-xl">
+                <Package className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                <p>No listings yet. Add your products or services.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {products.map(p => (
+                  <div key={p.id} className="bg-card border border-border rounded-xl p-4 flex gap-3">
+                    {p.image_urls?.[0] && <img src={p.image_urls[0]} alt={p.name} className="w-16 h-16 rounded-lg object-cover shrink-0" />}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm truncate">{p.name}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
+                      <p className="text-sm font-bold text-primary mt-1">₦{p.price?.toLocaleString()}{p.unit ? ` / ${p.unit}` : ""}</p>
+                    </div>
+                    <div className="flex flex-col gap-1 shrink-0">
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setProductForm({ ...p }); setProductDialog(p); }}>
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteProduct(p.id)}>
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Reviews */}
+          <TabsContent value="reviews">
+            <h2 className="font-heading text-lg font-semibold mb-4">Customer Reviews</h2>
+            {reviews.length === 0 ? (
+              <p className="text-muted-foreground text-sm">No reviews yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {reviews.map(r => (
+                  <div key={r.id} className="bg-card border border-border rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-sm">{r.reviewer_name}</p>
+                        {!r.is_approved && <Badge variant="outline" className="text-[9px] text-amber-600 border-amber-400">Pending</Badge>}
+                      </div>
+                      <StarRating rating={r.rating} size="sm" />
+                    </div>
+                    {r.title && <p className="text-sm font-medium">{r.title}</p>}
+                    <p className="text-sm text-muted-foreground">{r.comment}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Settings */}
+          <TabsContent value="settings">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading text-lg font-semibold">Business Settings</h2>
+              {!editSettings ? (
+                <Button size="sm" variant="outline" onClick={() => { setSettingsForm({ description: vendor.description, services_products: vendor.services_products, opening_hours: vendor.opening_hours, website: vendor.website, phone: vendor.phone, location_address: vendor.location_address, location_city: vendor.location_city, location_state: vendor.location_state, social_facebook: vendor.social_facebook, social_instagram: vendor.social_instagram, social_twitter: vendor.social_twitter, social_whatsapp: vendor.social_whatsapp }); setEditSettings(true); }}>
+                  <Pencil className="w-4 h-4 mr-1" />Edit
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => setEditSettings(false)}>Cancel</Button>
+                  <Button size="sm" onClick={saveSettings}>Save Changes</Button>
+                </div>
+              )}
+            </div>
+            {!editSettings ? (
+              <div className="space-y-3 text-sm">
+                {[["Description", vendor.description], ["Services/Products", vendor.services_products], ["Opening Hours", vendor.opening_hours], ["Website", vendor.website], ["Phone", vendor.phone], ["Address", vendor.location_address], ["City", vendor.location_city]].map(([label, val]) => val ? (
+                  <div key={label} className="flex gap-3"><span className="text-muted-foreground w-36 shrink-0">{label}:</span><span>{val}</span></div>
+                ) : null)}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-1.5"><Label>Description</Label><Textarea value={settingsForm.description || ""} onChange={e => setSettingsForm(f => ({ ...f, description: e.target.value }))} className="h-24" /></div>
+                <div className="space-y-1.5"><Label>Services/Products</Label><Textarea value={settingsForm.services_products || ""} onChange={e => setSettingsForm(f => ({ ...f, services_products: e.target.value }))} className="h-20" /></div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5"><Label>Phone</Label><Input value={settingsForm.phone || ""} onChange={e => setSettingsForm(f => ({ ...f, phone: e.target.value }))} /></div>
+                  <div className="space-y-1.5"><Label>Opening Hours</Label><Input value={settingsForm.opening_hours || ""} onChange={e => setSettingsForm(f => ({ ...f, opening_hours: e.target.value }))} /></div>
+                  <div className="space-y-1.5"><Label>Website</Label><Input value={settingsForm.website || ""} onChange={e => setSettingsForm(f => ({ ...f, website: e.target.value }))} /></div>
+                  <div className="space-y-1.5"><Label>City</Label><Input value={settingsForm.location_city || ""} onChange={e => setSettingsForm(f => ({ ...f, location_city: e.target.value }))} /></div>
+                </div>
+                <div className="space-y-1.5"><Label>Full Address</Label><Input value={settingsForm.location_address || ""} onChange={e => setSettingsForm(f => ({ ...f, location_address: e.target.value }))} /></div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5"><Label>Facebook</Label><Input value={settingsForm.social_facebook || ""} onChange={e => setSettingsForm(f => ({ ...f, social_facebook: e.target.value }))} /></div>
+                  <div className="space-y-1.5"><Label>Instagram</Label><Input value={settingsForm.social_instagram || ""} onChange={e => setSettingsForm(f => ({ ...f, social_instagram: e.target.value }))} /></div>
+                  <div className="space-y-1.5"><Label>WhatsApp</Label><Input value={settingsForm.social_whatsapp || ""} onChange={e => setSettingsForm(f => ({ ...f, social_whatsapp: e.target.value }))} /></div>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Product Dialog */}
+      <Dialog open={!!productDialog} onOpenChange={o => !o && setProductDialog(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-heading">{productDialog?.id ? "Edit Listing" : "Add New Listing"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
+            <div className="space-y-1.5"><Label>Name *</Label><Input value={productForm.name} onChange={e => setProductForm(f => ({ ...f, name: e.target.value }))} /></div>
+            <div className="space-y-1.5"><Label>Description</Label><Textarea value={productForm.description} onChange={e => setProductForm(f => ({ ...f, description: e.target.value }))} className="h-20" /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5"><Label>Price (₦) *</Label><Input type="number" value={productForm.price} onChange={e => setProductForm(f => ({ ...f, price: e.target.value }))} /></div>
+              <div className="space-y-1.5"><Label>Discount %</Label><Input type="number" min="0" max="100" value={productForm.discount_percent} onChange={e => setProductForm(f => ({ ...f, discount_percent: parseFloat(e.target.value) || 0 }))} /></div>
+            </div>
+            <div className="space-y-1.5"><Label>Unit (e.g. per night, per head)</Label><Input value={productForm.unit} onChange={e => setProductForm(f => ({ ...f, unit: e.target.value }))} /></div>
+            <div className="space-y-1.5">
+              <Label>Images</Label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {(productForm.image_urls || []).map((url, i) => (
+                  <div key={i} className="relative group">
+                    <img src={url} alt="" className="w-16 h-12 rounded object-cover border" />
+                    <button type="button" onClick={() => setProductForm(f => ({ ...f, image_urls: f.image_urls.filter((_, j) => j !== i) }))}
+                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs items-center justify-center hidden group-hover:flex">×</button>
+                  </div>
+                ))}
+              </div>
+              <label className="cursor-pointer">
+                <Button type="button" variant="outline" size="sm" asChild disabled={uploadingImg}>
+                  <span>{uploadingImg ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Upload className="w-4 h-4 mr-1" />}Add Image</span>
+                </Button>
+                <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files[0] && uploadProductImage(e.target.files[0])} />
+              </label>
+            </div>
+          </div>
+          <div className="flex gap-3 pt-2">
+            <Button variant="outline" className="flex-1" onClick={() => setProductDialog(null)}>Cancel</Button>
+            <Button className="flex-1" onClick={saveProduct}>Save</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

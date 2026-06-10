@@ -1,0 +1,47 @@
+{
+  "name": "VendorReview",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "Reference to Vendor"
+    },
+    "vendor_name": {
+      "type": "string"
+    },
+    "reviewer_name": {
+      "type": "string",
+      "description": "Name of the reviewer"
+    },
+    "reviewer_email": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "number",
+      "description": "Rating from 1 to 5"
+    },
+    "title": {
+      "type": "string",
+      "description": "Review title/headline"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Review body"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Admin must approve before it shows publicly"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "vendor_name",
+    "reviewer_name",
+    "rating"
+  ]
+}

@@ -24,6 +24,11 @@ import ContactPage from './pages/ContactPage';
 import ItineraryPage from './pages/ItineraryPage';
 import GuestUpdateLog from './pages/GuestUpdateLog';
 import EventHistoryPage from './pages/EventHistoryPage';
+import MarketplacePage from './pages/MarketplacePage';
+import VendorDetailPage from './pages/VendorDetailPage';
+import VendorRegisterPage from './pages/VendorRegisterPage';
+import VendorDashboardPage from './pages/VendorDashboardPage';
+import AdminMarketplace from './pages/AdminMarketplace';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -55,6 +60,10 @@ const AuthenticatedApp = () => {
       <Route path="/invite-detail" element={<InviteDetail />} />
       <Route path="/checkpoint" element={<SecurityCheckpoint />} />
       <Route path="/scanner" element={<CheckInScanner />} />
+      <Route path="/marketplace" element={<MarketplacePage />} />
+      <Route path="/marketplace/vendor" element={<VendorDetailPage />} />
+      <Route path="/marketplace/register" element={<VendorRegisterPage />} />
+      <Route path="/marketplace/vendor-dashboard" element={<VendorDashboardPage />} />
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/guests" element={<Guests />} />
@@ -66,6 +75,7 @@ const AuthenticatedApp = () => {
         <Route path="/settings" element={<EventSettings />} />
         <Route path="/guest-update-log" element={<GuestUpdateLog />} />
         <Route path="/event-history" element={<EventHistoryPage />} />
+        <Route path="/admin/marketplace" element={<AdminMarketplace />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

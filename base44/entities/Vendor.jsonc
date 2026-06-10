@@ -1,0 +1,156 @@
+{
+  "name": "Vendor",
+  "type": "object",
+  "properties": {
+    "business_name": {
+      "type": "string",
+      "description": "Trading/Business name"
+    },
+    "owner_full_name": {
+      "type": "string",
+      "description": "Full name of the business owner"
+    },
+    "category_id": {
+      "type": "string",
+      "description": "Reference to MarketplaceCategory"
+    },
+    "category_name": {
+      "type": "string",
+      "description": "Cached category name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Business description and services offered"
+    },
+    "services_products": {
+      "type": "string",
+      "description": "Detailed list of services/products offered"
+    },
+    "email": {
+      "type": "string",
+      "description": "Business email address"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Business phone number"
+    },
+    "website": {
+      "type": "string",
+      "description": "Business website URL"
+    },
+    "location_address": {
+      "type": "string",
+      "description": "Full address"
+    },
+    "location_city": {
+      "type": "string",
+      "description": "City"
+    },
+    "location_state": {
+      "type": "string",
+      "description": "State"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "Business logo image URL"
+    },
+    "cover_image_url": {
+      "type": "string",
+      "description": "Cover/banner image URL"
+    },
+    "gallery_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of gallery image URLs"
+    },
+    "reg_document_url": {
+      "type": "string",
+      "description": "Company registration document URL"
+    },
+    "social_facebook": {
+      "type": "string"
+    },
+    "social_instagram": {
+      "type": "string"
+    },
+    "social_twitter": {
+      "type": "string"
+    },
+    "social_whatsapp": {
+      "type": "string"
+    },
+    "approval_status": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "Approved",
+        "Rejected",
+        "Suspended"
+      ],
+      "default": "Pending",
+      "description": "Admin approval status"
+    },
+    "email_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "email_verification_token": {
+      "type": "string",
+      "description": "Token sent to email for verification"
+    },
+    "rejection_reason": {
+      "type": "string",
+      "description": "Reason if rejected by admin"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Internal admin notes"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Featured vendors appear at the top"
+    },
+    "average_rating": {
+      "type": "number",
+      "default": 0
+    },
+    "review_count": {
+      "type": "number",
+      "default": 0
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Linked app user ID if vendor has an account"
+    },
+    "price_range": {
+      "type": "string",
+      "enum": [
+        "Budget",
+        "Mid-range",
+        "Premium",
+        "Luxury"
+      ],
+      "description": "General price range indicator"
+    },
+    "opening_hours": {
+      "type": "string",
+      "description": "e.g. Mon-Fri 8am-6pm"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Searchable tags"
+    }
+  },
+  "required": [
+    "business_name",
+    "owner_full_name",
+    "email",
+    "phone"
+  ]
+}

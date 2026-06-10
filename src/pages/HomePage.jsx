@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { label: "About", href: "/about" },
   { label: "Itinerary", href: "/itinerary" },
   { label: "Contact", href: "/contact" },
+  { label: "Marketplace", href: "/marketplace" },
 ];
 
 function useCountdown(target) {
