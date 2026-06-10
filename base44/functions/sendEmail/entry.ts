@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { to, subject, html, from_name } = await req.json();
+    const { to, subject, html, from_name, from_email } = await req.json();
 
     if (!to || !subject || !html) {
       return Response.json({ error: 'to, subject, and html are required' }, { status: 400 });
@@ -20,6 +20,8 @@ Deno.serve(async (req) => {
       ? from_name.replace(/[—–\-|]/g, "").replace(/\s+/g, " ").trim()
       : "Royal Protocol Office";
 
+    const senderEmail = from_email || fromEmail;
+
     // Generate plain-text fallback by stripping HTML tags
     const text = html
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
@@ -34,7 +36,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        sender: { name: safeName, email: fromEmail },
+        sender: { name: safeName, email: senderEmail },
         to: [{ email: to }],
         subject,
         htmlContent: html,

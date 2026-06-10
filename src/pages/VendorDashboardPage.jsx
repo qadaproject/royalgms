@@ -144,14 +144,35 @@ export default function VendorDashboardPage() {
           )}
         </div>
 
-        {vendor.approval_status === "Pending" && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-sm text-amber-700">
-            <strong>Pending Approval:</strong> Your listing is under review. You'll be notified once approved.
+        {/* Email verification banner */}
+        {!vendor.email_verified && (
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4 text-sm text-orange-800 flex items-start gap-3">
+            <span className="text-xl mt-0.5">📧</span>
+            <div>
+              <p className="font-semibold mb-0.5">Email Verification Required</p>
+              <p>Please check your inbox at <strong>{vendor.email}</strong> and click the verification link to activate your account. Your application will not be reviewed until your email is verified.</p>
+            </div>
+          </div>
+        )}
+        {vendor.approval_status === "Pending" && vendor.email_verified && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 text-sm text-amber-700">
+            <strong>Under Review:</strong> Your listing is being reviewed by our team. You'll be notified at <strong>{vendor.email}</strong> once a decision is made (typically 2–3 business days).
+          </div>
+        )}
+        {vendor.approval_status === "Pending" && !vendor.email_verified && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 text-sm text-amber-700">
+            <strong>Awaiting Email Verification:</strong> Verify your email first to move your application to review.
           </div>
         )}
         {vendor.approval_status === "Rejected" && vendor.rejection_reason && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-sm text-red-700">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 text-sm text-red-700">
             <strong>Application Rejected:</strong> {vendor.rejection_reason}
+            <p className="mt-1 text-xs">Contact us at <a href="mailto:marketplace@royalgms.com" className="underline">marketplace@royalgms.com</a> for assistance.</p>
+          </div>
+        )}
+        {vendor.approval_status === "Suspended" && (
+          <div className="bg-gray-100 border border-gray-300 rounded-xl p-4 mb-4 text-sm text-gray-700">
+            <strong>Account Suspended:</strong> Your listing has been suspended. Please contact <a href="mailto:marketplace@royalgms.com" className="underline">marketplace@royalgms.com</a> for assistance.
           </div>
         )}
 

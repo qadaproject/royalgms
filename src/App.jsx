@@ -29,6 +29,7 @@ import VendorDetailPage from './pages/VendorDetailPage';
 import VendorRegisterPage from './pages/VendorRegisterPage';
 import VendorDashboardPage from './pages/VendorDashboardPage';
 import AdminMarketplace from './pages/AdminMarketplace';
+import VerifyVendorEmail from './pages/VerifyVendorEmail';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -64,6 +65,7 @@ const AuthenticatedApp = () => {
       <Route path="/marketplace/vendor" element={<VendorDetailPage />} />
       <Route path="/marketplace/register" element={<VendorRegisterPage />} />
       <Route path="/marketplace/vendor-dashboard" element={<VendorDashboardPage />} />
+      <Route path="/marketplace/verify-email" element={<VerifyVendorEmail />} />
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/guests" element={<Guests />} />
