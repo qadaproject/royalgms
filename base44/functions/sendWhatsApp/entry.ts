@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     // Build form-encoded payload
     const params = new URLSearchParams();
     params.append("token", token);
-    params.append("phone", recipient);
+    params.append("recipient", recipient);
     params.append("phone_number_id", "1150257071506724");
     params.append("template_code", "9115722281");
     params.append("parameters", `${name},${link}`);
