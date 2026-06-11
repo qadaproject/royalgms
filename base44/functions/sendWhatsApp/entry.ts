@@ -36,7 +36,16 @@ Deno.serve(async (req) => {
       type: "template",
       template: {
         name: "invitation_notice",
-        language: { code: "en_US" }
+        language: { code: "en" },
+        components: [
+          {
+            type: "body",
+            parameters: [
+              { type: "text", text: name },
+              { type: "text", text: link }
+            ]
+          }
+        ]
       }
     };
 
