@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
       to: recipient,
       type: "template",
       template: {
-        name: "invitation_notice",
+        name: "3p_direct_integration_test_template",
         language: { code: "en_US" }
       }
     };
