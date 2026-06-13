@@ -1,17 +1,9 @@
-import { Link } from "react-router-dom";
-import { Menu, X, MapPin, Phone, Mail } from "lucide-react";
+import { MapPin, Phone, Mail } from "lucide-react";
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-
-const NAV_LINKS = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Itinerary", href: "/itinerary" },
-  { label: "Contact", href: "/contact" },
-];
+import PublicNav from "../components/layout/PublicNav";
 
 export default function ContactPage() {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -33,31 +25,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-[#0d0603] text-[#f5ede0]">
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0d0603]/90 backdrop-blur-md border-b border-[#c9a84c]/20">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
-          <Link to="/" className="flex flex-col leading-tight">
-            <span className="text-[#c9a84c] text-[10px] uppercase tracking-[0.25em] font-sans">Royal Palace</span>
-            <span className="text-[#f5ede0] text-sm font-semibold tracking-wider">Warri Kingdom</span>
-          </Link>
-          <div className="hidden md:flex items-center gap-8">
-            {NAV_LINKS.map((l) => (
-              <Link key={l.href} to={l.href} className={`text-xs uppercase tracking-[0.2em] font-sans transition-colors ${l.href === "/contact" ? "text-[#c9a84c]" : "text-[#f5ede0]/70 hover:text-[#c9a84c]"}`}>
-                {l.label}
-              </Link>
-            ))}
-          </div>
-          <button className="md:hidden text-[#f5ede0]" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-        {menuOpen && (
-          <div className="md:hidden bg-[#0d0603] border-t border-[#c9a84c]/20 px-6 py-4 space-y-3">
-            {NAV_LINKS.map((l) => (
-              <Link key={l.href} to={l.href} onClick={() => setMenuOpen(false)} className="block text-[#f5ede0]/70 hover:text-[#c9a84c] text-sm uppercase tracking-widest font-sans">{l.label}</Link>
-            ))}
-          </div>
-        )}
-      </nav>
+      <PublicNav activePath="/contact" />
 
       <div className="pt-32 pb-20 px-6 max-w-5xl mx-auto">
         <div className="text-center mb-14">

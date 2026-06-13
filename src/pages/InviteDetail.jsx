@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Loader2, AlertTriangle, CheckCircle2, MapPin, Calendar, Clock, Shirt, Printer } from "lucide-react";
 import RoyalCrest from "../components/layout/RoyalCrest";
 import CategoryBadge from "../components/shared/CategoryBadge";
-import InviteDetailPrintSidebar from "../components/invitations/InviteDetailPrintSidebar";
+import { triggerPrint } from "../components/invitations/InviteDetailPrintSidebar";
 
 const rsvpColors = {
   Accepted: "text-emerald-400 bg-emerald-400/10 border-emerald-400/30",
@@ -20,7 +21,6 @@ export default function InviteDetail() {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [printOpen, setPrintOpen] = useState(false);
 
   useEffect(() => {
     if (!token) { setNotFound(true); setLoading(false); return; }
@@ -54,20 +54,15 @@ export default function InviteDetail() {
 
   const rsvpClass = rsvpColors[guest.rsvp_status] || rsvpColors.Pending;
 
+  const handlePrint = () => triggerPrint(guest, settings);
+
   return (
     <div className="min-h-screen bg-[#1a0a06] text-[#f5ede0]">
-      <InviteDetailPrintSidebar
-        guest={guest}
-        settings={settings}
-        open={printOpen}
-        onClose={() => setPrintOpen(false)}
-      />
-
       {/* Header */}
       <header className="text-center py-10 px-4 border-b border-[#c9a84c]/20">
         <div className="flex justify-end px-4 pt-2 absolute top-4 right-4">
           <button
-            onClick={() => setPrintOpen(true)}
+            onClick={handlePrint}
             className="flex items-center gap-2 text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/10 transition-colors rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -102,12 +97,20 @@ export default function InviteDetail() {
         </div>
 
         {/* RSVP Status */}
-        <div className={`border rounded-xl p-4 flex items-center gap-3 ${rsvpClass}`}>
-          <CheckCircle2 className="w-5 h-5 shrink-0" />
-          <div>
-            <p className="text-xs uppercase tracking-wider font-semibold">RSVP Status</p>
-            <p className="text-base font-semibold">{guest.rsvp_status || "Pending"}</p>
+        <div className={`border rounded-xl p-4 flex items-center justify-between gap-3 ${rsvpClass}`}>
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 shrink-0" />
+            <div>
+              <p className="text-xs uppercase tracking-wider font-semibold">RSVP Status</p>
+              <p className="text-base font-semibold">{guest.rsvp_status || "Pending"}</p>
+            </div>
           </div>
+          <Link
+            to={`/itinerary?ref=${guest.qr_code}`}
+            className="flex items-center gap-1.5 bg-[#c9a84c] text-[#1a0a06] font-bold text-xs uppercase tracking-wider px-3 py-2 rounded-lg hover:bg-[#b8963e] transition-colors shrink-0 font-sans"
+          >
+            Update RSVP
+          </Link>
         </div>
 
         {/* Event Details */}
@@ -161,8 +164,19 @@ export default function InviteDetail() {
         </div>
 
         {settings?.footer_note && (
-          <p className="text-center text-[#f5ede0]/30 text-xs italic pb-6">{settings.footer_note}</p>
+          <p className="text-center text-[#f5ede0]/30 text-xs italic pb-2">{settings.footer_note}</p>
         )}
+
+        {/* Bottom print button */}
+        <div className="pb-8 pt-4 text-center">
+          <button
+            onClick={handlePrint}
+            className="inline-flex items-center gap-2 text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/10 transition-colors rounded-lg px-5 py-2.5 text-xs font-semibold uppercase tracking-wider"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            Print Invitation
+          </button>
+        </div>
       </main>
     </div>
   );
