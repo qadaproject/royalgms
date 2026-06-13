@@ -39,12 +39,12 @@ export default function VendorDashboardPage() {
 
   useEffect(() => {
     const session = sessionStorage.getItem("vendor_session");
-    if (!session) { window.location.href = "/marketplace/vendor"; return; }
+    if (!session) { window.location.href = "/marketplace/vendor/login"; return; }
     const { id } = JSON.parse(session);
     base44.entities.Vendor.filter({ id }).then(results => {
       if (results.length > 0) setVendor(results[0]);
-      else { sessionStorage.removeItem("vendor_session"); window.location.href = "/marketplace/vendor"; }
-    }).catch(() => { window.location.href = "/marketplace/vendor"; })
+      else { sessionStorage.removeItem("vendor_session"); window.location.href = "/marketplace/vendor/login"; }
+    }).catch(() => { window.location.href = "/marketplace/vendor/login"; })
       .finally(() => setLoading(false));
   }, []);
 
@@ -62,7 +62,7 @@ export default function VendorDashboardPage() {
 
   const handleLogout = () => {
     sessionStorage.removeItem("vendor_session");
-    window.location.href = "/marketplace/vendor";
+    window.location.href = "/marketplace/vendor/login";
   };
 
   const saveProduct = async () => {
