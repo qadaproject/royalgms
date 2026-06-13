@@ -72,6 +72,7 @@ const AuthenticatedApp = () => {
       <Route path="/marketplace/register" element={<VendorRegisterPage />} />
       <Route path="/marketplace/vendor" element={<VendorLoginPage />} />
       <Route path="/marketplace/vendor/dashboard" element={<VendorDashboardPage />} />
+      <Route path="/marketplace/vendor/:username" element={<VendorDetailPage />} />
       <Route path="/marketplace/verify-email" element={<VerifyVendorEmail />} />
       <Route path="/directory" element={<DirectoryPage />} />
       <Route path="/directory/listing" element={<DirectoryListingDetail />} />

@@ -1,41 +1,44 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, MapPin, Phone, Globe, Mail, ArrowLeft, Facebook, Instagram, Twitter, MessageCircle, Clock, Tag, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, MapPin, Phone, Globe, Mail, ArrowLeft, Facebook, Instagram, Twitter, MessageCircle, Clock, Tag, ChevronLeft, ChevronRight, BadgeCheck } from "lucide-react";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import StarRating from "../components/marketplace/StarRating";
 import { toast } from "sonner";
 
 export default function VendorDetailPage() {
-  const params = new URLSearchParams(window.location.search);
-  const vendorId = params.get("id");
+  const { username } = useParams();
+  const urlParams = new URLSearchParams(window.location.search);
+  const vendorId = urlParams.get("id");
   const queryClient = useQueryClient();
   const [galleryIdx, setGalleryIdx] = useState(0);
   const [reviewForm, setReviewForm] = useState({ reviewer_name: "", reviewer_email: "", rating: 5, title: "", comment: "" });
   const [submitting, setSubmitting] = useState(false);
 
   const { data: vendor } = useQuery({
-    queryKey: ["vendor", vendorId],
-    queryFn: () => base44.entities.Vendor.filter({ id: vendorId }),
+    queryKey: ["vendor", vendorId, username],
+    queryFn: () => username
+      ? base44.entities.Vendor.filter({ marketplace_username: username, approval_status: "Approved" })
+      : base44.entities.Vendor.filter({ id: vendorId }),
     select: d => d[0],
-    enabled: !!vendorId,
+    enabled: !!(vendorId || username),
   });
 
   const { data: products = [] } = useQuery({
-    queryKey: ["vendor_products", vendorId],
-    queryFn: () => base44.entities.VendorProduct.filter({ vendor_id: vendorId, is_available: true }),
-    enabled: !!vendorId,
+    queryKey: ["vendor_products", vendor?.id],
+    queryFn: () => base44.entities.VendorProduct.filter({ vendor_id: vendor?.id, is_available: true }),
+    enabled: !!vendor?.id,
   });
 
   const { data: reviews = [] } = useQuery({
-    queryKey: ["vendor_reviews", vendorId],
-    queryFn: () => base44.entities.VendorReview.filter({ vendor_id: vendorId, is_approved: true }),
-    enabled: !!vendorId,
+    queryKey: ["vendor_reviews", vendor?.id],
+    queryFn: () => base44.entities.VendorReview.filter({ vendor_id: vendor?.id, is_approved: true }),
+    enabled: !!vendor?.id,
   });
 
   const submitReview = async (e) => {
@@ -44,7 +47,7 @@ export default function VendorDetailPage() {
     setSubmitting(true);
     await base44.entities.VendorReview.create({
       ...reviewForm,
-      vendor_id: vendorId,
+      vendor_id: vendor?.id,
       vendor_name: vendor?.business_name || "",
     });
     toast.success("Review submitted! It will appear after admin approval.");
@@ -113,7 +116,10 @@ export default function VendorDetailPage() {
                   <Badge variant="outline" className="text-[10px]">{vendor.category_name}</Badge>
                   {vendor.price_range && <span className={`text-xs font-semibold ${priceRangeColor[vendor.price_range] || ""}`}>{vendor.price_range}</span>}
                 </div>
-                <h1 className="font-heading text-3xl font-semibold">{vendor.business_name}</h1>
+                <h1 className="font-heading text-3xl font-semibold flex items-center gap-2">
+                  {vendor.business_name}
+                  <BadgeCheck className="w-7 h-7 text-blue-500 shrink-0" title="Verified Vendor" />
+                </h1>
                 <div className="flex items-center gap-2 mt-1">
                   <StarRating rating={vendor.average_rating || 0} />
                   <span className="text-sm text-muted-foreground">({vendor.review_count || 0} reviews)</span>

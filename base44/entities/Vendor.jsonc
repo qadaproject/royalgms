@@ -149,6 +149,15 @@
         "type": "string"
       },
       "description": "Searchable tags"
+    },
+    "marketplace_username": {
+      "type": "string",
+      "description": "Custom URL slug e.g. royalgms.com/marketplace/vendor/username"
+    },
+    "marketplace_username_set_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when marketplace_username was last set \u2014 enforces 3-month cooldown"
     }
   },
   "required": [
