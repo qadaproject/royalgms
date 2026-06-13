@@ -47,7 +47,10 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (authError) {
+  const publicPaths = ['/marketplace', '/directory', '/rsvp', '/invite-detail', '/checkpoint', '/scanner', '/about', '/contact', '/itinerary', '/admin'];
+  const isPublicPath = publicPaths.some(p => window.location.pathname.startsWith(p)) || window.location.pathname === '/';
+
+  if (authError && !isPublicPath) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
