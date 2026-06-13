@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Trophy } from "lucide-react";
+import { MapPin, Trophy, BadgeCheck } from "lucide-react";
 import StarRating from "./StarRating";
 
 // Mirrors the same threshold logic used in VendorDashboardPage
@@ -48,7 +48,10 @@ export default function VendorCard({ vendor, featured = false }) {
             <img src={vendor.logo_url} alt="Logo" className="w-9 h-9 rounded-lg object-cover border border-border shrink-0 -mt-6 relative shadow-sm bg-card" />
           )}
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm leading-tight truncate">{vendor.business_name}</p>
+            <p className="font-semibold text-sm leading-tight truncate flex items-center gap-1">
+              {vendor.verified_badge_enabled !== false && <BadgeCheck className="w-3.5 h-3.5 shrink-0 fill-amber-400 text-white" />}
+              {vendor.business_name}
+            </p>
             <Badge variant="outline" className="text-[9px] mt-0.5">{vendor.category_name}</Badge>
           </div>
         </div>
