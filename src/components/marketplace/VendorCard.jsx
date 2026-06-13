@@ -16,7 +16,7 @@ const priceRangeColor = {
 
 export default function VendorCard({ vendor, featured = false }) {
   return (
-    <Link to={`/marketplace/vendor?id=${vendor.id}`} className="group block bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+    <Link to={vendor.marketplace_username ? `/marketplace/vendor/${vendor.marketplace_username}` : `/marketplace/vendor/detail?id=${vendor.id}`} className="group block bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
       {/* Image */}
       <div className="relative aspect-video bg-muted overflow-hidden">
         {vendor.cover_image_url ? (
