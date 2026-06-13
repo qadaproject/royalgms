@@ -58,6 +58,31 @@
       "items": {
         "type": "string"
       }
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of views"
+    },
+    "favourite_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of favourites"
+    },
+    "share_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of WhatsApp shares"
+    },
+    "comment_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of approved comments"
+    },
+    "report_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of reports"
     }
   },
   "required": [

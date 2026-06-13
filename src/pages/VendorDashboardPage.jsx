@@ -9,11 +9,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Store, Package, Star, Settings, Plus, Pencil, Trash2, ArrowLeft, Loader2, Upload, CheckCircle, XCircle, Clock, BadgeCheck, AtSign, Link2 } from "lucide-react";
+import { Store, Package, Star, Settings, Plus, Pencil, Trash2, ArrowLeft, Loader2, Upload, CheckCircle, XCircle, Clock, BadgeCheck, AtSign, Link2, Eye, Heart, Share2, MessageSquare, Flag } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import StarRating from "../components/marketplace/StarRating";
+import ProductEngagementCard from "../components/marketplace/ProductEngagementCard";
 
 export default function VendorDashboardPage() {
   const [vendor, setVendor] = useState(null);
@@ -202,7 +203,7 @@ export default function VendorDashboardPage() {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
           {[
             { label: "Products", value: products.length, icon: <Package className="w-5 h-5 text-primary" /> },
             { label: "Reviews", value: reviews.length, icon: <Star className="w-5 h-5 text-amber-400" /> },
@@ -212,6 +213,24 @@ export default function VendorDashboardPage() {
             <div key={s.label} className="bg-card border border-border rounded-xl p-4">
               <div className="flex items-center gap-2 mb-1">{s.icon}<span className="text-xs text-muted-foreground">{s.label}</span></div>
               <p className="font-heading text-xl font-semibold">{s.value}</p>
+            </div>
+          ))}
+        </div>
+        {/* Engagement totals */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-8">
+          {[
+            { label: "Total Views", value: products.reduce((a, p) => a + (p.view_count || 0), 0), icon: <Eye className="w-4 h-4 text-muted-foreground" /> },
+            { label: "Favourites", value: products.reduce((a, p) => a + (p.favourite_count || 0), 0), icon: <Heart className="w-4 h-4 text-red-400" /> },
+            { label: "Shares", value: products.reduce((a, p) => a + (p.share_count || 0), 0), icon: <Share2 className="w-4 h-4 text-green-500" /> },
+            { label: "Comments", value: products.reduce((a, p) => a + (p.comment_count || 0), 0), icon: <MessageSquare className="w-4 h-4 text-blue-500" /> },
+            { label: "Reports", value: products.reduce((a, p) => a + (p.report_count || 0), 0), icon: <Flag className="w-4 h-4 text-amber-500" /> },
+          ].map(s => (
+            <div key={s.label} className="bg-card border border-border rounded-xl p-3 flex items-center gap-3">
+              {s.icon}
+              <div>
+                <p className="font-heading text-lg font-semibold leading-none">{s.value}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{s.label}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -237,30 +256,15 @@ export default function VendorDashboardPage() {
                 <p>No listings yet. Add your products or services.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-4">
                 {products.map(p => (
-                  <div key={p.id} className="bg-card border border-border rounded-xl p-4 flex gap-3">
-                    {p.image_urls?.[0] && <img src={p.image_urls[0]} alt={p.name} className="w-16 h-16 rounded-lg object-cover shrink-0" />}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate">{p.name}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
-                      <p className="text-sm font-bold text-primary mt-1">₦{p.price?.toLocaleString()}{p.unit ? ` / ${p.unit}` : ""}</p>
-                      <div className="mt-1.5">
-                        {vendor.approval_status === "Approved"
-                          ? <Badge variant="outline" className="gap-1 text-[10px] bg-emerald-50 text-emerald-700 border-emerald-300"><CheckCircle className="w-2.5 h-2.5" />Approved</Badge>
-                          : <Badge variant="outline" className="gap-1 text-[10px] bg-amber-50 text-amber-700 border-amber-300"><Clock className="w-2.5 h-2.5" />Pending</Badge>
-                        }
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1 shrink-0">
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setProductForm({ ...p }); setProductDialog(p); }}>
-                        <Pencil className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteProduct(p.id)}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
+                  <ProductEngagementCard
+                    key={p.id}
+                    product={p}
+                    vendor={vendor}
+                    onEdit={() => { setProductForm({ ...p }); setProductDialog(p); }}
+                    onDelete={() => deleteProduct(p.id)}
+                  />
                 ))}
               </div>
             )}

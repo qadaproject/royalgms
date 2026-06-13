@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Star, MapPin, Phone, Globe, Mail, ArrowLeft, Facebook, Instagram, Twitter, MessageCircle, Clock, Tag, ChevronLeft, ChevronRight, BadgeCheck } from "lucide-react";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import StarRating from "../components/marketplace/StarRating";
+import ProductCard from "../components/marketplace/ProductCard";
 import { toast } from "sonner";
 
 export default function VendorDetailPage() {
@@ -147,27 +148,7 @@ export default function VendorDetailPage() {
                 <h2 className="font-heading text-xl font-semibold mb-4">Listings & Pricing</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {products.map(p => (
-                    <div key={p.id} className="border border-border rounded-xl overflow-hidden bg-card hover:shadow-md transition-shadow">
-                      {p.image_urls?.[0] && (
-                        <img src={p.image_urls[0]} alt={p.name} className="w-full h-36 object-cover" />
-                      )}
-                      <div className="p-3">
-                        <p className="font-semibold text-sm">{p.name}</p>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          {p.discount_percent > 0 ? (
-                            <>
-                              <span className="text-sm font-bold text-primary">₦{(p.discounted_price || p.price * (1 - p.discount_percent / 100)).toLocaleString()}</span>
-                              <span className="text-xs line-through text-muted-foreground">₦{p.price?.toLocaleString()}</span>
-                              <Badge className="text-[9px] bg-red-100 text-red-700 border-red-300">-{p.discount_percent}%</Badge>
-                            </>
-                          ) : (
-                            <span className="text-sm font-bold text-primary">₦{p.price?.toLocaleString()}</span>
-                          )}
-                          {p.unit && <span className="text-xs text-muted-foreground">/ {p.unit}</span>}
-                        </div>
-                      </div>
-                    </div>
+                    <ProductCard key={p.id} product={p} vendor={vendor} />
                   ))}
                 </div>
               </div>

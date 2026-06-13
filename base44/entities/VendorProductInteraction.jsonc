@@ -1,0 +1,68 @@
+{
+  "name": "VendorProductInteraction",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string",
+      "description": "Reference to VendorProduct"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "Reference to Vendor (for filtering in dashboard)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "view",
+        "favourite",
+        "comment",
+        "report",
+        "share",
+        "vendor_reply"
+      ],
+      "description": "Type of interaction"
+    },
+    "user_fingerprint": {
+      "type": "string",
+      "description": "Browser fingerprint (IP+UA hash) to deduplicate views/favourites"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Name for comments/reports"
+    },
+    "content": {
+      "type": "string",
+      "description": "Comment or report text; or vendor reply text"
+    },
+    "parent_id": {
+      "type": "string",
+      "description": "For vendor_reply \u2014 ID of the comment being replied to"
+    },
+    "report_reason": {
+      "type": "string",
+      "enum": [
+        "Spam",
+        "Inaccurate info",
+        "Offensive content",
+        "Fraud",
+        "Other"
+      ],
+      "description": "Reason for report"
+    },
+    "is_approved": {
+      "type": "boolean",
+      "default": true,
+      "description": "Comments visible by default; can be hidden by admin"
+    },
+    "is_resolved": {
+      "type": "boolean",
+      "default": false,
+      "description": "For reports"
+    }
+  },
+  "required": [
+    "product_id",
+    "vendor_id",
+    "type"
+  ]
+}
