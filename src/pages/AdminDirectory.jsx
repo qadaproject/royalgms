@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Plus, Edit2, Trash2, MapPin, Flag, CheckCircle2, XCircle, Globe, Building2, Tag, Star, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,8 @@ export default function AdminDirectory() {
   const [editingListing, setEditingListing] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState("");
 
   const fetchAll = async () => {
@@ -44,6 +47,29 @@ export default function AdminDirectory() {
     await base44.entities.DirectoryListing.delete(confirmDelete.id);
     setConfirmDelete(null);
     fetchAll();
+  };
+
+  const handleBulkDelete = async () => {
+    await Promise.all([...selectedIds].map(id => base44.entities.DirectoryListing.delete(id)));
+    setSelectedIds(new Set());
+    setConfirmBulkDelete(false);
+    fetchAll();
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredListings.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredListings.map(l => l.id)));
+    }
   };
 
   const handleDeleteCategory = async (cat) => {
@@ -142,18 +168,35 @@ export default function AdminDirectory() {
 
         {/* Listings Tab */}
         <TabsContent value="listings">
-          <div className="mb-4">
+          <div className="mb-4 flex items-center gap-3">
             <Input
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search listings by name or category..."
               className="max-w-sm"
             />
+            {selectedIds.size > 0 && (
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => setConfirmBulkDelete(true)}
+                className="gap-1.5 shrink-0"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete {selectedIds.size} selected
+              </Button>
+            )}
           </div>
           <div className="bg-card border border-border rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
                 <tr>
+                  <th className="p-3 w-10">
+                    <Checkbox
+                      checked={filteredListings.length > 0 && selectedIds.size === filteredListings.length}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                  </th>
                   <th className="text-left p-3 font-medium text-muted-foreground text-xs">Business</th>
                   <th className="text-left p-3 font-medium text-muted-foreground text-xs hidden md:table-cell">Category</th>
                   <th className="text-left p-3 font-medium text-muted-foreground text-xs hidden lg:table-cell">Address</th>
@@ -163,7 +206,10 @@ export default function AdminDirectory() {
               </thead>
               <tbody className="divide-y divide-border">
                 {filteredListings.map(l => (
-                  <tr key={l.id} className="hover:bg-muted/20 transition-colors">
+                  <tr key={l.id} className={`hover:bg-muted/20 transition-colors ${selectedIds.has(l.id) ? "bg-muted/30" : ""}`}>
+                    <td className="p-3 w-10">
+                      <Checkbox checked={selectedIds.has(l.id)} onCheckedChange={() => toggleSelect(l.id)} />
+                    </td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         {l.is_featured && <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />}
@@ -324,6 +370,23 @@ export default function AdminDirectory() {
           onSaved={() => { setShowCategoryForm(false); setEditingCategory(null); fetchAll(); }}
         />
       )}
+
+      <AlertDialog open={confirmBulkDelete} onOpenChange={() => setConfirmBulkDelete(false)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedIds.size} Listings</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete {selectedIds.size} listings? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={!!confirmDelete} onOpenChange={() => setConfirmDelete(null)}>
         <AlertDialogContent>
