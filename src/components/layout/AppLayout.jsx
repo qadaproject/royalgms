@@ -3,13 +3,31 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import Sidebar from "./Sidebar";
 import MobileNav from "./MobileNav";
+import { Loader2 } from "lucide-react";
 
 export default function AppLayout() {
   const [user, setUser] = useState(null);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    base44.auth.me().then(setUser);
+    base44.auth.me()
+      .then(u => setUser(u))
+      .catch(() => setUser(null))
+      .finally(() => setChecking(false));
   }, []);
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user || user.role !== "admin") {
+    window.location.href = "/admin";
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
