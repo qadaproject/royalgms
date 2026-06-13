@@ -25,7 +25,7 @@ function buildPrintHTML(guest, settings) {
       @media print { body { background: #1a0a06; } }
       .card {
         background: linear-gradient(135deg, #3d0a06 0%, #6b1a12 50%, #3d0a06 100%);
-        border: 3px solid #c9a84c; border-radius: 12px; padding: 32px;
+        border: 3px solid #c9a84c; border-radius: 12px; padding: 22px 26px;
         color: #f5ede0; width: 100%; max-width: 420px; position: relative;
       }
       .corner { position: absolute; width: 22px; height: 22px; border-color: #c9a84c; border-style: solid; border-width: 0; }
@@ -33,22 +33,22 @@ function buildPrintHTML(guest, settings) {
       .tr { top: 10px; right: 10px; border-top-width: 2px; border-right-width: 2px; }
       .bl { bottom: 10px; left: 10px; border-bottom-width: 2px; border-left-width: 2px; }
       .br { bottom: 10px; right: 10px; border-bottom-width: 2px; border-right-width: 2px; }
-      .gold-line { width: 70px; height: 1px; background: #c9a84c; margin: 10px auto; }
-      .label { color: #c9a84c; font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase;
+      .gold-line { width: 50px; height: 1px; background: #c9a84c; margin: 6px auto; }
+      .label { color: #c9a84c; font-size: 7.5px; letter-spacing: 0.3em; text-transform: uppercase;
                 font-family: 'Inter', sans-serif; font-weight: 600; }
-      .section { text-align: center; margin-bottom: 16px; }
-      .crest { width: 72px; height: 72px; object-fit: contain; display: inline-block; }
-      .details-box { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 14px 18px; margin: 12px 0; }
-      .detail-row { display: flex; gap: 12px; margin-bottom: 8px; align-items: baseline; }
-      .detail-key { color: #c9a84c; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
-                    font-family: 'Inter', sans-serif; font-weight: 600; min-width: 38px; }
-      .detail-val { color: #f5ede0; font-size: 12px; font-weight: 500; }
-      .zone-grid { display: grid; grid-template-columns: 1fr 1fr; padding-top: 10px;
-                   border-top: 1px solid rgba(201,168,76,0.2); margin-top: 6px; }
-      .qr-wrap { text-align: center; margin: 12px 0 6px; }
-      .qr-inner { background: #fff; padding: 8px; border-radius: 8px; border: 2px solid #c9a84c; display: inline-block; }
-      .footer-note { text-align: center; color: rgba(245,237,224,0.3); font-size: 8px;
-                     margin-top: 16px; font-style: italic; line-height: 1.6; font-family: 'Inter', sans-serif; }
+      .section { text-align: center; margin-bottom: 10px; }
+      .crest { width: 52px; height: 52px; object-fit: contain; display: inline-block; }
+      .details-box { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 10px 14px; margin: 8px 0; }
+      .detail-row { display: flex; gap: 10px; margin-bottom: 5px; align-items: baseline; }
+      .detail-key { color: #c9a84c; font-size: 7.5px; letter-spacing: 0.2em; text-transform: uppercase;
+                    font-family: 'Inter', sans-serif; font-weight: 600; min-width: 36px; }
+      .detail-val { color: #f5ede0; font-size: 11px; font-weight: 500; }
+      .zone-grid { display: grid; grid-template-columns: 1fr 1fr; padding-top: 7px;
+                   border-top: 1px solid rgba(201,168,76,0.2); margin-top: 4px; }
+      .qr-wrap { text-align: center; margin: 8px 0 4px; }
+      .qr-inner { background: #fff; padding: 6px; border-radius: 6px; border: 2px solid #c9a84c; display: inline-block; }
+      .footer-note { text-align: center; color: rgba(245,237,224,0.3); font-size: 7.5px;
+                     margin-top: 10px; font-style: italic; line-height: 1.5; font-family: 'Inter', sans-serif; }
     </style>
     </head><body>
     <div class="card">
@@ -61,26 +61,26 @@ function buildPrintHTML(guest, settings) {
 
       <div class="section">
         <p class="label">His Majesty</p>
-        <h2 style="font-size:18px;font-weight:700;color:#f5ede0;letter-spacing:0.04em;line-height:1.2;margin:4px 0 2px;">Ògíame Atúwàtse III, CFR,</h2>
-        <p style="color:#c9a84c;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:4px;">The Olu of Warri,</p>
+        <h2 style="font-size:15px;font-weight:700;color:#f5ede0;letter-spacing:0.04em;line-height:1.2;margin:3px 0 2px;">Ògíame Atúwàtse III, CFR,</h2>
+        <p style="color:#c9a84c;font-size:9.5px;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:3px;">The Olu of Warri,</p>
         <div class="gold-line"></div>
-        <p style="color:rgba(245,237,224,0.73);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;margin:10px 0;font-style:italic;">Formally Invites</p>
+        <p style="color:rgba(245,237,224,0.73);font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;margin:6px 0;font-style:italic;">Formally Invites</p>
         <div class="gold-line"></div>
       </div>
 
       <div class="section">
-        <p style="font-size:22px;font-weight:700;color:#f5ede0;line-height:1.25;">${guestName}</p>
-        ${guest.official_title ? `<p style="color:rgba(201,168,76,0.8);font-size:12px;margin-top:6px;font-style:italic;">${guest.official_title}</p>` : ""}
+        <p style="font-size:19px;font-weight:700;color:#f5ede0;line-height:1.2;">${guestName}</p>
+        ${guest.official_title ? `<p style="color:rgba(201,168,76,0.8);font-size:11px;margin-top:4px;font-style:italic;">${guest.official_title}</p>` : ""}
       </div>
 
       <div class="gold-line"></div>
 
-      <div class="section" style="margin-top:14px;">
-        <p style="color:rgba(245,237,224,0.73);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:6px;font-style:italic;">To the</p>
-        <h3 style="font-size:17px;font-weight:700;color:#c9a84c;letter-spacing:0.06em;text-transform:uppercase;line-height:1.3;">
+      <div class="section" style="margin-top:8px;">
+        <p style="color:rgba(245,237,224,0.73);font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:4px;font-style:italic;">To the</p>
+        <h3 style="font-size:14px;font-weight:700;color:#c9a84c;letter-spacing:0.06em;text-transform:uppercase;line-height:1.3;">
           ${settings?.event_name || "5th Coronation Anniversary"}
         </h3>
-        ${settings?.event_subtitle ? `<p style="color:rgba(245,237,224,0.4);font-size:10px;margin-top:4px;letter-spacing:0.1em;">${settings.event_subtitle}</p>` : ""}
+        ${settings?.event_subtitle ? `<p style="color:rgba(245,237,224,0.4);font-size:9px;margin-top:3px;letter-spacing:0.1em;">${settings.event_subtitle}</p>` : ""}
       </div>
 
       <div class="gold-line"></div>
@@ -96,7 +96,7 @@ function buildPrintHTML(guest, settings) {
       </div>
 
       <div class="qr-wrap">
-        <div class="qr-inner"><img src="${qrImgUrl}" alt="QR Code" style="width:110px;height:110px;display:block;" /></div>
+        <div class="qr-inner"><img src="${qrImgUrl}" alt="QR Code" style="width:90px;height:90px;display:block;" /></div>
         <p class="label" style="margin-top:6px;">Scan to view invitation</p>
         <p style="color:#c9a84c;font-size:10px;font-family:monospace;font-weight:700;letter-spacing:0.2em;margin-top:3px;">${guest.qr_code}</p>
       </div>
