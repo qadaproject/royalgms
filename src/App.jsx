@@ -33,6 +33,7 @@ import VerifyVendorEmail from './pages/VerifyVendorEmail';
 import DirectoryPage from './pages/DirectoryPage';
 import DirectoryListingDetail from './pages/DirectoryListingDetail';
 import AdminDirectory from './pages/AdminDirectory';
+import AdminLogin from './pages/AdminLogin';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -56,6 +57,7 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
+      <Route path="/admin" element={<AdminLogin />} />
       <Route path="/" element={<HomePage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
