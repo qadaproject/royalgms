@@ -19,8 +19,8 @@ export default function MarketplaceNav() {
           </Link>
         </div>
         <div className="flex items-center gap-2">
-          <Button asChild variant={loc.pathname === "/marketplace/vendor-dashboard" ? "default" : "ghost"} size="sm">
-            <Link to="/marketplace/vendor-dashboard">
+          <Button asChild variant={loc.pathname.startsWith("/marketplace/vendor") ? "default" : "ghost"} size="sm">
+            <Link to="/marketplace/vendor">
               <LayoutDashboard className="w-4 h-4 mr-1" />
               <span className="hidden sm:inline">My Dashboard</span>
             </Link>

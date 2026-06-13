@@ -49,7 +49,7 @@ export default function VerifyVendorEmail() {
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Button asChild>
-                <Link to="/vendor">Sign In to Your Dashboard</Link>
+                <Link to="/marketplace/vendor">Sign In to Your Dashboard</Link>
               </Button>
               <Button asChild variant="outline">
                 <Link to="/marketplace">Back to Marketplace</Link>
@@ -68,7 +68,7 @@ export default function VerifyVendorEmail() {
               <a href="mailto:marketplace@royalgms.com" className="text-primary underline">marketplace@royalgms.com</a>.
             </p>
             <Button asChild variant="outline">
-              <Link to="/vendor">Back to Vendor Login</Link>
+              <Link to="/marketplace/vendor">Back to Vendor Login</Link>
             </Button>
           </>
         )}

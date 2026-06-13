@@ -37,7 +37,7 @@ export default function VendorLoginPage() {
       }
       // Store vendor session
       sessionStorage.setItem("vendor_session", JSON.stringify({ id: vendor.id, email: vendor.email }));
-      window.location.href = "/vendor/dashboard";
+      window.location.href = "/marketplace/vendor/dashboard";
     } catch (err) {
       setError("Something went wrong. Please try again.");
       setLoading(false);

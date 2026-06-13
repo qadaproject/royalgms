@@ -115,7 +115,7 @@ export default function VendorRegisterPage() {
             <p style="color:#888;font-size:13px;">If the button doesn't work, copy and paste this link:<br/><a href="${verifyLink}" style="color:#7a1a1a;">${verifyLink}</a></p>
             <hr style="border:none;border-top:1px solid #eee;margin:24px 0;"/>
             <p style="color:#555;font-size:13px;"><strong>What happens next?</strong><br/>After verifying your email, our team will review your application within 2–3 business days. You will be notified at this email address once a decision is made.</p>
-            <p style="color:#555;font-size:13px;">You can check your application status anytime at your <a href="${window.location.origin}/vendor" style="color:#7a1a1a;">Vendor Portal</a>.</p>
+            <p style="color:#555;font-size:13px;">You can check your application status anytime at your <a href="${window.location.origin}/marketplace/vendor" style="color:#7a1a1a;">Vendor Portal</a>.</p>
           </div>
           <div style="background:#f8f4ef;padding:16px 24px;text-align:center;">
             <p style="color:#888;font-size:12px;margin:0;">Royal Protocol Office · Warri Kingdom · <a href="mailto:${MARKETPLACE_EMAIL}" style="color:#7a1a1a;">${MARKETPLACE_EMAIL}</a></p>
@@ -141,7 +141,7 @@ export default function VendorRegisterPage() {
           <p>📧 A verification email has been sent to <strong>{form.email}</strong>.</p>
           <p>✅ Click the link in that email to verify your address.</p>
           <p>🔍 Our team will then review your listing within 2–3 business days.</p>
-          <p>📊 Check your application status anytime via the <Link to="/vendor" className="underline font-semibold">Vendor Portal</Link>.</p>
+          <p>📊 Check your application status anytime via the <Link to="/marketplace/vendor" className="underline font-semibold">Vendor Portal</Link>.</p>
         </div>
         <Button asChild variant="outline">
           <Link to="/marketplace"><ArrowLeft className="w-4 h-4 mr-2" />Back to Marketplace</Link>
