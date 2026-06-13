@@ -86,7 +86,7 @@ export default function VendorDetailPage() {
   const vendorId = urlParams.get("id");
   const queryClient = useQueryClient();
   const [galleryIdx, setGalleryIdx] = useState(0);
-  const [reviewForm, setReviewForm] = useState({ reviewer_name: "", reviewer_email: "", rating: 5, title: "", comment: "" });
+  const [reviewForm, setReviewForm] = useState({ reviewer_name: "", reviewer_email: "", rating: 5, comment: "" });
   const [submitting, setSubmitting] = useState(false);
 
   const { data: vendor } = useQuery({
@@ -128,7 +128,7 @@ export default function VendorDetailPage() {
       vendor_name: vendor?.business_name || "",
     });
     toast.success("Review submitted! It will appear after admin approval.");
-    setReviewForm({ reviewer_name: "", reviewer_email: "", rating: 5, title: "", comment: "" });
+    setReviewForm({ reviewer_name: "", reviewer_email: "", rating: 5, comment: "" });
     setSubmitting(false);
   };
 
@@ -250,7 +250,6 @@ export default function VendorDetailPage() {
                         <p className="font-semibold text-sm">{r.reviewer_name}</p>
                         <StarRating rating={r.rating} size="sm" />
                       </div>
-                      {r.title && <p className="text-sm font-medium mb-1">{r.title}</p>}
                       <p className="text-sm text-muted-foreground">{r.comment}</p>
                     </div>
                   ))}
@@ -272,7 +271,6 @@ export default function VendorDetailPage() {
                         className={`text-xl transition-colors ${n <= reviewForm.rating ? "text-amber-400" : "text-muted-foreground/30"}`}>★</button>
                     ))}
                   </div>
-                  <Input placeholder="Review title" value={reviewForm.title} onChange={e => setReviewForm(f => ({ ...f, title: e.target.value }))} />
                   <Textarea placeholder="Write your review... *" value={reviewForm.comment} onChange={e => setReviewForm(f => ({ ...f, comment: e.target.value }))} className="h-24" />
                   <Button type="submit" disabled={submitting}>{submitting ? "Submitting..." : "Submit Review"}</Button>
                 </form>

@@ -95,6 +95,7 @@ export default function ProductCard({ product, vendor }) {
   };
 
   const handleShare = async () => {
+    if (!vendor) return;
     const msg = buildWhatsAppMessage(vendor, product);
     window.open(`https://wa.me/?text=${msg}`, "_blank");
     setCounts(c => ({ ...c, share: c.share + 1 }));
@@ -173,11 +174,11 @@ export default function ProductCard({ product, vendor }) {
           </button>
           <button
             onClick={handleShare}
-            className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg text-muted-foreground hover:text-green-600 hover:bg-green-50 transition-colors"
+            className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg text-green-600 bg-green-50 hover:bg-green-100 transition-colors"
             title="Share on WhatsApp"
           >
             <Share2 className="w-3.5 h-3.5" />
-            <span>{counts.share > 0 ? counts.share : ""}</span>
+            <span>{counts.share > 0 ? counts.share : "Share"}</span>
           </button>
           <button
             onClick={toggleComments}
