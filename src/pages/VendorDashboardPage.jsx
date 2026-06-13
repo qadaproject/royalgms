@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
@@ -16,16 +16,25 @@ import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import StarRating from "../components/marketplace/StarRating";
 
 export default function VendorDashboardPage() {
-  const [email, setEmail] = useState("");
-  const [lookupEmail, setLookupEmail] = useState("");
   const [vendor, setVendor] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [productDialog, setProductDialog] = useState(null); // null | 'new' | product object
   const [editSettings, setEditSettings] = useState(false);
   const [settingsForm, setSettingsForm] = useState({});
   const [productForm, setProductForm] = useState({ name: "", description: "", price: "", discount_percent: 0, unit: "", is_available: true });
   const [uploadingImg, setUploadingImg] = useState(false);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const session = sessionStorage.getItem("vendor_session");
+    if (!session) { window.location.href = "/vendor"; return; }
+    const { id } = JSON.parse(session);
+    base44.entities.Vendor.filter({ id }).then(results => {
+      if (results.length > 0) setVendor(results[0]);
+      else { sessionStorage.removeItem("vendor_session"); window.location.href = "/vendor"; }
+    }).catch(() => { window.location.href = "/vendor"; })
+      .finally(() => setLoading(false));
+  }, []);
 
   const { data: products = [], refetch: refetchProducts } = useQuery({
     queryKey: ["my_products", vendor?.id],
@@ -39,13 +48,9 @@ export default function VendorDashboardPage() {
     enabled: !!vendor?.id,
   });
 
-  const lookupVendor = async () => {
-    if (!lookupEmail.trim()) return;
-    setLoading(true);
-    const results = await base44.entities.Vendor.filter({ email: lookupEmail.trim() });
-    setLoading(false);
-    if (results.length > 0) setVendor(results[0]);
-    else toast.error("No business found with that email address.");
+  const handleLogout = () => {
+    sessionStorage.removeItem("vendor_session");
+    window.location.href = "/vendor";
   };
 
   const saveProduct = async () => {
@@ -92,30 +97,9 @@ export default function VendorDashboardPage() {
     return <Badge variant="outline" className={`gap-1 text-xs ${map[s] || ""}`}>{icons[s]}{s}</Badge>;
   };
 
-  // Login screen
-  if (!vendor) return (
-    <div className="min-h-screen bg-background"><MarketplaceNav />
-      <div className="max-w-md mx-auto px-4 py-20">
-        <div className="text-center mb-8">
-          <Store className="w-14 h-14 mx-auto mb-4 text-primary" />
-          <h1 className="font-heading text-3xl font-semibold mb-2">Vendor Dashboard</h1>
-          <p className="text-muted-foreground text-sm">Enter your registered business email to access your dashboard.</p>
-        </div>
-        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-          <div className="space-y-1.5">
-            <Label>Business Email</Label>
-            <Input type="email" value={lookupEmail} onChange={e => setLookupEmail(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && lookupVendor()}
-              placeholder="your@business.com" />
-          </div>
-          <Button onClick={lookupVendor} disabled={loading} className="w-full">
-            {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Looking up...</> : "Access Dashboard"}
-          </Button>
-          <p className="text-center text-xs text-muted-foreground">
-            Not registered? <Link to="/marketplace/register" className="text-primary underline">Register here</Link>
-          </p>
-        </div>
-      </div>
+  if (loading || !vendor) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-primary" />
     </div>
   );
 
@@ -137,11 +121,16 @@ export default function VendorDashboardPage() {
             <h1 className="font-heading text-2xl font-semibold">{vendor.business_name}</h1>
             <p className="text-sm text-muted-foreground">{vendor.email}</p>
           </div>
-          {vendor.approval_status === "Approved" && (
-            <Button asChild variant="outline" size="sm">
-              <Link to={`/marketplace/vendor?id=${vendor.id}`}>View Public Listing</Link>
+          <div className="flex gap-2">
+            {vendor.approval_status === "Approved" && (
+              <Button asChild variant="outline" size="sm">
+                <Link to={`/marketplace/vendor?id=${vendor.id}`}>View Public Listing</Link>
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-foreground">
+              Sign Out
             </Button>
-          )}
+          </div>
         </div>
 
         {/* Email verification banner */}

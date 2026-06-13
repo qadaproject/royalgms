@@ -34,6 +34,7 @@ import DirectoryPage from './pages/DirectoryPage';
 import DirectoryListingDetail from './pages/DirectoryListingDetail';
 import AdminDirectory from './pages/AdminDirectory';
 import AdminLogin from './pages/AdminLogin';
+import VendorLoginPage from './pages/VendorLoginPage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -69,6 +70,8 @@ const AuthenticatedApp = () => {
       <Route path="/marketplace" element={<MarketplacePage />} />
       <Route path="/marketplace/vendor" element={<VendorDetailPage />} />
       <Route path="/marketplace/register" element={<VendorRegisterPage />} />
+      <Route path="/vendor" element={<VendorLoginPage />} />
+      <Route path="/vendor/dashboard" element={<VendorDashboardPage />} />
       <Route path="/marketplace/vendor-dashboard" element={<VendorDashboardPage />} />
       <Route path="/marketplace/verify-email" element={<VerifyVendorEmail />} />
       <Route path="/directory" element={<DirectoryPage />} />

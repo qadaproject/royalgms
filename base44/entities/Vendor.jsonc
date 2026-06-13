@@ -30,6 +30,10 @@
       "type": "string",
       "description": "Business email address"
     },
+    "password": {
+      "type": "string",
+      "description": "Vendor login password (plain text for lookup)"
+    },
     "phone": {
       "type": "string",
       "description": "Business phone number"
