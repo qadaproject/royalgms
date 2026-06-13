@@ -201,7 +201,7 @@ export default function VendorDetailPage() {
                 <h1 className="font-heading text-3xl font-semibold flex items-center gap-2">
                   {vendor.business_name}
                   {vendor.verified_badge_enabled !== false && (
-                    <BadgeCheck className="w-7 h-7 text-blue-500 shrink-0" title="Verified Vendor" />
+                    <BadgeCheck className="w-7 h-7 shrink-0 fill-amber-400 text-white" title="Verified Vendor" />
                   )}
                 </h1>
                 <div className="flex items-center gap-2 mt-1">
