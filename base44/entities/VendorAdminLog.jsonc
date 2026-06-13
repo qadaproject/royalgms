@@ -1,0 +1,29 @@
+{
+  "name": "VendorAdminLog",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "Reference to Vendor"
+    },
+    "vendor_name": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string",
+      "description": "e.g. badge_enabled, badge_disabled"
+    },
+    "performed_by": {
+      "type": "string",
+      "description": "Admin user name or email"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "vendor_name",
+    "action"
+  ]
+}

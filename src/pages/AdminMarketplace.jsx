@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Store, CheckCircle, XCircle, Clock, Star, Tag, Plus, Pencil, Trash2, Eye, Package, BarChart2, Upload, Loader2, BadgeCheck, BadgeX, Flag, Mail, TrendingUp, Users, Heart, Share2, MessageSquare, Trophy } from "lucide-react";
+import { Store, CheckCircle, XCircle, Clock, Star, Tag, Plus, Pencil, Trash2, Eye, Package, BarChart2, Upload, Loader2, BadgeCheck, BadgeX, Flag, Mail, TrendingUp, Users, Heart, Share2, MessageSquare, Trophy, History } from "lucide-react";
 import AdminVendorMessaging from "../components/marketplace/AdminVendorMessaging";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -117,9 +117,17 @@ export default function AdminMarketplace() {
       ? `Re-enable the verified badge for ${v.business_name}?`
       : `Remove the verified badge from ${v.business_name}? Their listing stays approved but the badge is hidden.`,
     async () => {
-      await base44.entities.Vendor.update(v.id, { verified_badge_enabled: v.verified_badge_enabled === false ? true : false });
+      const enabling = v.verified_badge_enabled === false;
+      await base44.entities.Vendor.update(v.id, { verified_badge_enabled: enabling });
+      await base44.entities.VendorAdminLog.create({
+        vendor_id: v.id,
+        vendor_name: v.business_name,
+        action: enabling ? "badge_enabled" : "badge_disabled",
+        notes: enabling ? "Verified badge re-enabled by admin" : "Verified badge disabled by admin",
+      });
       queryClient.invalidateQueries({ queryKey: ["all_vendors"] });
-      toast.success(v.verified_badge_enabled === false ? "Verified badge enabled" : "Verified badge disabled");
+      queryClient.invalidateQueries({ queryKey: ["vendor_admin_logs"] });
+      toast.success(enabling ? "Verified badge enabled" : "Verified badge disabled");
     }
   );
 
@@ -277,6 +285,11 @@ export default function AdminMarketplace() {
     setUploadingProductImg(false);
   };
 
+  const { data: adminLogs = [] } = useQuery({
+    queryKey: ["vendor_admin_logs"],
+    queryFn: () => base44.entities.VendorAdminLog.list("-created_date", 200),
+  });
+
   const filteredVendors = vendors.filter(v => approvalFilter === "all" ? true : v.approval_status === approvalFilter);
 
   const metrics = {
@@ -353,6 +366,7 @@ export default function AdminMarketplace() {
           <TabsTrigger value="reviews"><Star className="w-4 h-4 mr-1" />Reviews {metrics.pendingReviews > 0 && <Badge className="ml-1 h-4 min-w-4 text-[9px] bg-amber-500">{metrics.pendingReviews}</Badge>}</TabsTrigger>
           <TabsTrigger value="flagged"><Flag className="w-4 h-4 mr-1" />Flagged {metrics.flagged > 0 && <Badge className="ml-1 h-4 min-w-4 text-[9px] bg-red-500">{metrics.flagged}</Badge>}</TabsTrigger>
           <TabsTrigger value="messaging"><Mail className="w-4 h-4 mr-1" />Messaging</TabsTrigger>
+          <TabsTrigger value="activitylog"><History className="w-4 h-4 mr-1" />Activity Log</TabsTrigger>
         </TabsList>
 
         {/* Vendors Tab */}
@@ -580,6 +594,31 @@ export default function AdminMarketplace() {
         {/* Messaging Tab */}
         <TabsContent value="messaging">
           <AdminVendorMessaging vendors={vendors} categories={categories} />
+        </TabsContent>
+
+        {/* Activity Log Tab */}
+        <TabsContent value="activitylog">
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground mb-2">{adminLogs.length} admin action{adminLogs.length !== 1 ? "s" : ""} recorded</p>
+            {adminLogs.length === 0 ? (
+              <p className="text-center text-muted-foreground py-12">No admin activity recorded yet.</p>
+            ) : adminLogs.map(log => (
+              <div key={log.id} className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${log.action === "badge_enabled" ? "bg-amber-100" : "bg-gray-100"}`}>
+                  {log.action === "badge_enabled"
+                    ? <BadgeCheck className="w-4 h-4 fill-amber-400 text-white" />
+                    : <BadgeX className="w-4 h-4 text-gray-500" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold">{log.vendor_name}</p>
+                  <p className="text-xs text-muted-foreground">{log.notes || log.action}</p>
+                </div>
+                <p className="text-[10px] text-muted-foreground shrink-0">
+                  {new Date(log.created_date).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                </p>
+              </div>
+            ))}
+          </div>
         </TabsContent>
       </Tabs>
 

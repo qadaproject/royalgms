@@ -90,14 +90,26 @@ export default function MarketplacePage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-10">
-        {/* Categories */}
-        <div className="mb-10">
-          <h2 className="font-heading text-2xl font-semibold mb-5">Browse by Category</h2>
-          <CategoryGrid
-            categories={categories}
-            selected={selectedCategory}
-            onSelect={setSelectedCategory}
-          />
+        {/* Category Filter Bar */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setSelectedCategory("all")}
+              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${selectedCategory === "all" ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"}`}
+            >
+              All Categories
+            </button>
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(selectedCategory === cat.id ? "all" : cat.id)}
+                className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors flex items-center gap-1.5 ${selectedCategory === cat.id ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"}`}
+              >
+                {cat.icon && <span>{cat.icon}</span>}
+                {cat.name}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Featured */}
