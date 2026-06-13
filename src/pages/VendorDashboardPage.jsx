@@ -9,12 +9,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Store, Package, Star, Settings, Plus, Pencil, Trash2, ArrowLeft, Loader2, Upload, CheckCircle, XCircle, Clock, BadgeCheck, AtSign, Link2, Eye, Heart, Share2, MessageSquare, Flag } from "lucide-react";
+import { Store, Package, Star, Settings, Plus, Pencil, Trash2, ArrowLeft, Loader2, Upload, CheckCircle, XCircle, Clock, BadgeCheck, AtSign, Link2, Eye, Heart, Share2, MessageSquare, Flag, Trophy } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import StarRating from "../components/marketplace/StarRating";
 import ProductEngagementCard from "../components/marketplace/ProductEngagementCard";
+import ProductPerformanceChart from "../components/marketplace/ProductPerformanceChart";
+import VendorNotificationBell from "../components/marketplace/VendorNotificationBell";
+
+// Top Rated threshold: 10+ favourites across all products OR avg rating >= 4.5 with 3+ reviews
+const isTopRated = (vendor, products) => {
+  const totalFavs = products.reduce((a, p) => a + (p.favourite_count || 0), 0);
+  return totalFavs >= 10 || (vendor.average_rating >= 4.5 && vendor.review_count >= 3);
+};
 
 export default function VendorDashboardPage() {
   const [vendor, setVendor] = useState(null);
@@ -152,13 +160,19 @@ export default function VendorDashboardPage() {
               {statusBadge(vendor.approval_status)}
               <Badge variant="outline" className="text-[10px]">{vendor.category_name}</Badge>
             </div>
-            <h1 className="font-heading text-2xl font-semibold flex items-center gap-2">
+            <h1 className="font-heading text-2xl font-semibold flex items-center gap-2 flex-wrap">
               {vendor.business_name}
               {vendor.approval_status === "Approved" && <BadgeCheck className="w-6 h-6 text-blue-500 shrink-0" title="Verified & Approved" />}
+              {isTopRated(vendor, products) && (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-300 rounded-full px-2 py-0.5">
+                  <Trophy className="w-3 h-3" /> Top Rated
+                </span>
+              )}
             </h1>
             <p className="text-sm text-muted-foreground">{vendor.email}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <VendorNotificationBell vendorId={vendor.id} />
             {vendor.approval_status === "Approved" && (
               <Button asChild variant="outline" size="sm">
                 <Link to={vendor.marketplace_username ? `/marketplace/vendor/${vendor.marketplace_username}` : `/marketplace/vendor?id=${vendor.id}`}>View Public Listing</Link>
@@ -234,6 +248,8 @@ export default function VendorDashboardPage() {
             </div>
           ))}
         </div>
+
+        {products.length > 0 && <ProductPerformanceChart products={products} />}
 
         <Tabs defaultValue="products">
           <TabsList className="mb-6">

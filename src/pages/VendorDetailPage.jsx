@@ -184,6 +184,11 @@ export default function VendorDetailPage() {
                   {vendor.featured && <Badge className="bg-accent text-accent-foreground text-[10px]">⭐ Featured</Badge>}
                   <Badge variant="outline" className="text-[10px]">{vendor.category_name}</Badge>
                   {vendor.price_range && <span className={`text-xs font-semibold ${priceRangeColor[vendor.price_range] || ""}`}>{vendor.price_range}</span>}
+                  {(vendor.average_rating >= 4.5 && vendor.review_count >= 3) && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-amber-100 text-amber-700 border border-amber-300 rounded-full px-2 py-0.5">
+                      🏆 Top Rated
+                    </span>
+                  )}
                 </div>
                 <h1 className="font-heading text-3xl font-semibold flex items-center gap-2">
                   {vendor.business_name}

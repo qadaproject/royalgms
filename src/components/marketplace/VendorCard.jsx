@@ -1,7 +1,11 @@
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Star, Phone } from "lucide-react";
+import { MapPin, Trophy } from "lucide-react";
 import StarRating from "./StarRating";
+
+// Mirrors the same threshold logic used in VendorDashboardPage
+const isTopRated = (vendor) =>
+  (vendor.average_rating >= 4.5 && vendor.review_count >= 3);
 
 const priceRangeColor = {
   Budget: "text-emerald-600",
@@ -24,6 +28,11 @@ export default function VendorCard({ vendor, featured = false }) {
         )}
         {featured && vendor.featured && (
           <Badge className="absolute top-2 left-2 text-[9px] bg-accent text-accent-foreground shadow-sm">⭐ Featured</Badge>
+        )}
+        {isTopRated(vendor) && (
+          <Badge className="absolute bottom-2 left-2 text-[9px] bg-amber-500 text-white shadow-sm flex items-center gap-1">
+            <Trophy className="w-2.5 h-2.5" /> Top Rated
+          </Badge>
         )}
         {vendor.price_range && (
           <Badge variant="secondary" className={`absolute top-2 right-2 text-[9px] ${priceRangeColor[vendor.price_range]}`}>
