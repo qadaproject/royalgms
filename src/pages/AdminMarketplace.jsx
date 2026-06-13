@@ -397,6 +397,11 @@ export default function AdminMarketplace() {
                   <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setReviewVendor(v)}>
                     <Eye className="w-3 h-3 mr-1" />Review
                   </Button>
+                  <a href={v.marketplace_username ? `/marketplace/vendor/${v.marketplace_username}` : `/marketplace/vendor/detail?id=${v.id}`} target="_blank" rel="noreferrer">
+                    <Button size="sm" variant="outline" className="h-7 text-xs text-indigo-600 border-indigo-300 hover:bg-indigo-50">
+                      <Eye className="w-3 h-3 mr-1" />Preview
+                    </Button>
+                  </a>
                   <Button size="sm" variant="outline" className="h-7 text-xs"
                     onClick={() => { setVendorForm({ ...emptyVendorForm, ...v }); setVendorDialog(v); }}>
                     <Pencil className="w-3 h-3 mr-1" />Edit
