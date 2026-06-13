@@ -91,9 +91,17 @@ export default function VendorDetailPage() {
 
   const { data: vendor } = useQuery({
     queryKey: ["vendor", vendorId, username],
-    queryFn: () => username
-      ? base44.entities.Vendor.filter({ marketplace_username: username, approval_status: "Approved" })
-      : base44.entities.Vendor.filter({ id: vendorId }),
+    queryFn: async () => {
+      const results = username
+        ? await base44.entities.Vendor.filter({ marketplace_username: username, approval_status: "Approved" })
+        : await base44.entities.Vendor.filter({ id: vendorId });
+      const v = results[0];
+      if (v?.id) {
+        // Increment profile view counter (fire-and-forget)
+        base44.entities.Vendor.update(v.id, { profile_view_count: (v.profile_view_count || 0) + 1 }).catch(() => {});
+      }
+      return results;
+    },
     select: d => d[0],
     enabled: !!(vendorId || username),
   });
@@ -192,7 +200,9 @@ export default function VendorDetailPage() {
                 </div>
                 <h1 className="font-heading text-3xl font-semibold flex items-center gap-2">
                   {vendor.business_name}
-                  <BadgeCheck className="w-7 h-7 text-blue-500 shrink-0" title="Verified Vendor" />
+                  {vendor.verified_badge_enabled !== false && (
+                    <BadgeCheck className="w-7 h-7 text-blue-500 shrink-0" title="Verified Vendor" />
+                  )}
                 </h1>
                 <div className="flex items-center gap-2 mt-1">
                   <StarRating rating={vendor.average_rating || 0} />

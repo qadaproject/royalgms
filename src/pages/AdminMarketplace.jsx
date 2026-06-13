@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Store, CheckCircle, XCircle, Clock, Star, Tag, Plus, Pencil, Trash2, Eye, Package, BarChart2, Upload, Loader2 } from "lucide-react";
+import { Store, CheckCircle, XCircle, Clock, Star, Tag, Plus, Pencil, Trash2, Eye, Package, BarChart2, Upload, Loader2, BadgeCheck, BadgeX, Flag, Mail, TrendingUp, Users, Heart, Share2, MessageSquare, Trophy } from "lucide-react";
+import AdminVendorMessaging from "../components/marketplace/AdminVendorMessaging";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import PageHeader from "../components/shared/PageHeader";
@@ -80,6 +81,11 @@ export default function AdminMarketplace() {
     queryFn: () => base44.entities.VendorReview.list("-created_date", 200),
   });
 
+  const { data: flaggedInteractions = [] } = useQuery({
+    queryKey: ["flagged_interactions"],
+    queryFn: () => base44.entities.VendorProductInteraction.filter({ type: "report" }),
+  });
+
   // --- Helpers ---
   const ask = (title, description, onConfirm) => setConfirm({ title, description, onConfirm });
 
@@ -104,6 +110,18 @@ export default function AdminMarketplace() {
     setRejectReason("");
     setReviewVendor(null);
   };
+
+  const toggleVerifiedBadge = (v) => ask(
+    v.verified_badge_enabled === false ? "Enable Verified Badge?" : "Disable Verified Badge?",
+    v.verified_badge_enabled === false
+      ? `Re-enable the verified badge for ${v.business_name}?`
+      : `Remove the verified badge from ${v.business_name}? Their listing stays approved but the badge is hidden.`,
+    async () => {
+      await base44.entities.Vendor.update(v.id, { verified_badge_enabled: v.verified_badge_enabled === false ? true : false });
+      queryClient.invalidateQueries({ queryKey: ["all_vendors"] });
+      toast.success(v.verified_badge_enabled === false ? "Verified badge enabled" : "Verified badge disabled");
+    }
+  );
 
   const toggleFeatured = (v) => ask(
     v.featured ? "Remove from Featured?" : "Mark as Featured?",
@@ -269,6 +287,12 @@ export default function AdminMarketplace() {
     products: products.length,
     reviews: reviews.length,
     pendingReviews: reviews.filter(r => !r.is_approved).length,
+    flagged: flaggedInteractions.filter(i => !i.is_resolved).length,
+    totalViews: products.reduce((a, p) => a + (p.view_count || 0), 0),
+    totalFavs: products.reduce((a, p) => a + (p.favourite_count || 0), 0),
+    totalShares: products.reduce((a, p) => a + (p.share_count || 0), 0),
+    topRated: vendors.filter(v => v.average_rating >= 4.5 && v.review_count >= 3).length,
+    profileViews: vendors.reduce((a, v) => a + (v.profile_view_count || 0), 0),
   };
 
   const statusColor = {
@@ -292,15 +316,14 @@ export default function AdminMarketplace() {
       </PageHeader>
 
       {/* Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 mb-4">
         {[
           { label: "Total Vendors", value: metrics.total, icon: <Store className="w-4 h-4 text-primary" /> },
           { label: "Approved", value: metrics.approved, icon: <CheckCircle className="w-4 h-4 text-emerald-500" /> },
           { label: "Pending", value: metrics.pending, icon: <Clock className="w-4 h-4 text-amber-500" /> },
-          { label: "Featured", value: metrics.featured, icon: <Star className="w-4 h-4 text-amber-400" /> },
           { label: "Products", value: metrics.products, icon: <Package className="w-4 h-4 text-blue-500" /> },
-          { label: "Reviews", value: metrics.reviews, icon: <BarChart2 className="w-4 h-4 text-purple-500" /> },
           { label: "Pending Reviews", value: metrics.pendingReviews, icon: <Clock className="w-4 h-4 text-orange-500" /> },
+          { label: "Flagged Reports", value: metrics.flagged, icon: <Flag className="w-4 h-4 text-red-500" /> },
         ].map(m => (
           <div key={m.label} className="bg-card border border-border rounded-xl p-3">
             <div className="flex items-center gap-1.5 mb-1">{m.icon}<span className="text-[10px] text-muted-foreground uppercase tracking-wide">{m.label}</span></div>
@@ -308,13 +331,28 @@ export default function AdminMarketplace() {
           </div>
         ))}
       </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+        {[
+          { label: "Profile Visits", value: metrics.profileViews, icon: <Users className="w-4 h-4 text-indigo-500" /> },
+          { label: "Total Views", value: metrics.totalViews, icon: <Eye className="w-4 h-4 text-blue-400" /> },
+          { label: "Total Favourites", value: metrics.totalFavs, icon: <Heart className="w-4 h-4 text-red-400" /> },
+          { label: "Top Rated Vendors", value: metrics.topRated, icon: <Trophy className="w-4 h-4 text-amber-500" /> },
+        ].map(m => (
+          <div key={m.label} className="bg-card border border-border rounded-xl p-3">
+            <div className="flex items-center gap-1.5 mb-1">{m.icon}<span className="text-[10px] text-muted-foreground uppercase tracking-wide">{m.label}</span></div>
+            <p className="font-heading text-2xl font-semibold">{m.value.toLocaleString()}</p>
+          </div>
+        ))}
+      </div>
 
       <Tabs defaultValue="vendors">
-        <TabsList className="mb-6">
+        <TabsList className="mb-6 flex-wrap h-auto gap-1">
           <TabsTrigger value="vendors"><Store className="w-4 h-4 mr-1" />Vendors</TabsTrigger>
           <TabsTrigger value="products"><Package className="w-4 h-4 mr-1" />Products</TabsTrigger>
           <TabsTrigger value="categories"><Tag className="w-4 h-4 mr-1" />Categories</TabsTrigger>
           <TabsTrigger value="reviews"><Star className="w-4 h-4 mr-1" />Reviews {metrics.pendingReviews > 0 && <Badge className="ml-1 h-4 min-w-4 text-[9px] bg-amber-500">{metrics.pendingReviews}</Badge>}</TabsTrigger>
+          <TabsTrigger value="flagged"><Flag className="w-4 h-4 mr-1" />Flagged {metrics.flagged > 0 && <Badge className="ml-1 h-4 min-w-4 text-[9px] bg-red-500">{metrics.flagged}</Badge>}</TabsTrigger>
+          <TabsTrigger value="messaging"><Mail className="w-4 h-4 mr-1" />Messaging</TabsTrigger>
         </TabsList>
 
         {/* Vendors Tab */}
@@ -366,6 +404,13 @@ export default function AdminMarketplace() {
                   <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => toggleFeatured(v)}>
                     <Star className="w-3 h-3 mr-1" />{v.featured ? "Unfeature" : "Feature"}
                   </Button>
+                  {v.approval_status === "Approved" && (
+                    <Button size="sm" variant="outline" className={`h-7 text-xs ${v.verified_badge_enabled === false ? "text-gray-500" : "text-blue-600"}`}
+                      onClick={() => toggleVerifiedBadge(v)} title={v.verified_badge_enabled === false ? "Enable verified badge" : "Disable verified badge"}>
+                      {v.verified_badge_enabled === false ? <BadgeX className="w-3 h-3 mr-1" /> : <BadgeCheck className="w-3 h-3 mr-1" />}
+                      {v.verified_badge_enabled === false ? "Badge Off" : "Badge On"}
+                    </Button>
+                  )}
                   <Button size="sm" variant="outline" className={`h-7 text-xs ${v.approval_status === "Suspended" ? "text-emerald-600" : "text-orange-600"}`}
                     onClick={() => toggleSuspend(v)}>
                     {v.approval_status === "Suspended" ? "Reinstate" : "Suspend"}
@@ -476,6 +521,60 @@ export default function AdminMarketplace() {
               </div>
             ))}
           </div>
+        </TabsContent>
+        {/* Flagged Reports Tab */}
+        <TabsContent value="flagged">
+          <div className="space-y-3">
+            {flaggedInteractions.length === 0 ? (
+              <p className="text-center text-muted-foreground py-12">No flagged reports.</p>
+            ) : flaggedInteractions.map(f => {
+              const product = products.find(p => p.id === f.product_id);
+              const vendor = vendors.find(v => v.id === f.vendor_id);
+              return (
+                <div key={f.id} className="bg-card border border-border rounded-xl p-4 flex items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <Flag className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                      <p className="font-semibold text-sm">{f.author_name || "Anonymous"}</p>
+                      {product && <Badge variant="outline" className="text-[9px]">{product.name}</Badge>}
+                      {vendor && <Badge variant="outline" className="text-[9px] text-muted-foreground">{vendor.business_name}</Badge>}
+                      {f.is_resolved
+                        ? <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-300">Resolved</Badge>
+                        : <Badge variant="outline" className="text-[9px] text-red-600 border-red-300">Open</Badge>}
+                    </div>
+                    {f.report_reason && <p className="text-xs font-medium text-amber-700 mb-0.5">Reason: {f.report_reason}</p>}
+                    {f.content && <p className="text-sm text-muted-foreground">{f.content}</p>}
+                    <p className="text-[10px] text-muted-foreground mt-1">{new Date(f.created_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    {!f.is_resolved && (
+                      <Button size="sm" className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                        onClick={() => ask("Mark as Resolved?", "Mark this report as resolved?", async () => {
+                          await base44.entities.VendorProductInteraction.update(f.id, { is_resolved: true });
+                          queryClient.invalidateQueries({ queryKey: ["flagged_interactions"] });
+                          toast.success("Report resolved");
+                        })}>
+                        <CheckCircle className="w-3 h-3 mr-1" />Resolve
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" className="h-7 text-xs text-red-600"
+                      onClick={() => ask("Delete Report?", "Permanently delete this report?", async () => {
+                        await base44.entities.VendorProductInteraction.delete(f.id);
+                        queryClient.invalidateQueries({ queryKey: ["flagged_interactions"] });
+                        toast.success("Report deleted");
+                      })}>
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </TabsContent>
+
+        {/* Messaging Tab */}
+        <TabsContent value="messaging">
+          <AdminVendorMessaging vendors={vendors} categories={categories} />
         </TabsContent>
       </Tabs>
 

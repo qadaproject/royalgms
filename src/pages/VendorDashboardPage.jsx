@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Store, Package, Star, Settings, Plus, Pencil, Trash2, ArrowLeft, Loader2, Upload, CheckCircle, XCircle, Clock, BadgeCheck, AtSign, Link2, Eye, Heart, Share2, MessageSquare, Flag, Trophy } from "lucide-react";
+import { Store, Package, Star, Settings, Plus, Pencil, Trash2, ArrowLeft, Loader2, Upload, CheckCircle, XCircle, Clock, BadgeCheck, AtSign, Link2, Eye, Heart, Share2, MessageSquare, Flag, Trophy, BarChart2, Users } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
@@ -17,6 +17,7 @@ import StarRating from "../components/marketplace/StarRating";
 import ProductEngagementCard from "../components/marketplace/ProductEngagementCard";
 import ProductPerformanceChart from "../components/marketplace/ProductPerformanceChart";
 import VendorNotificationBell from "../components/marketplace/VendorNotificationBell";
+import VendorAnalyticsTab from "../components/marketplace/VendorAnalyticsTab";
 
 // Top Rated threshold: 10+ favourites across all products OR avg rating >= 4.5 with 3+ reviews
 const isTopRated = (vendor, products) => {
@@ -162,7 +163,7 @@ export default function VendorDashboardPage() {
             </div>
             <h1 className="font-heading text-2xl font-semibold flex items-center gap-2 flex-wrap">
               {vendor.business_name}
-              {vendor.approval_status === "Approved" && <BadgeCheck className="w-6 h-6 text-blue-500 shrink-0" title="Verified & Approved" />}
+              {vendor.approval_status === "Approved" && vendor.verified_badge_enabled !== false && <BadgeCheck className="w-6 h-6 text-blue-500 shrink-0" title="Verified & Approved" />}
               {isTopRated(vendor, products) && (
                 <span className="inline-flex items-center gap-1 text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-300 rounded-full px-2 py-0.5">
                   <Trophy className="w-3 h-3" /> Top Rated
@@ -231,8 +232,9 @@ export default function VendorDashboardPage() {
           ))}
         </div>
         {/* Engagement totals */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
           {[
+            { label: "Profile Visits", value: vendor.profile_view_count || 0, icon: <Users className="w-4 h-4 text-indigo-500" /> },
             { label: "Total Views", value: products.reduce((a, p) => a + (p.view_count || 0), 0), icon: <Eye className="w-4 h-4 text-muted-foreground" /> },
             { label: "Favourites", value: products.reduce((a, p) => a + (p.favourite_count || 0), 0), icon: <Heart className="w-4 h-4 text-red-400" /> },
             { label: "Shares", value: products.reduce((a, p) => a + (p.share_count || 0), 0), icon: <Share2 className="w-4 h-4 text-green-500" /> },
@@ -254,6 +256,7 @@ export default function VendorDashboardPage() {
         <Tabs defaultValue="products">
           <TabsList className="mb-6">
             <TabsTrigger value="products"><Package className="w-4 h-4 mr-1" />Products/Services</TabsTrigger>
+            <TabsTrigger value="analytics"><BarChart2 className="w-4 h-4 mr-1" />Analytics</TabsTrigger>
             <TabsTrigger value="reviews"><Star className="w-4 h-4 mr-1" />Reviews</TabsTrigger>
             <TabsTrigger value="settings"><Settings className="w-4 h-4 mr-1" />Settings</TabsTrigger>
           </TabsList>
@@ -284,6 +287,11 @@ export default function VendorDashboardPage() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* Analytics */}
+          <TabsContent value="analytics">
+            <VendorAnalyticsTab vendor={vendor} products={products} />
           </TabsContent>
 
           {/* Reviews */}

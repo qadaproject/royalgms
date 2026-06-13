@@ -117,6 +117,11 @@
       "default": false,
       "description": "Featured vendors appear at the top"
     },
+    "verified_badge_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Admin can disable the verified badge without changing approval status"
+    },
     "average_rating": {
       "type": "number",
       "default": 0
@@ -152,12 +157,17 @@
     },
     "marketplace_username": {
       "type": "string",
-      "description": "Custom URL slug e.g. royalgms.com/marketplace/vendor/username"
+      "description": "Custom URL slug"
     },
     "marketplace_username_set_date": {
       "type": "string",
       "format": "date",
-      "description": "Date when marketplace_username was last set \u2014 enforces 3-month cooldown"
+      "description": "Date when marketplace_username was last set"
+    },
+    "profile_view_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total profile page views"
     }
   },
   "required": [
