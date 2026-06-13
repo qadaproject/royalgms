@@ -49,8 +49,8 @@ export default function VendorCard({ vendor, featured = false }) {
           )}
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-sm leading-tight truncate flex items-center gap-1">
-              {vendor.verified_badge_enabled !== false && <BadgeCheck className="w-3.5 h-3.5 shrink-0 fill-amber-400 text-white" />}
               {vendor.business_name}
+              {vendor.verified_badge_enabled !== false && <BadgeCheck className="w-3.5 h-3.5 shrink-0 fill-amber-400 text-white" />}
             </p>
             <Badge variant="outline" className="text-[9px] mt-0.5">{vendor.category_name}</Badge>
           </div>

@@ -204,6 +204,7 @@ export default function VendorDetailPage() {
                     <BadgeCheck className="w-7 h-7 shrink-0 fill-amber-400 text-white" title="Verified Vendor" />
                   )}
                 </h1>
+
                 <div className="flex items-center gap-2 mt-1">
                   <StarRating rating={vendor.average_rating || 0} />
                   <span className="text-sm text-muted-foreground">({vendor.review_count || 0} reviews)</span>

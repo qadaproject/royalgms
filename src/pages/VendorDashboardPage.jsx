@@ -163,7 +163,7 @@ export default function VendorDashboardPage() {
             </div>
             <h1 className="font-heading text-2xl font-semibold flex items-center gap-2 flex-wrap">
               {vendor.business_name}
-              {vendor.approval_status === "Approved" && vendor.verified_badge_enabled !== false && <BadgeCheck className="w-6 h-6 text-blue-500 shrink-0" title="Verified & Approved" />}
+              {vendor.approval_status === "Approved" && vendor.verified_badge_enabled !== false && <BadgeCheck className="w-6 h-6 shrink-0 fill-amber-400 text-white" title="Verified & Approved" />}
               {isTopRated(vendor, products) && (
                 <span className="inline-flex items-center gap-1 text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-300 rounded-full px-2 py-0.5">
                   <Trophy className="w-3 h-3" /> Top Rated
