@@ -6,7 +6,75 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, MapPin, Phone, Globe, Mail, ArrowLeft, Facebook, Instagram, Twitter, MessageCircle, Clock, Tag, ChevronLeft, ChevronRight, BadgeCheck } from "lucide-react";
+import { Star, MapPin, Phone, Globe, Mail, ArrowLeft, Facebook, Instagram, Twitter, MessageCircle, Clock, Tag, ChevronLeft, ChevronRight, BadgeCheck, Eye, Copy, Check } from "lucide-react";
+
+function RevealCallButton({ phone }) {
+  const [revealed, setRevealed] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  if (!revealed) {
+    return (
+      <Button className="w-full" size="sm" onClick={() => setRevealed(true)}>
+        <Eye className="w-4 h-4 mr-2" />Reveal & Call
+      </Button>
+    );
+  }
+
+  return (
+    <div className="flex gap-2">
+      <Button asChild className="flex-1" size="sm">
+        <a href={`tel:${phone}`}><Phone className="w-4 h-4 mr-2" />{phone}</a>
+      </Button>
+      <Button variant="outline" size="sm" className="px-3" title="Copy"
+        onClick={() => { navigator.clipboard.writeText(phone); setCopied(true); setTimeout(() => setCopied(false), 2000); }}>
+        {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+      </Button>
+    </div>
+  );
+}
+
+function MaskedPhone({ phone }) {
+  const [revealed, setRevealed] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const masked = phone.length > 6
+    ? phone.slice(0, 4) + "****" + phone.slice(-3)
+    : phone.slice(0, 2) + "****";
+
+  const copyPhone = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(phone);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (!revealed) {
+    return (
+      <button
+        onClick={() => setRevealed(true)}
+        className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors group"
+        title="Click to reveal number"
+      >
+        <span className="font-mono tracking-wider">{masked}</span>
+        <span className="flex items-center gap-0.5 text-xs text-primary group-hover:underline">
+          <Eye className="w-3 h-3" /> Reveal
+        </span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <a href={`tel:${phone}`} className="font-mono tracking-wider text-foreground hover:text-primary transition-colors">
+        {phone}
+      </a>
+      <button onClick={copyPhone} className="text-muted-foreground hover:text-primary transition-colors" title="Copy number">
+        {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+      </button>
+    </div>
+  );
+}
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import StarRating from "../components/marketplace/StarRating";
 import ProductCard from "../components/marketplace/ProductCard";
@@ -209,10 +277,10 @@ export default function VendorDetailPage() {
                   </div>
                 )}
                 {vendor.phone && (
-                  <a href={`tel:${vendor.phone}`} className="flex gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                  <div className="flex gap-2">
                     <Phone className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
-                    <span>{vendor.phone}</span>
-                  </a>
+                    <MaskedPhone phone={vendor.phone} />
+                  </div>
                 )}
                 {vendor.email && (
                   <a href={`mailto:${vendor.email}`} className="flex gap-2 text-muted-foreground hover:text-foreground transition-colors">
@@ -257,9 +325,7 @@ export default function VendorDetailPage() {
 
               <div className="mt-4 pt-4 border-t border-border space-y-2">
                 {vendor.phone && (
-                  <Button asChild className="w-full" size="sm">
-                    <a href={`tel:${vendor.phone}`}><Phone className="w-4 h-4 mr-2" />Call Now</a>
-                  </Button>
+                  <RevealCallButton phone={vendor.phone} />
                 )}
                 {vendor.social_whatsapp && (
                   <Button asChild variant="outline" className="w-full border-green-500 text-green-600 hover:bg-green-50" size="sm">
