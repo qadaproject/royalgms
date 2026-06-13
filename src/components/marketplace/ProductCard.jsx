@@ -14,7 +14,7 @@ function getFingerprint() {
 function buildWhatsAppMessage(vendor, product) {
   const vendorUrl = vendor.marketplace_username
     ? `${window.location.origin}/marketplace/vendor/${vendor.marketplace_username}`
-    : `${window.location.origin}/marketplace/vendor?id=${vendor.id}`;
+    : `${window.location.origin}/marketplace/vendor/detail?id=${vendor.id}`;
   const price = product.discount_percent > 0
     ? `₦${(product.discounted_price || product.price * (1 - product.discount_percent / 100)).toLocaleString()} (${product.discount_percent}% off)`
     : `₦${product.price?.toLocaleString()}`;

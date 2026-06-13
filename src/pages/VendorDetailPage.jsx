@@ -337,9 +337,6 @@ export default function VendorDetailPage() {
               )}
 
               <div className="mt-4 pt-4 border-t border-border space-y-2">
-                {vendor.phone && (
-                  <RevealCallButton phone={vendor.phone} />
-                )}
                 {vendor.social_whatsapp && (
                   <Button asChild variant="outline" className="w-full border-green-500 text-green-600 hover:bg-green-50" size="sm">
                     <a href={`https://wa.me/${vendor.social_whatsapp}`} target="_blank" rel="noreferrer">
