@@ -34,9 +34,9 @@ import DirectoryPage from './pages/DirectoryPage';
 import DirectoryListingDetail from './pages/DirectoryListingDetail';
 import AdminDirectory from './pages/AdminDirectory';
 import AdminLogin from './pages/AdminLogin';
+import VendorLoginPage from './pages/VendorLoginPage';
 import ItsekiriDirectory from './pages/ItsekiriDirectory';
 import AdminItsekiri from './pages/AdminItsekiri';
-import VendorLoginPage from './pages/VendorLoginPage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
