@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Search, X } from "lucide-react";
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Search, X, Eye, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +31,8 @@ export default function AdminItsekiris() {
   const [personForm, setPersonForm] = useState(emptyPerson);
   const [catForm, setCatForm] = useState(emptyCategory);
   const [saving, setSaving] = useState(false);
+  const [viewPerson, setViewPerson] = useState(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [globalVisibility, setGlobalVisibility] = useState({ show_bio: true, show_email: false, show_phone: false, show_social: true });
   const [applyingGlobal, setApplyingGlobal] = useState(false);
 
@@ -107,6 +109,15 @@ export default function AdminItsekiris() {
     p.profession?.toLowerCase().includes(search.toLowerCase()) ||
     p.category_name?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    upd("photo_url", file_url);
+    setUploadingPhoto(false);
+  };
 
   const upd = (f, v) => setPersonForm((prev) => ({ ...prev, [f]: v }));
   const updCat = (f, v) => setCatForm((prev) => ({ ...prev, [f]: v }));
@@ -200,8 +211,9 @@ export default function AdminItsekiris() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => openEditPerson(p)}><Pencil className="w-3.5 h-3.5" /></Button>
-                        <Button variant="ghost" size="sm" onClick={() => deletePerson(p.id)} className="text-destructive hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => setViewPerson(p)} title="View"><Eye className="w-3.5 h-3.5" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => openEditPerson(p)} title="Edit"><Pencil className="w-3.5 h-3.5" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => deletePerson(p.id)} className="text-destructive hover:text-destructive" title="Delete"><Trash2 className="w-3.5 h-3.5" /></Button>
                       </div>
                     </td>
                   </tr>
@@ -264,8 +276,17 @@ export default function AdminItsekiris() {
                 </select>
               </div>
               <div>
-                <Label className="text-xs">Photo URL</Label>
-                <Input value={personForm.photo_url} onChange={(e) => upd("photo_url", e.target.value)} placeholder="https://..." />
+                <Label className="text-xs">Profile Photo</Label>
+                <div className="flex items-center gap-3 mt-1">
+                  {personForm.photo_url && (
+                    <img src={personForm.photo_url} alt="" className="w-12 h-12 rounded-full object-cover border border-border shrink-0" />
+                  )}
+                  <label className="flex items-center gap-2 cursor-pointer border border-dashed border-input rounded-md px-3 py-2 text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors flex-1">
+                    <Upload className="w-4 h-4 shrink-0" />
+                    <span>{uploadingPhoto ? "Uploading..." : personForm.photo_url ? "Change Photo" : "Upload Photo"}</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
+                  </label>
+                </div>
               </div>
             </div>
             <div>
@@ -317,6 +338,54 @@ export default function AdminItsekiris() {
           <div className="flex justify-end gap-3 mt-4 pt-4 border-t">
             <Button variant="outline" onClick={() => setPersonDialog(false)}>Cancel</Button>
             <Button onClick={savePerson} disabled={saving || !personForm.full_name}>{saving ? "Saving..." : editPerson ? "Update" : "Add Person"}</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Person Dialog */}
+      <Dialog open={!!viewPerson} onOpenChange={() => setViewPerson(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Person Profile</DialogTitle>
+          </DialogHeader>
+          {viewPerson && (
+            <div className="space-y-4 mt-2">
+              <div className="flex items-center gap-4">
+                {viewPerson.photo_url ? (
+                  <img src={viewPerson.photo_url} alt="" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-semibold">{viewPerson.full_name?.charAt(0)}</div>
+                )}
+                <div>
+                  <p className="font-semibold text-lg">{viewPerson.full_name}</p>
+                  {viewPerson.profession && <p className="text-sm text-muted-foreground">{viewPerson.profession}</p>}
+                  {viewPerson.category_name && <Badge variant="outline" className="mt-1 text-xs">{viewPerson.category_name}</Badge>}
+                </div>
+              </div>
+              {viewPerson.bio && (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Bio</p>
+                  <p className="text-sm">{viewPerson.bio}</p>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                {viewPerson.email && <div><p className="text-xs text-muted-foreground">Email</p><p>{viewPerson.email}</p></div>}
+                {viewPerson.phone && <div><p className="text-xs text-muted-foreground">Phone</p><p>{viewPerson.phone}</p></div>}
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs">
+                {viewPerson.social_facebook && <a href={viewPerson.social_facebook} target="_blank" rel="noreferrer" className="text-primary underline">Facebook</a>}
+                {viewPerson.social_instagram && <a href={viewPerson.social_instagram} target="_blank" rel="noreferrer" className="text-primary underline">Instagram</a>}
+                {viewPerson.social_twitter && <a href={viewPerson.social_twitter} target="_blank" rel="noreferrer" className="text-primary underline">Twitter/X</a>}
+                {viewPerson.social_linkedin && <a href={viewPerson.social_linkedin} target="_blank" rel="noreferrer" className="text-primary underline">LinkedIn</a>}
+              </div>
+              <div className="flex gap-4 text-xs text-muted-foreground border-t pt-3">
+                <span>Status: <strong className={viewPerson.is_active ? "text-green-600" : "text-red-500"}>{viewPerson.is_active ? "Active" : "Inactive"}</strong></span>
+              </div>
+            </div>
+          )}
+          <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
+            <Button variant="outline" onClick={() => setViewPerson(null)}>Close</Button>
+            <Button onClick={() => { openEditPerson(viewPerson); setViewPerson(null); }}><Pencil className="w-3.5 h-3.5 mr-1" />Edit</Button>
           </div>
         </DialogContent>
       </Dialog>
