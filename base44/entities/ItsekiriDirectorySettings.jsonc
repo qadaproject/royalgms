@@ -1,0 +1,34 @@
+{
+  "name": "ItsekiriDirectorySettings",
+  "type": "object",
+  "properties": {
+    "show_photo": {
+      "type": "boolean",
+      "default": true
+    },
+    "show_email": {
+      "type": "boolean",
+      "default": true
+    },
+    "show_phone": {
+      "type": "boolean",
+      "default": true
+    },
+    "show_social": {
+      "type": "boolean",
+      "default": true
+    },
+    "show_location": {
+      "type": "boolean",
+      "default": true
+    },
+    "mask_email": {
+      "type": "boolean",
+      "default": true
+    },
+    "mask_phone": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

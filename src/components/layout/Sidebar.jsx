@@ -32,6 +32,7 @@ const navItems = [
   { path: "/checkpoint", label: "Security Checkpoint", icon: Shield, roles: ["admin", "security"] },
   { path: "/admin/marketplace", label: "Marketplace Mgmt", icon: Store, roles: ["admin", "chairman"] },
   { path: "/admin/directory", label: "Directory Mgmt", icon: MapPin, roles: ["admin", "chairman"] },
+  { path: "/admin/itsekiris", label: "Itsekiri Directory", icon: Users, roles: ["admin", "chairman"] },
   { path: "/", label: "Public Homepage", icon: Globe, roles: ["admin", "chairman"] },
 ];
 

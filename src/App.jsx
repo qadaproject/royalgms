@@ -34,6 +34,8 @@ import DirectoryPage from './pages/DirectoryPage';
 import DirectoryListingDetail from './pages/DirectoryListingDetail';
 import AdminDirectory from './pages/AdminDirectory';
 import AdminLogin from './pages/AdminLogin';
+import ItsekiriDirectory from './pages/ItsekiriDirectory';
+import AdminItsekiri from './pages/AdminItsekiri';
 import VendorLoginPage from './pages/VendorLoginPage';
 
 const AuthenticatedApp = () => {
@@ -79,6 +81,7 @@ const AuthenticatedApp = () => {
       <Route path="/marketplace/verify-email" element={<VerifyVendorEmail />} />
       <Route path="/directory" element={<DirectoryPage />} />
       <Route path="/directory/listing" element={<DirectoryListingDetail />} />
+      <Route path="/itsekiris" element={<ItsekiriDirectory />} />
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/guests" element={<Guests />} />
@@ -92,6 +95,7 @@ const AuthenticatedApp = () => {
         <Route path="/event-history" element={<EventHistoryPage />} />
         <Route path="/admin/marketplace" element={<AdminMarketplace />} />
         <Route path="/admin/directory" element={<AdminDirectory />} />
+        <Route path="/admin/itsekiris" element={<AdminItsekiri />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
