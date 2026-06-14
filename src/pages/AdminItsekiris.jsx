@@ -153,10 +153,29 @@ export default function AdminItsekiris() {
                     <td className="px-4 py-3"><Badge variant="outline">{p.category_name || "—"}</Badge></td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1 flex-wrap">
-                        {p.show_bio && <Badge variant="secondary" className="text-[10px]">Bio</Badge>}
-                        {p.show_email && <Badge variant="secondary" className="text-[10px]">Email</Badge>}
-                        {p.show_phone && <Badge variant="secondary" className="text-[10px]">Phone</Badge>}
-                        {p.show_social && <Badge variant="secondary" className="text-[10px]">Social</Badge>}
+                        {[
+                          { key: "show_bio", label: "Bio" },
+                          { key: "show_email", label: "Email" },
+                          { key: "show_phone", label: "Phone" },
+                          { key: "show_social", label: "Social" },
+                        ].map(({ key, label }) => (
+                          <button
+                            key={key}
+                            onClick={async () => {
+                              const updated = { [key]: !p[key] };
+                              await base44.entities.ItsekiriPerson.update(p.id, updated);
+                              loadData();
+                            }}
+                            title={`Click to ${p[key] ? "hide" : "show"} ${label}`}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-sans border transition-all ${
+                              p[key]
+                                ? "bg-green-100 text-green-700 border-green-300 hover:bg-red-100 hover:text-red-600 hover:border-red-300"
+                                : "bg-muted text-muted-foreground border-border hover:bg-green-100 hover:text-green-700 hover:border-green-300"
+                            }`}
+                          >
+                            {p[key] ? "✓" : "✗"} {label}
+                          </button>
+                        ))}
                       </div>
                     </td>
                     <td className="px-4 py-3">
