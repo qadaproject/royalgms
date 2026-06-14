@@ -40,7 +40,7 @@ export default function SecurityCheckpoint() {
       let results = await base44.entities.Guest.filter({ qr_code: code.trim().toUpperCase() }, "-created_date", 1);
       // If no result, try fetching all and filtering by name
       if (!results || results.length === 0) {
-        const all = await base44.entities.Guest.list("-created_date", 500);
+        const all = await base44.entities.Guest.list("-created_date", 10000);
         setAllGuests(all);
         const q = code.trim().toLowerCase();
         results = all.filter(
@@ -87,7 +87,7 @@ export default function SecurityCheckpoint() {
 
   // Load all guests on mount for daily summary
   useEffect(() => {
-    base44.entities.Guest.list("-created_date", 500).then(setAllGuests).catch(() => {});
+    base44.entities.Guest.list("-created_date", 10000).then(setAllGuests).catch(() => {});
   }, []);
 
   useEffect(() => () => stopCamera(), []);

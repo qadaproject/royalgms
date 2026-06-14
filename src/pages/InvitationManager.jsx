@@ -20,7 +20,7 @@ export default function InvitationManager() {
 
   const { data: guests = [], isLoading } = useQuery({
     queryKey: ["guests"],
-    queryFn: () => base44.entities.Guest.list("-created_date", 500),
+    queryFn: () => base44.entities.Guest.list("-created_date", 10000),
   });
 
   const { data: settings = [] } = useQuery({
