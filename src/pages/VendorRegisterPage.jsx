@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Loader2, Store, Mail } from "lucide-react";
+import { ArrowLeft, Loader2, Store, Mail, Eye, EyeOff } from "lucide-react";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import useMpUser from "@/hooks/useMpUser";
+import { hashPassword } from "@/lib/marketplaceAuth";
 import { toast } from "sonner";
 
 const MARKETPLACE_NAME = "Royal Marketplace";
@@ -20,6 +21,8 @@ export default function VendorRegisterPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submittedBusiness, setSubmittedBusiness] = useState("");
   const [submittedEmail, setSubmittedEmail] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const [form, setForm] = useState({
     business_name: "",
@@ -32,6 +35,8 @@ export default function VendorRegisterPage() {
     location_city: "",
     location_state: "",
     price_range: "",
+    password: "",
+    confirm_password: "",
   });
 
   useEffect(() => {
@@ -56,13 +61,24 @@ export default function VendorRegisterPage() {
       toast.error("Please fill all required fields");
       return;
     }
+    if (!form.password || form.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (form.password !== form.confirm_password) {
+      toast.error("Passwords do not match");
+      return;
+    }
     setSubmitting(true);
     try {
       const token = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + Date.now().toString(36);
       const verifyLink = `${window.location.origin}/marketplace/verify-email?token=${token}`;
+      const password_hash = await hashPassword(form.password);
 
+      const { password, confirm_password, ...vendorData } = form;
       await base44.entities.Vendor.create({
-        ...form,
+        ...vendorData,
+        password_hash,
         approval_status: "Pending",
         email_verified: false,
         email_verification_token: token,
@@ -189,6 +205,30 @@ export default function VendorRegisterPage() {
             <div className="space-y-1.5">
               <Label>State</Label>
               <Input value={form.location_state} onChange={e => set("location_state", e.target.value)} placeholder="e.g. Delta State" />
+            </div>
+          </div>
+
+          <div className="border-t pt-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Set Your Password</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Password <span className="text-red-500">*</span></Label>
+                <div className="relative">
+                  <Input type={showPass ? "text" : "password"} value={form.password} onChange={e => set("password", e.target.value)} placeholder="Min. 6 characters" />
+                  <button type="button" onClick={() => setShowPass(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Confirm Password <span className="text-red-500">*</span></Label>
+                <div className="relative">
+                  <Input type={showConfirm ? "text" : "password"} value={form.confirm_password} onChange={e => set("confirm_password", e.target.value)} placeholder="Re-enter password" />
+                  <button type="button" onClick={() => setShowConfirm(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
