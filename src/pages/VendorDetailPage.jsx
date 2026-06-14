@@ -66,10 +66,14 @@ export default function VendorDetailPage() {
 
   const submitReview = async (e) => {
     e.preventDefault();
-    if (!reviewForm.reviewer_name || !reviewForm.comment) { toast.error("Please fill all required fields"); return; }
+    const name = mpUser ? mpUser.full_name : reviewForm.reviewer_name;
+    const email = mpUser ? mpUser.email : reviewForm.reviewer_email;
+    if (!name || !reviewForm.comment) { toast.error("Please fill all required fields"); return; }
     setSubmitting(true);
     await base44.entities.VendorReview.create({
       ...reviewForm,
+      reviewer_name: name,
+      reviewer_email: email,
       vendor_id: vendorId,
       vendor_name: vendor?.business_name || "",
     });
@@ -265,10 +269,12 @@ export default function VendorDetailPage() {
               <div className="border border-border rounded-xl p-5 bg-card">
                 <h3 className="font-heading text-base font-semibold mb-4">Leave a Review</h3>
                 <form onSubmit={submitReview} className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <Input placeholder="Your name *" value={reviewForm.reviewer_name} onChange={e => setReviewForm(f => ({ ...f, reviewer_name: e.target.value }))} />
-                    <Input placeholder="Your email" value={reviewForm.reviewer_email} onChange={e => setReviewForm(f => ({ ...f, reviewer_email: e.target.value }))} />
-                  </div>
+                  {!mpUser && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input placeholder="Your name *" value={reviewForm.reviewer_name} onChange={e => setReviewForm(f => ({ ...f, reviewer_name: e.target.value }))} />
+                      <Input placeholder="Your email" value={reviewForm.reviewer_email} onChange={e => setReviewForm(f => ({ ...f, reviewer_email: e.target.value }))} />
+                    </div>
+                  )}
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">Rating:</span>
                     {[1, 2, 3, 4, 5].map(n => (
