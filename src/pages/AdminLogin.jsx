@@ -5,12 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lock, Mail, Loader2 } from "lucide-react";
 import RoyalCrest from "@/components/layout/RoyalCrest";
+import GoogleIcon from "@/components/GoogleIcon";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const handleGoogle = () => {
+    base44.auth.loginWithProvider("google", "/dashboard");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,6 +46,23 @@ export default function AdminLogin() {
 
         {/* Card */}
         <div className="bg-[#2a110a]/80 border border-[#c9a84c]/20 rounded-xl p-8">
+          <button
+            onClick={handleGoogle}
+            className="w-full h-11 flex items-center justify-center gap-3 mb-6 rounded-lg border border-[#c9a84c]/30 bg-[#1a0a06]/40 text-[#f5ede0]/80 text-sm font-medium hover:bg-[#1a0a06]/70 hover:border-[#c9a84c]/50 transition-colors"
+          >
+            <GoogleIcon className="w-5 h-5" />
+            Sign in with Google
+          </button>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[#c9a84c]/20" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-[#2a110a] px-3 text-[#f5ede0]/40 tracking-wider">or</span>
+            </div>
+          </div>
+
           {error && (
             <div className="mb-5 p-3 rounded-lg bg-red-900/30 border border-red-500/30 text-red-300 text-sm">
               {error}
