@@ -1,0 +1,26 @@
+{
+  "name": "VendorFavorite",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "MarketplaceUser ID"
+    },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "vendor",
+        "product"
+      ]
+    },
+    "target_id": {
+      "type": "string",
+      "description": "Vendor or VendorProduct ID"
+    }
+  },
+  "required": [
+    "user_id",
+    "target_type",
+    "target_id"
+  ]
+}

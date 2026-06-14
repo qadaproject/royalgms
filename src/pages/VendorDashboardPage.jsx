@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Store, Package, Star, Settings, Plus, Pencil, Trash2, ArrowLeft, Loader2, Upload, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Store, Package, Star, Settings, Plus, Pencil, Trash2, ArrowLeft, Loader2, Upload, CheckCircle, XCircle, Clock, MessageSquare, Send } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
@@ -39,6 +39,28 @@ export default function VendorDashboardPage() {
     queryFn: () => base44.entities.VendorReview.filter({ vendor_id: vendor?.id }),
     enabled: !!vendor?.id,
   });
+
+  const { data: comments = [], refetch: refetchComments } = useQuery({
+    queryKey: ["my_comments_vendor", vendor?.id],
+    queryFn: () => base44.entities.VendorComment.filter({ vendor_id: vendor?.id }, "-created_date", 100),
+    enabled: !!vendor?.id,
+  });
+
+  const [replyText, setReplyText] = useState({});
+  const [replyingTo, setReplyingTo] = useState(null);
+
+  const submitReply = async (commentId) => {
+    const text = replyText[commentId]?.trim();
+    if (!text) return;
+    await base44.entities.VendorComment.update(commentId, {
+      vendor_reply: text,
+      vendor_replied_at: new Date().toISOString(),
+    });
+    setReplyText(r => ({ ...r, [commentId]: "" }));
+    setReplyingTo(null);
+    refetchComments();
+    toast.success("Reply posted!");
+  };
 
   const lookupVendor = async () => {
     if (!lookupEmail.trim()) return;
@@ -74,6 +96,10 @@ export default function VendorDashboardPage() {
   };
 
   const saveSettings = async () => {
+    if (settingsForm.username) {
+      const existing = await base44.entities.Vendor.filter({ username: settingsForm.username });
+      if (existing.length && existing[0].id !== vendor.id) { toast.error("Username already taken"); return; }
+    }
     await base44.entities.Vendor.update(vendor.id, settingsForm);
     setVendor(v => ({ ...v, ...settingsForm }));
     setEditSettings(false);
@@ -196,8 +222,9 @@ export default function VendorDashboardPage() {
         </div>
 
         <Tabs defaultValue="products">
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 flex-wrap h-auto gap-1">
             <TabsTrigger value="products"><Package className="w-4 h-4 mr-1" />Products/Services</TabsTrigger>
+            <TabsTrigger value="comments"><MessageSquare className="w-4 h-4 mr-1" />Comments {comments.length > 0 && <span className="ml-1 bg-primary text-primary-foreground rounded-full text-[9px] w-4 h-4 flex items-center justify-center">{comments.filter(c => !c.vendor_reply).length || ""}</span>}</TabsTrigger>
             <TabsTrigger value="reviews"><Star className="w-4 h-4 mr-1" />Reviews</TabsTrigger>
             <TabsTrigger value="settings"><Settings className="w-4 h-4 mr-1" />Settings</TabsTrigger>
           </TabsList>
@@ -239,6 +266,59 @@ export default function VendorDashboardPage() {
             )}
           </TabsContent>
 
+          {/* Comments */}
+          <TabsContent value="comments">
+            <h2 className="font-heading text-lg font-semibold mb-4">Customer Comments</h2>
+            {comments.length === 0 ? (
+              <p className="text-muted-foreground text-sm">No comments yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {comments.map(c => (
+                  <div key={c.id} className="bg-card border border-border rounded-xl p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className="font-semibold text-sm">{c.user_name}</span>
+                          {c.product_name && <Badge variant="outline" className="text-[9px]">📦 {c.product_name}</Badge>}
+                          {!c.vendor_reply && <Badge className="text-[9px] bg-amber-100 text-amber-700 border-amber-300">Awaiting reply</Badge>}
+                        </div>
+                        <p className="text-sm text-muted-foreground">{c.comment}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">👍 {c.thumbs_up || 0} · 👎 {c.thumbs_down || 0}</p>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground shrink-0">{new Date(c.created_date).toLocaleDateString()}</span>
+                    </div>
+                    {c.vendor_reply ? (
+                      <div className="mt-3 pl-3 border-l-2 border-primary/20 text-sm">
+                        <p className="text-xs text-muted-foreground mb-0.5">Your reply:</p>
+                        <p className="text-foreground">{c.vendor_reply}</p>
+                        <button onClick={() => setReplyingTo(c.id)} className="text-xs text-primary underline mt-1">Edit reply</button>
+                      </div>
+                    ) : null}
+                    {(replyingTo === c.id || (!c.vendor_reply && replyingTo !== null)) && replyingTo === c.id ? (
+                      <div className="mt-3 flex gap-2">
+                        <Textarea
+                          value={replyText[c.id] || ""}
+                          onChange={e => setReplyText(r => ({ ...r, [c.id]: e.target.value }))}
+                          placeholder="Write your reply..."
+                          className="h-16 text-sm flex-1"
+                        />
+                        <div className="flex flex-col gap-1">
+                          <Button size="sm" onClick={() => submitReply(c.id)}><Send className="w-3 h-3" /></Button>
+                          <Button size="sm" variant="ghost" onClick={() => setReplyingTo(null)}>✕</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button onClick={() => { setReplyingTo(c.id); setReplyText(r => ({ ...r, [c.id]: c.vendor_reply || "" })); }}
+                        className="mt-2 text-xs text-primary hover:underline flex items-center gap-1">
+                        <MessageSquare className="w-3 h-3" /> {c.vendor_reply ? "Edit reply" : "Reply to this comment"}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
           {/* Reviews */}
           <TabsContent value="reviews">
             <h2 className="font-heading text-lg font-semibold mb-4">Customer Reviews</h2>
@@ -267,7 +347,7 @@ export default function VendorDashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-heading text-lg font-semibold">Business Settings</h2>
               {!editSettings ? (
-                <Button size="sm" variant="outline" onClick={() => { setSettingsForm({ description: vendor.description, services_products: vendor.services_products, opening_hours: vendor.opening_hours, website: vendor.website, phone: vendor.phone, location_address: vendor.location_address, location_city: vendor.location_city, location_state: vendor.location_state, social_facebook: vendor.social_facebook, social_instagram: vendor.social_instagram, social_twitter: vendor.social_twitter, social_whatsapp: vendor.social_whatsapp }); setEditSettings(true); }}>
+                <Button size="sm" variant="outline" onClick={() => { setSettingsForm({ username: vendor.username, description: vendor.description, services_products: vendor.services_products, opening_hours: vendor.opening_hours, website: vendor.website, phone: vendor.phone, location_address: vendor.location_address, location_city: vendor.location_city, location_state: vendor.location_state, social_facebook: vendor.social_facebook, social_instagram: vendor.social_instagram, social_twitter: vendor.social_twitter, social_whatsapp: vendor.social_whatsapp }); setEditSettings(true); }}>
                   <Pencil className="w-4 h-4 mr-1" />Edit
                 </Button>
               ) : (
@@ -285,6 +365,14 @@ export default function VendorDashboardPage() {
               </div>
             ) : (
               <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label>Vendor Username (sets your URL: /marketplace/<em>username</em>)</Label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground text-sm">/marketplace/</span>
+                    <Input value={settingsForm.username || ""} onChange={e => setSettingsForm(f => ({ ...f, username: e.target.value.replace(/\s/g, "").toLowerCase() }))} placeholder="your-business-slug" />
+                  </div>
+                  {vendor.username && <p className="text-xs text-emerald-600">Current: {window.location.origin}/marketplace/{vendor.username}</p>}
+                </div>
                 <div className="space-y-1.5"><Label>Description</Label><Textarea value={settingsForm.description || ""} onChange={e => setSettingsForm(f => ({ ...f, description: e.target.value }))} className="h-24" /></div>
                 <div className="space-y-1.5"><Label>Services/Products</Label><Textarea value={settingsForm.services_products || ""} onChange={e => setSettingsForm(f => ({ ...f, services_products: e.target.value }))} className="h-20" /></div>
                 <div className="grid grid-cols-2 gap-4">

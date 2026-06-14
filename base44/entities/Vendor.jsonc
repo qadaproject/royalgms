@@ -10,6 +10,10 @@
       "type": "string",
       "description": "Full name of the business owner"
     },
+    "username": {
+      "type": "string",
+      "description": "Unique vendor username for /marketplace/username URL"
+    },
     "category_id": {
       "type": "string",
       "description": "Reference to MarketplaceCategory"
@@ -95,28 +99,24 @@
     "is_verified": {
       "type": "boolean",
       "default": false,
-      "description": "Admin-granted verified badge \u2014 shown as a gold checkmark on the vendor's public listing"
+      "description": "Admin-granted verified badge"
     },
     "email_verified": {
       "type": "boolean",
       "default": false
     },
     "email_verification_token": {
-      "type": "string",
-      "description": "Token sent to email for verification"
+      "type": "string"
     },
     "rejection_reason": {
-      "type": "string",
-      "description": "Reason if rejected by admin"
+      "type": "string"
     },
     "admin_notes": {
-      "type": "string",
-      "description": "Internal admin notes"
+      "type": "string"
     },
     "featured": {
       "type": "boolean",
-      "default": false,
-      "description": "Featured vendors appear at the top"
+      "default": false
     },
     "average_rating": {
       "type": "number",
@@ -127,8 +127,7 @@
       "default": 0
     },
     "user_id": {
-      "type": "string",
-      "description": "Linked app user ID if vendor has an account"
+      "type": "string"
     },
     "price_range": {
       "type": "string",
@@ -137,19 +136,16 @@
         "Mid-range",
         "Premium",
         "Luxury"
-      ],
-      "description": "General price range indicator"
+      ]
     },
     "opening_hours": {
-      "type": "string",
-      "description": "e.g. Mon-Fri 8am-6pm"
+      "type": "string"
     },
     "tags": {
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "Searchable tags"
+      }
     }
   },
   "required": [

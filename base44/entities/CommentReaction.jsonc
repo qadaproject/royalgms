@@ -1,0 +1,26 @@
+{
+  "name": "CommentReaction",
+  "type": "object",
+  "properties": {
+    "comment_id": {
+      "type": "string",
+      "description": "Reference to VendorComment"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "MarketplaceUser ID"
+    },
+    "reaction": {
+      "type": "string",
+      "enum": [
+        "thumbs_up",
+        "thumbs_down"
+      ]
+    }
+  },
+  "required": [
+    "comment_id",
+    "user_id",
+    "reaction"
+  ]
+}

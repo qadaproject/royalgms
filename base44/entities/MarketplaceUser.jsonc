@@ -1,0 +1,54 @@
+{
+  "name": "MarketplaceUser",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Linked app user ID"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Public display name"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email address"
+    },
+    "password_hash": {
+      "type": "string",
+      "description": "Base64 encoded password hash"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Profile picture URL"
+    },
+    "email_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "email_verification_token": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": false
+    },
+    "favorite_vendors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of vendor IDs"
+    },
+    "favorite_products": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of product IDs"
+    }
+  },
+  "required": [
+    "email"
+  ]
+}

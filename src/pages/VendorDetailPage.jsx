@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, MapPin, Phone, Globe, Mail, ArrowLeft, Facebook, Instagram, Twitter, MessageCircle, Clock, Tag, ChevronLeft, ChevronRight, Share2, Eye, EyeOff } from "lucide-react";
+import { Star, MapPin, Phone, Globe, Mail, ArrowLeft, Facebook, Instagram, Twitter, MessageCircle, Clock, Tag, ChevronLeft, ChevronRight, Share2, Eye, EyeOff, Heart } from "lucide-react";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import StarRating from "../components/marketplace/StarRating";
 import VerifiedBadge from "../components/marketplace/VerifiedBadge";
+import CommentsSection from "../components/marketplace/CommentsSection";
+import { getMpUser } from "@/lib/marketplaceAuth";
 import { toast } from "sonner";
 
 export default function VendorDetailPage() {
@@ -20,6 +22,8 @@ export default function VendorDetailPage() {
   const [reviewForm, setReviewForm] = useState({ reviewer_name: "", reviewer_email: "", rating: 5, comment: "" });
   const [submitting, setSubmitting] = useState(false);
   const [phoneRevealed, setPhoneRevealed] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const mpUser = getMpUser();
 
   const { data: vendor } = useQuery({
     queryKey: ["vendor", vendorId],
@@ -39,6 +43,26 @@ export default function VendorDetailPage() {
     queryFn: () => base44.entities.VendorReview.filter({ vendor_id: vendorId, is_approved: true }),
     enabled: !!vendorId,
   });
+
+  const { data: favoriteRecord } = useQuery({
+    queryKey: ["vendor_fav", vendorId, mpUser?.id],
+    queryFn: () => base44.entities.VendorFavorite.filter({ user_id: mpUser.id, target_type: "vendor", target_id: vendorId }),
+    enabled: !!mpUser?.id && !!vendorId,
+    select: d => d[0],
+  });
+
+  const toggleFavorite = async () => {
+    if (!mpUser) { toast.info("Sign in to favourite vendors"); return; }
+    if (favoriteRecord) {
+      await base44.entities.VendorFavorite.delete(favoriteRecord.id);
+      queryClient.invalidateQueries(["vendor_fav", vendorId, mpUser.id]);
+      toast.success("Removed from favourites");
+    } else {
+      await base44.entities.VendorFavorite.create({ user_id: mpUser.id, target_type: "vendor", target_id: vendorId });
+      queryClient.invalidateQueries(["vendor_fav", vendorId, mpUser.id]);
+      toast.success("Added to favourites!");
+    }
+  };
 
   const submitReview = async (e) => {
     e.preventDefault();
@@ -142,9 +166,16 @@ export default function VendorDetailPage() {
                   <Badge variant="outline" className="text-[10px]">{vendor.category_name}</Badge>
                   {vendor.price_range && <span className={`text-xs font-semibold ${priceRangeColor[vendor.price_range] || ""}`}>{vendor.price_range}</span>}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="font-heading text-3xl font-semibold">{vendor.business_name}</h1>
                   {vendor.is_verified && <VerifiedBadge size="lg" />}
+                  <button
+                    onClick={toggleFavorite}
+                    title={favoriteRecord ? "Remove from favourites" : "Add to favourites"}
+                    className={`ml-1 transition-colors ${favoriteRecord ? "text-red-500" : "text-muted-foreground hover:text-red-400"}`}
+                  >
+                    <Heart className={`w-5 h-5 ${favoriteRecord ? "fill-red-500" : ""}`} />
+                  </button>
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                   <StarRating rating={vendor.average_rating || 0} />
@@ -207,6 +238,9 @@ export default function VendorDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Comments */}
+            <CommentsSection vendorId={vendorId} />
 
             {/* Reviews */}
             <div>
