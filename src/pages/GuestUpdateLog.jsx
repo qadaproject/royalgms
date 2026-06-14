@@ -34,13 +34,13 @@ export default function GuestUpdateLog() {
 
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["guest_activity_logs"],
-    queryFn: () => base44.entities.GuestActivityLog.list("-created_date", 10000),
+    queryFn: () => base44.entities.GuestActivityLog.list("-created_date", 500),
     refetchInterval: 30000,
   });
 
   const { data: guests = [] } = useQuery({
     queryKey: ["guests"],
-    queryFn: () => base44.entities.Guest.list("-created_date", 10000),
+    queryFn: () => base44.entities.Guest.list("-created_date", 500),
   });
 
   const guestMap = useMemo(() => {

@@ -30,10 +30,6 @@
       "type": "string",
       "description": "Business email address"
     },
-    "password": {
-      "type": "string",
-      "description": "Vendor login password (plain text for lookup)"
-    },
     "phone": {
       "type": "string",
       "description": "Business phone number"
@@ -117,11 +113,6 @@
       "default": false,
       "description": "Featured vendors appear at the top"
     },
-    "verified_badge_enabled": {
-      "type": "boolean",
-      "default": true,
-      "description": "Admin can disable the verified badge without changing approval status"
-    },
     "average_rating": {
       "type": "number",
       "default": 0
@@ -154,20 +145,6 @@
         "type": "string"
       },
       "description": "Searchable tags"
-    },
-    "marketplace_username": {
-      "type": "string",
-      "description": "Custom URL slug"
-    },
-    "marketplace_username_set_date": {
-      "type": "string",
-      "format": "date",
-      "description": "Date when marketplace_username was last set"
-    },
-    "profile_view_count": {
-      "type": "number",
-      "default": 0,
-      "description": "Total profile page views"
     }
   },
   "required": [

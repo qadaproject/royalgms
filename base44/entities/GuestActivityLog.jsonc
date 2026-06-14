@@ -44,41 +44,5 @@
     "guest_name",
     "event_type",
     "description"
-  ],
-  "rls": {
-    "create": {},
-    "read": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chairman",
-            "data_manager",
-            "protocol_liaison",
-            "security"
-          ]
-        }
-      }
-    },
-    "update": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chairman"
-          ]
-        }
-      }
-    },
-    "delete": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chairman"
-          ]
-        }
-      }
-    }
-  }
+  ]
 }

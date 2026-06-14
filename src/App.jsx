@@ -33,10 +33,6 @@ import VerifyVendorEmail from './pages/VerifyVendorEmail';
 import DirectoryPage from './pages/DirectoryPage';
 import DirectoryListingDetail from './pages/DirectoryListingDetail';
 import AdminDirectory from './pages/AdminDirectory';
-import AdminLogin from './pages/AdminLogin';
-import VendorLoginPage from './pages/VendorLoginPage';
-import ItsekiriDirectory from './pages/ItsekiriDirectory';
-import AdminItsekiri from './pages/AdminItsekiri';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -49,10 +45,7 @@ const AuthenticatedApp = () => {
     );
   }
 
-  const publicPaths = ['/marketplace', '/directory', '/rsvp', '/invite-detail', '/checkpoint', '/scanner', '/about', '/contact', '/itinerary', '/admin'];
-  const isPublicPath = publicPaths.some(p => window.location.pathname.startsWith(p)) || window.location.pathname === '/';
-
-  if (authError && !isPublicPath) {
+  if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
@@ -63,7 +56,6 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
-      <Route path="/admin" element={<AdminLogin />} />
       <Route path="/" element={<HomePage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
@@ -73,15 +65,12 @@ const AuthenticatedApp = () => {
       <Route path="/checkpoint" element={<SecurityCheckpoint />} />
       <Route path="/scanner" element={<CheckInScanner />} />
       <Route path="/marketplace" element={<MarketplacePage />} />
-      <Route path="/marketplace/vendor/login" element={<VendorLoginPage />} />
-      <Route path="/marketplace/vendor/detail" element={<VendorDetailPage />} />
+      <Route path="/marketplace/vendor" element={<VendorDetailPage />} />
       <Route path="/marketplace/register" element={<VendorRegisterPage />} />
-      <Route path="/marketplace/vendor/dashboard" element={<VendorDashboardPage />} />
-      <Route path="/marketplace/vendor/:username" element={<VendorDetailPage />} />
+      <Route path="/marketplace/vendor-dashboard" element={<VendorDashboardPage />} />
       <Route path="/marketplace/verify-email" element={<VerifyVendorEmail />} />
       <Route path="/directory" element={<DirectoryPage />} />
       <Route path="/directory/listing" element={<DirectoryListingDetail />} />
-      <Route path="/itsekiris" element={<ItsekiriDirectory />} />
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/guests" element={<Guests />} />
@@ -95,7 +84,6 @@ const AuthenticatedApp = () => {
         <Route path="/event-history" element={<EventHistoryPage />} />
         <Route path="/admin/marketplace" element={<AdminMarketplace />} />
         <Route path="/admin/directory" element={<AdminDirectory />} />
-        <Route path="/admin/itsekiris" element={<AdminItsekiri />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

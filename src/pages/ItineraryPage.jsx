@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Loader2, CheckCircle2, Lock, Edit3 } from "lucide-react";
-import PublicNav from "../components/layout/PublicNav";
+import { Loader2, CheckCircle2, Lock, Edit3, Menu, X } from "lucide-react";
+
+const NAV_LINKS = [
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Itinerary", href: "/itinerary" },
+  { label: "Contact", href: "/contact" },
+];
 
 const FIELD_LABELS = {
   formal_salutation: "Formal Salutation",
@@ -19,6 +26,7 @@ const FIELD_LABELS = {
 };
 
 export default function ItineraryPage() {
+  const [menuOpen, setMenuOpen] = useState(false);
   const urlParams = new URLSearchParams(window.location.search);
   const refToken = urlParams.get("ref") || urlParams.get("token") || "";
 
@@ -100,7 +108,29 @@ export default function ItineraryPage() {
 
   return (
     <div className="min-h-screen bg-[#0d0603] text-[#f5ede0]">
-      <PublicNav activePath="/itinerary" />
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0d0603]/90 backdrop-blur-md border-b border-[#c9a84c]/20">
+        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
+          <Link to="/" className="flex flex-col leading-tight">
+            <span className="text-[#c9a84c] text-[10px] uppercase tracking-[0.25em] font-sans">Royal Palace</span>
+            <span className="text-[#f5ede0] text-sm font-semibold tracking-wider">Warri Kingdom</span>
+          </Link>
+          <div className="hidden md:flex items-center gap-8">
+            {NAV_LINKS.map((l) => (
+              <Link key={l.href} to={l.href} className={`text-xs uppercase tracking-[0.2em] font-sans transition-colors ${l.href === "/itinerary" ? "text-[#c9a84c]" : "text-[#f5ede0]/70 hover:text-[#c9a84c]"}`}>{l.label}</Link>
+            ))}
+          </div>
+          <button className="md:hidden text-[#f5ede0]" onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+        {menuOpen && (
+          <div className="md:hidden bg-[#0d0603] border-t border-[#c9a84c]/20 px-6 py-4 space-y-3">
+            {NAV_LINKS.map((l) => (
+              <Link key={l.href} to={l.href} onClick={() => setMenuOpen(false)} className="block text-[#f5ede0]/70 hover:text-[#c9a84c] text-sm uppercase tracking-widest font-sans">{l.label}</Link>
+            ))}
+          </div>
+        )}
+      </nav>
 
       <div className="pt-24 pb-20 px-6 max-w-2xl mx-auto">
         {!guest ? (
@@ -175,21 +205,14 @@ export default function ItineraryPage() {
               {/* Editable fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {Object.entries(FIELD_LABELS).map(([key, label]) => {
-                  const isLocked = (key === "email" && !!guest[key]) || (key === "phone" && !!guest[key]);
+                  const isLocked = false;
                   return (
                     <div key={key}>
-                      <label className="text-[#f5ede0]/50 text-[10px] uppercase tracking-wider font-sans block mb-1 flex items-center gap-1">
-                        {label} {isLocked && <Lock className="w-2.5 h-2.5 inline" />}
-                      </label>
+                      <label className="text-[#f5ede0]/50 text-[10px] uppercase tracking-wider font-sans block mb-1">{label}</label>
                       <input
                         value={form[key] || ""}
-                        onChange={(e) => !isLocked && setForm(p => ({ ...p, [key]: e.target.value }))}
-                        readOnly={isLocked}
-                        className={`w-full border rounded-lg px-3 py-2 text-sm font-sans focus:outline-none ${
-                          isLocked
-                            ? "bg-[#0d0603]/50 border-[#c9a84c]/10 text-[#f5ede0]/40 cursor-not-allowed"
-                            : "bg-[#0d0603] border-[#c9a84c]/15 text-[#f5ede0] focus:border-[#c9a84c]/50"
-                        }`}
+                        onChange={(e) => setForm(p => ({ ...p, [key]: e.target.value }))}
+                        className="w-full bg-[#0d0603] border border-[#c9a84c]/15 text-[#f5ede0] placeholder:text-[#f5ede0]/20 rounded-lg px-3 py-2 text-sm font-sans focus:outline-none focus:border-[#c9a84c]/50"
                       />
                     </div>
                   );

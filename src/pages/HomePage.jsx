@@ -1,8 +1,16 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { ChevronDown } from "lucide-react";
-import PublicNav from "../components/layout/PublicNav";
+import { Menu, X, ChevronDown } from "lucide-react";
+
+const NAV_LINKS = [
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Itinerary", href: "/itinerary" },
+  { label: "Contact", href: "/contact" },
+  { label: "Directory", href: "/directory" },
+  { label: "Marketplace", href: "/marketplace" },
+];
 
 function useCountdown(target) {
   const [timeLeft, setTimeLeft] = useState({});
@@ -26,6 +34,7 @@ function useCountdown(target) {
 }
 
 export default function HomePage() {
+  const [menuOpen, setMenuOpen] = useState(false);
   const [settings, setSettings] = useState(null);
   const eventTarget = new Date("2026-08-21T10:00:00+01:00"); // WAT = UTC+1
   const countdown = useCountdown(eventTarget);
@@ -45,7 +54,33 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#0d0603] text-[#f5ede0] font-serif">
       {/* Navbar */}
-      <PublicNav activePath="/" />
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0d0603]/90 backdrop-blur-md border-b border-[#c9a84c]/20">
+        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
+          <Link to="/" className="flex flex-col leading-tight">
+            <span className="text-[#c9a84c] text-[10px] uppercase tracking-[0.25em] font-sans">Royal Palace</span>
+            <span className="text-[#f5ede0] text-sm font-semibold tracking-wider">Warri Kingdom</span>
+          </Link>
+          <div className="hidden md:flex items-center gap-8">
+            {NAV_LINKS.map((l) => (
+              <Link key={l.href} to={l.href} className="text-[#f5ede0]/70 hover:text-[#c9a84c] text-xs uppercase tracking-[0.2em] font-sans transition-colors">
+                {l.label}
+              </Link>
+            ))}
+          </div>
+          <button className="md:hidden text-[#f5ede0]" onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+        {menuOpen && (
+          <div className="md:hidden bg-[#0d0603] border-t border-[#c9a84c]/20 px-6 py-4 space-y-3">
+            {NAV_LINKS.map((l) => (
+              <Link key={l.href} to={l.href} onClick={() => setMenuOpen(false)} className="block text-[#f5ede0]/70 hover:text-[#c9a84c] text-sm uppercase tracking-widest font-sans">
+                {l.label}
+              </Link>
+            ))}
+          </div>
+        )}
+      </nav>
 
       {/* Hero */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">

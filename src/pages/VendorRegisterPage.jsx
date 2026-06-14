@@ -28,7 +28,6 @@ export default function VendorRegisterPage() {
   const [form, setForm] = useState({
     business_name: "", owner_full_name: "", category_id: "", category_name: "",
     description: "", services_products: "", email: "", phone: "",
-    password: "", password_confirm: "",
     website: "", location_address: "", location_city: "", location_state: "",
     price_range: "", opening_hours: "",
     social_facebook: "", social_instagram: "", social_twitter: "", social_whatsapp: "",
@@ -73,21 +72,12 @@ export default function VendorRegisterPage() {
       toast.error("Please fill all required fields");
       return;
     }
-    if (!form.password || form.password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
-    if (form.password !== form.password_confirm) {
-      toast.error("Passwords do not match");
-      return;
-    }
     setSubmitting(true);
     const token = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + Date.now().toString(36);
     const verifyLink = `${window.location.origin}/marketplace/verify-email?token=${token}`;
 
-    const { password_confirm, ...vendorData } = form;
     await base44.entities.Vendor.create({
-      ...vendorData,
+      ...form,
       approval_status: "Pending",
       email_verified: false,
       email_verification_token: token,
@@ -115,7 +105,7 @@ export default function VendorRegisterPage() {
             <p style="color:#888;font-size:13px;">If the button doesn't work, copy and paste this link:<br/><a href="${verifyLink}" style="color:#7a1a1a;">${verifyLink}</a></p>
             <hr style="border:none;border-top:1px solid #eee;margin:24px 0;"/>
             <p style="color:#555;font-size:13px;"><strong>What happens next?</strong><br/>After verifying your email, our team will review your application within 2–3 business days. You will be notified at this email address once a decision is made.</p>
-            <p style="color:#555;font-size:13px;">You can check your application status anytime at your <a href="${window.location.origin}/marketplace/vendor" style="color:#7a1a1a;">Vendor Portal</a>.</p>
+            <p style="color:#555;font-size:13px;">You can check your application status anytime at your <a href="${window.location.origin}/marketplace/vendor-dashboard" style="color:#7a1a1a;">Vendor Dashboard</a>.</p>
           </div>
           <div style="background:#f8f4ef;padding:16px 24px;text-align:center;">
             <p style="color:#888;font-size:12px;margin:0;">Royal Protocol Office · Warri Kingdom · <a href="mailto:${MARKETPLACE_EMAIL}" style="color:#7a1a1a;">${MARKETPLACE_EMAIL}</a></p>
@@ -141,7 +131,7 @@ export default function VendorRegisterPage() {
           <p>📧 A verification email has been sent to <strong>{form.email}</strong>.</p>
           <p>✅ Click the link in that email to verify your address.</p>
           <p>🔍 Our team will then review your listing within 2–3 business days.</p>
-          <p>📊 Check your application status anytime via the <Link to="/marketplace/vendor" className="underline font-semibold">Vendor Portal</Link>.</p>
+          <p>📊 Check your application status anytime via the <Link to="/marketplace/vendor-dashboard" className="underline font-semibold">Vendor Dashboard</Link>.</p>
         </div>
         <Button asChild variant="outline">
           <Link to="/marketplace"><ArrowLeft className="w-4 h-4 mr-2" />Back to Marketplace</Link>
@@ -152,7 +142,7 @@ export default function VendorRegisterPage() {
 
   const canNext = [
     form.business_name && form.owner_full_name && form.category_id,
-    form.email && form.phone && form.location_city && form.password && form.password === form.password_confirm,
+    form.email && form.phone && form.location_city,
     true,
     form.business_name && form.email,
   ][step];
@@ -250,12 +240,6 @@ export default function VendorRegisterPage() {
                   <Input type="email" value={form.email} onChange={e => set("email", e.target.value)} placeholder="business@example.com" /></div>
                 <div className="space-y-1.5"><Label>Phone Number <span className="text-red-500">*</span></Label>
                   <Input value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="+234 xxx xxx xxxx" /></div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5"><Label>Password <span className="text-red-500">*</span></Label>
-                  <Input type="password" value={form.password} onChange={e => set("password", e.target.value)} placeholder="Min. 6 characters" /></div>
-                <div className="space-y-1.5"><Label>Confirm Password <span className="text-red-500">*</span></Label>
-                  <Input type="password" value={form.password_confirm} onChange={e => set("password_confirm", e.target.value)} placeholder="Repeat password" /></div>
               </div>
               <div className="space-y-1.5"><Label>Website</Label>
                 <Input value={form.website} onChange={e => set("website", e.target.value)} placeholder="https://yourbusiness.com" /></div>

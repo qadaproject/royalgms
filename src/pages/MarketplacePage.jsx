@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
@@ -6,28 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Store, Plus, Heart } from "lucide-react";
+import { Search, Star, MapPin, Phone, Globe, ArrowRight, ChevronRight, Store, Plus, Filter } from "lucide-react";
 import VendorCard from "../components/marketplace/VendorCard";
 import CategoryGrid from "../components/marketplace/CategoryGrid";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
-
-const getFavourites = () => {
-  try { return JSON.parse(localStorage.getItem("fav_vendors") || "[]"); } catch { return []; }
-};
 
 export default function MarketplacePage() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [priceRange, setPriceRange] = useState("all");
   const [sortBy, setSortBy] = useState("featured");
-  const [showFavs, setShowFavs] = useState(false);
-  const [favIds, setFavIds] = useState(getFavourites);
-
-  useEffect(() => {
-    const handler = () => setFavIds(getFavourites());
-    window.addEventListener("fav_vendors_changed", handler);
-    return () => window.removeEventListener("fav_vendors_changed", handler);
-  }, []);
 
   const { data: vendors = [] } = useQuery({
     queryKey: ["vendors_public"],
@@ -69,7 +57,6 @@ export default function MarketplacePage() {
   }, [vendors, search, selectedCategory, priceRange, sortBy]);
 
   const featured = vendors.filter(v => v.featured).slice(0, 4);
-  const favouriteVendors = vendors.filter(v => favIds.includes(v.id));
 
   return (
     <div className="min-h-screen bg-background">
@@ -103,53 +90,14 @@ export default function MarketplacePage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-10">
-        {/* My Favourites toggle */}
-        {favIds.length > 0 && (
-          <div className="mb-6 flex items-center gap-3">
-            <button
-              onClick={() => setShowFavs(!showFavs)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition-colors ${showFavs ? "bg-red-50 border-red-300 text-red-600" : "bg-card border-border text-muted-foreground hover:border-red-300 hover:text-red-500"}`}
-            >
-              <Heart className={`w-4 h-4 ${showFavs ? "fill-red-500 text-red-500" : ""}`} />
-              My Favourites ({favIds.length})
-            </button>
-            {showFavs && <span className="text-xs text-muted-foreground">Showing saved vendors</span>}
-          </div>
-        )}
-
-        {/* My Favourites grid */}
-        {showFavs && (
-          <div className="mb-10">
-            {favouriteVendors.length === 0 ? (
-              <p className="text-muted-foreground text-sm py-6">Your saved vendors have been removed or are no longer available.</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                {favouriteVendors.map(v => <VendorCard key={v.id} vendor={v} />)}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Category Filter Bar */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setSelectedCategory("all")}
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${selectedCategory === "all" ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"}`}
-            >
-              All Categories
-            </button>
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(selectedCategory === cat.id ? "all" : cat.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors flex items-center gap-1.5 ${selectedCategory === cat.id ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"}`}
-              >
-                {cat.icon && <span>{cat.icon}</span>}
-                {cat.name}
-              </button>
-            ))}
-          </div>
+        {/* Categories */}
+        <div className="mb-10">
+          <h2 className="font-heading text-2xl font-semibold mb-5">Browse by Category</h2>
+          <CategoryGrid
+            categories={categories}
+            selected={selectedCategory}
+            onSelect={setSelectedCategory}
+          />
         </div>
 
         {/* Featured */}

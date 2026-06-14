@@ -1,12 +1,7 @@
-import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Trophy, BadgeCheck, Heart } from "lucide-react";
+import { MapPin, Star, Phone } from "lucide-react";
 import StarRating from "./StarRating";
-
-// Mirrors the same threshold logic used in VendorDashboardPage
-const isTopRated = (vendor) =>
-  (vendor.average_rating >= 4.5 && vendor.review_count >= 3);
 
 const priceRangeColor = {
   Budget: "text-emerald-600",
@@ -15,26 +10,9 @@ const priceRangeColor = {
   Luxury: "text-purple-600",
 };
 
-const getFavourites = () => {
-  try { return JSON.parse(localStorage.getItem("fav_vendors") || "[]"); } catch { return []; }
-};
-
 export default function VendorCard({ vendor, featured = false }) {
-  const [isFav, setIsFav] = useState(() => getFavourites().includes(vendor.id));
-
-  const toggleFav = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const favs = getFavourites();
-    const updated = favs.includes(vendor.id) ? favs.filter(id => id !== vendor.id) : [...favs, vendor.id];
-    localStorage.setItem("fav_vendors", JSON.stringify(updated));
-    setIsFav(!favs.includes(vendor.id));
-    window.dispatchEvent(new Event("fav_vendors_changed"));
-  }, [vendor.id]);
-
   return (
-    <div className="relative group">
-    <Link to={vendor.marketplace_username ? `/marketplace/vendor/${vendor.marketplace_username}` : `/marketplace/vendor/detail?id=${vendor.id}`} className="group block bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+    <Link to={`/marketplace/vendor?id=${vendor.id}`} className="group block bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
       {/* Image */}
       <div className="relative aspect-video bg-muted overflow-hidden">
         {vendor.cover_image_url ? (
@@ -44,20 +22,8 @@ export default function VendorCard({ vendor, featured = false }) {
             {vendor.category_name?.[0] || "🏪"}
           </div>
         )}
-        <button
-          onClick={toggleFav}
-          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow hover:scale-110 transition-transform z-10"
-          title={isFav ? "Remove from favourites" : "Save to favourites"}
-        >
-          <Heart className={`w-3.5 h-3.5 ${isFav ? "fill-red-500 text-red-500" : "text-gray-500"}`} />
-        </button>
         {featured && vendor.featured && (
           <Badge className="absolute top-2 left-2 text-[9px] bg-accent text-accent-foreground shadow-sm">⭐ Featured</Badge>
-        )}
-        {isTopRated(vendor) && (
-          <Badge className="absolute bottom-2 left-2 text-[9px] bg-amber-500 text-white shadow-sm flex items-center gap-1">
-            <Trophy className="w-2.5 h-2.5" /> Top Rated
-          </Badge>
         )}
         {vendor.price_range && (
           <Badge variant="secondary" className={`absolute top-2 right-2 text-[9px] ${priceRangeColor[vendor.price_range]}`}>
@@ -73,10 +39,7 @@ export default function VendorCard({ vendor, featured = false }) {
             <img src={vendor.logo_url} alt="Logo" className="w-9 h-9 rounded-lg object-cover border border-border shrink-0 -mt-6 relative shadow-sm bg-card" />
           )}
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm leading-tight truncate flex items-center gap-1">
-              {vendor.business_name}
-              {vendor.verified_badge_enabled !== false && <BadgeCheck className="w-3.5 h-3.5 shrink-0 fill-amber-400 text-white" />}
-            </p>
+            <p className="font-semibold text-sm leading-tight truncate">{vendor.business_name}</p>
             <Badge variant="outline" className="text-[9px] mt-0.5">{vendor.category_name}</Badge>
           </div>
         </div>
@@ -97,6 +60,5 @@ export default function VendorCard({ vendor, featured = false }) {
         </div>
       </div>
     </Link>
-    </div>
   );
 }

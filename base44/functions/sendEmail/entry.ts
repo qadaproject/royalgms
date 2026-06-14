@@ -1,18 +1,33 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+
 Deno.serve(async (req) => {
   try {
-    const { to, subject, html, from_name } = await req.json();
+    const base44 = createClientFromRequest(req);
+    const { to, subject, html, from_name, from_email } = await req.json();
 
     if (!to || !subject || !html) {
       return Response.json({ error: 'to, subject, and html are required' }, { status: 400 });
     }
 
     const apiKey = Deno.env.get("BREVO_API_KEY");
-    if (!apiKey) {
-      return Response.json({ error: 'BREVO_API_KEY secret must be set.' }, { status: 400 });
+    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL"); // reuse existing sender email secret
+
+    if (!apiKey || !fromEmail) {
+      return Response.json({ error: 'BREVO_API_KEY and RESEND_FROM_EMAIL secrets must be set.' }, { status: 400 });
     }
 
-    const fromEmail = Deno.env.get("SMTP_USER") || "noreply@atuwatseiii.com";
-    const senderName = from_name || "Royal Protocol Office";
+    const safeName = from_name
+      ? from_name.replace(/[—–\-|]/g, "").replace(/\s+/g, " ").trim()
+      : "Royal Protocol Office";
+
+    const senderEmail = from_email || fromEmail;
+
+    // Generate plain-text fallback by stripping HTML tags
+    const text = html
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s{2,}/g, "\n")
+      .trim();
 
     const response = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
@@ -21,20 +36,21 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        sender: { name: senderName, email: fromEmail },
+        sender: { name: safeName, email: senderEmail },
         to: [{ email: to }],
         subject,
         htmlContent: html,
+        textContent: text,
       }),
     });
 
+    const result = await response.json();
+
     if (!response.ok) {
-      const err = await response.text();
-      return Response.json({ error: err }, { status: response.status });
+      return Response.json({ error: result.message || "Brevo API error", details: result }, { status: 500 });
     }
 
-    const data = await response.json();
-    return Response.json({ success: true, messageId: data.messageId });
+    return Response.json({ success: true, result });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

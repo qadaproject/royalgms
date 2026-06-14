@@ -114,43 +114,5 @@
   "required": [
     "full_name",
     "category"
-  ],
-  "rls": {
-    "create": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chairman",
-            "data_manager",
-            "protocol_liaison"
-          ]
-        }
-      }
-    },
-    "read": {},
-    "update": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chairman",
-            "data_manager",
-            "protocol_liaison",
-            "security"
-          ]
-        }
-      }
-    },
-    "delete": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chairman"
-          ]
-        }
-      }
-    }
-  }
+  ]
 }

@@ -127,22 +127,21 @@ export default function Notifications() {
   const [channel, setChannel] = useState("Email");
   const [bulkSending, setBulkSending] = useState(false);
   const [search, setSearch] = useState("");
-  const [rsvpFilter, setRsvpFilter] = useState("All");
   const queryClient = useQueryClient();
 
   const { data: guests = [] } = useQuery({
     queryKey: ["guests"],
-    queryFn: () => base44.entities.Guest.list("-created_date", 10000),
+    queryFn: () => base44.entities.Guest.list("-created_date", 500),
   });
 
   const { data: invitations = [] } = useQuery({
     queryKey: ["invitations"],
-    queryFn: () => base44.entities.Invitation.list("-created_date", 10000),
+    queryFn: () => base44.entities.Invitation.list("-created_date", 500),
   });
 
   const { data: logs = [] } = useQuery({
     queryKey: ["notification_logs"],
-    queryFn: () => base44.entities.NotificationLog.list("-created_date", 10000),
+    queryFn: () => base44.entities.NotificationLog.list("-created_date", 500),
   });
 
   const { data: settings = [] } = useQuery({
@@ -178,23 +177,20 @@ export default function Notifications() {
   }, [logs]);
 
   const sentGuestIds = new Set(logs.map((l) => l.guest_id));
+  const pendingGuests = guests.filter((g) => g.rsvp_status === "Pending" && g.qr_code);
 
   const filteredGuests = useMemo(() => {
-    let result = guests;
-    if (rsvpFilter !== "All") result = result.filter((g) => g.rsvp_status === rsvpFilter);
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      result = result.filter((g) =>
-        `${g.formal_salutation || ""} ${g.full_name}`.toLowerCase().includes(q) ||
-        (g.email || "").toLowerCase().includes(q) ||
-        (g.contact_person_email || "").toLowerCase().includes(q) ||
-        (g.phone || "").includes(q) ||
-        (g.contact_person_phone || "").includes(q) ||
-        (g.category || "").toLowerCase().includes(q)
-      );
-    }
-    return result;
-  }, [guests, search, rsvpFilter]);
+    if (!search.trim()) return pendingGuests;
+    const q = search.toLowerCase();
+    return pendingGuests.filter((g) =>
+      `${g.formal_salutation || ""} ${g.full_name}`.toLowerCase().includes(q) ||
+      (g.email || "").toLowerCase().includes(q) ||
+      (g.contact_person_email || "").toLowerCase().includes(q) ||
+      (g.phone || "").includes(q) ||
+      (g.contact_person_phone || "").includes(q) ||
+      (g.category || "").toLowerCase().includes(q)
+    );
+  }, [pendingGuests, search]);
 
   const logMutation = useMutation({
     mutationFn: (data) => base44.entities.NotificationLog.create(data),
@@ -202,107 +198,100 @@ export default function Notifications() {
   });
 
   const sendNotification = async (guest, ch) => {
-    setSending((prev) => ({ ...prev, [guest.id]: true }));
     if (!guest.qr_code) {
       toast.error(`${guest.full_name} has no QR token. Re-save the guest to generate one.`);
-      setSending((prev) => ({ ...prev, [guest.id]: false }));
       return;
     }
+    setSending((prev) => ({ ...prev, [guest.id]: true }));
+
+    const emailTemplate = eventSettings.email_template || DEFAULT_EMAIL_TEMPLATE;
+    const smsTemplate = eventSettings.sms_template || DEFAULT_SMS_TEMPLATE;
+    const emailSubject = eventSettings.email_subject || DEFAULT_EMAIL_SUBJECT;
+    const emailBody = applyTemplate(emailTemplate, guest);
+    const smsBody = applyTemplate(smsTemplate, guest);
 
     let success = true;
-    let emailBody = "";
-    try {
-      const emailTemplate = eventSettings.email_template || DEFAULT_EMAIL_TEMPLATE;
-      const smsTemplate = eventSettings.sms_template || DEFAULT_SMS_TEMPLATE;
-      const emailSubject = eventSettings.email_subject || DEFAULT_EMAIL_SUBJECT;
-      emailBody = applyTemplate(emailTemplate, guest);
-      const smsBody = applyTemplate(smsTemplate, guest);
 
-      if (ch === "Email" || ch === "Email + SMS" || ch === "Email + WhatsApp") {
-        const htmlBody = buildHtmlEmail(guest, emailBody, eventSettings);
-        const emailRecipients = [guest.email, guest.contact_person_email].filter(Boolean);
-        const uniqueRecipients = [...new Set(emailRecipients)];
-        if (uniqueRecipients.length > 0) {
-          for (const to of uniqueRecipients) {
-            try {
-              const res = await base44.functions.invoke("sendEmail", {
-                to,
-                subject: emailSubject,
-                html: htmlBody,
-                from_name: "Royal Protocol Office Warri Kingdom",
-              });
-              if (res?.data?.error) success = false;
-            } catch {
-              success = false;
-            }
-          }
-        } else {
-          success = false;
-        }
-      }
-
-      if (ch === "SMS" || ch === "Email + SMS") {
-        const rawPhone = guest.phone || guest.contact_person_phone;
-        const phone = formatPhone(rawPhone);
-        if (phone) {
+    if (ch === "Email" || ch === "Email + SMS" || ch === "Email + WhatsApp") {
+      const htmlBody = buildHtmlEmail(guest, emailBody, eventSettings);
+      const emailRecipients = [guest.email, guest.contact_person_email].filter(Boolean);
+      const uniqueRecipients = [...new Set(emailRecipients)];
+      if (uniqueRecipients.length > 0) {
+        for (const to of uniqueRecipients) {
           try {
-            const res = await base44.functions.invoke("sendSMS", { phone, messageBody: smsBody });
-            if (res?.data?.error || res?.data?.result?.status === "error") success = false;
+            const res = await base44.functions.invoke("sendEmail", {
+              to,
+              subject: emailSubject,
+              html: htmlBody,
+              from_name: "Royal Protocol Office Warri Kingdom",
+            });
+            if (res?.data?.error) success = false;
           } catch {
             success = false;
           }
-        } else {
-          success = false;
         }
-      }
-
-      if (ch === "WhatsApp" || ch === "Email + WhatsApp") {
-        const rawPhone = guest.phone || guest.contact_person_phone;
-        const phone = formatPhone(rawPhone);
-        const guestName = `${guest.formal_salutation || ""} ${guest.full_name}`.trim();
-        const inviteLink = buildInviteLink(guest);
-        if (phone) {
-          await base44.functions.invoke("sendWhatsApp", {
-            phone,
-            name: guestName,
-            link: inviteLink,
-          }).catch(() => { success = false; });
-        } else {
-          success = false;
-        }
-      }
-
-      try {
-        await logMutation.mutateAsync({
-          guest_id: guest.id,
-          guest_name: guest.full_name,
-          guest_email: guest.email || guest.contact_person_email || "",
-          guest_phone: guest.phone || guest.contact_person_phone || "",
-          channel: ch,
-          status: success ? "Sent" : "Failed",
-          message_preview: emailBody.substring(0, 200),
-          rsvp_token: guest.qr_code,
-        });
-        base44.entities.GuestActivityLog.create({
-          guest_id: guest.id,
-          guest_name: guest.full_name,
-          event_type: "notification_sent",
-          description: `${ch} notification ${success ? "sent" : "failed"}`,
-          new_value: success ? "Sent" : "Failed",
-        }).catch(() => {});
-      } catch {
-        // log failure is non-critical
-      }
-
-      if (success) {
-        toast.success(`Notification sent to ${guest.full_name}`);
       } else {
-        toast.error(`Failed to send to ${guest.full_name}`);
+        success = false;
       }
-    } catch (err) {
-      toast.error(`Error sending to ${guest.full_name}: ${err?.message || "Unknown error"}`);
-    } finally {
-      setSending((prev) => ({ ...prev, [guest.id]: false }));
+    }
+
+    if (ch === "SMS" || ch === "Email + SMS") {
+      const rawPhone = guest.phone || guest.contact_person_phone;
+      const phone = formatPhone(rawPhone);
+      if (phone) {
+        try {
+          const res = await base44.functions.invoke("sendSMS", { phone, messageBody: smsBody });
+          if (res?.data?.error || res?.data?.result?.status === "error") {
+            success = false;
+          }
+        } catch {
+          success = false;
+        }
+      } else {
+        success = false;
+      }
+    }
+
+    if (ch === "WhatsApp" || ch === "Email + WhatsApp") {
+      const rawPhone = guest.phone || guest.contact_person_phone;
+      const phone = formatPhone(rawPhone);
+      const guestName = `${guest.formal_salutation || ""} ${guest.full_name}`.trim();
+      const inviteLink = buildInviteLink(guest);
+      if (phone) {
+        await base44.functions.invoke("sendWhatsApp", {
+          phone,
+          name: guestName,
+          link: inviteLink,
+        }).catch(() => { success = false; });
+      } else {
+        success = false;
+      }
+    }
+
+    await logMutation.mutateAsync({
+      guest_id: guest.id,
+      guest_name: guest.full_name,
+      guest_email: guest.email || guest.contact_person_email || "",
+      guest_phone: guest.phone || guest.contact_person_phone || "",
+      channel: ch,
+      status: success ? "Sent" : "Failed",
+      message_preview: emailBody.substring(0, 200),
+      rsvp_token: guest.qr_code,
+    });
+
+    base44.entities.GuestActivityLog.create({
+      guest_id: guest.id,
+      guest_name: guest.full_name,
+      event_type: "notification_sent",
+      description: `${ch} notification ${success ? "sent" : "failed"}`,
+      new_value: success ? "Sent" : "Failed",
+    }).catch(() => {});
+
+    setSending((prev) => ({ ...prev, [guest.id]: false }));
+    if (success) {
+      toast.success(`Notification sent to ${guest.full_name}`);
+    } else {
+      toast.error(`Failed to send to ${guest.full_name}`);
     }
   };
 
@@ -326,7 +315,7 @@ export default function Notifications() {
 
   return (
     <div>
-      <PageHeader title="Notifications" subtitle="Send notifications to any guest regardless of RSVP status">
+      <PageHeader title="Notifications" subtitle="Send personalized RSVP reminders to pending guests">
         <Select value={channel} onValueChange={setChannel}>
           <SelectTrigger className="w-44 h-9">
             <SelectValue />
@@ -351,42 +340,28 @@ export default function Notifications() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* All Guests */}
+        {/* Pending Guests */}
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-heading text-lg font-semibold">All Guests</h2>
+            <h2 className="font-heading text-lg font-semibold">Pending RSVP Guests</h2>
             <Badge variant="outline" className="text-[10px]">{filteredGuests.length} shown</Badge>
           </div>
 
-          {/* Search + RSVP Filter */}
-          <div className="flex gap-2 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by name, email, phone, category..."
-                className="pl-8 h-9 text-sm"
-              />
-            </div>
-            <Select value={rsvpFilter} onValueChange={setRsvpFilter}>
-              <SelectTrigger className="w-36 h-9 shrink-0">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Status</SelectItem>
-                <SelectItem value="Pending">Pending</SelectItem>
-                <SelectItem value="Accepted">Accepted</SelectItem>
-                <SelectItem value="Declined">Declined</SelectItem>
-                <SelectItem value="Proxy">Proxy</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Search */}
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, email, phone, category..."
+              className="pl-8 h-9 text-sm"
+            />
           </div>
 
           {filteredGuests.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-emerald-500" />
-              <p className="font-heading text-lg">{search || rsvpFilter !== "All" ? "No matching guests" : "No guests found"}</p>
+              <p className="font-heading text-lg">{search ? "No matching guests" : "All guests have responded"}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -401,12 +376,6 @@ export default function Notifications() {
                       </p>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <CategoryBadge category={g.category} />
-                        <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full border ${
-                          g.rsvp_status === "Accepted" ? "text-emerald-700 border-emerald-400/40 bg-emerald-500/10" :
-                          g.rsvp_status === "Declined" ? "text-red-700 border-red-400/40 bg-red-500/10" :
-                          g.rsvp_status === "Proxy" ? "text-blue-700 border-blue-400/40 bg-blue-500/10" :
-                          "text-amber-700 border-amber-400/40 bg-amber-500/10"
-                        }`}>{g.rsvp_status || "Pending"}</span>
                         <span className={`text-[10px] truncate ${!hasEmail ? "text-amber-600 font-medium" : "text-muted-foreground"}`}>
                           {hasEmail ? (g.email || g.contact_person_email) : "No email"}
                         </span>

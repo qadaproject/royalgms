@@ -1,121 +1,41 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, MapPin, Phone, Globe, Mail, ArrowLeft, Facebook, Instagram, Twitter, MessageCircle, Clock, Tag, ChevronLeft, ChevronRight, BadgeCheck, Eye, Copy, Check } from "lucide-react";
-
-function RevealCallButton({ phone }) {
-  const [revealed, setRevealed] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  if (!revealed) {
-    return (
-      <Button className="w-full" size="sm" onClick={() => setRevealed(true)}>
-        <Eye className="w-4 h-4 mr-2" />Reveal & Call
-      </Button>
-    );
-  }
-
-  return (
-    <div className="flex gap-2">
-      <Button asChild className="flex-1" size="sm">
-        <a href={`tel:${phone}`}><Phone className="w-4 h-4 mr-2" />{phone}</a>
-      </Button>
-      <Button variant="outline" size="sm" className="px-3" title="Copy"
-        onClick={() => { navigator.clipboard.writeText(phone); setCopied(true); setTimeout(() => setCopied(false), 2000); }}>
-        {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-      </Button>
-    </div>
-  );
-}
-
-function MaskedPhone({ phone }) {
-  const [revealed, setRevealed] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const masked = phone.length > 6
-    ? phone.slice(0, 4) + "****" + phone.slice(-3)
-    : phone.slice(0, 2) + "****";
-
-  const copyPhone = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    navigator.clipboard.writeText(phone);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  if (!revealed) {
-    return (
-      <button
-        onClick={() => setRevealed(true)}
-        className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors group"
-        title="Click to reveal number"
-      >
-        <span className="font-mono tracking-wider">{masked}</span>
-        <span className="flex items-center gap-0.5 text-xs text-primary group-hover:underline">
-          <Eye className="w-3 h-3" /> Reveal
-        </span>
-      </button>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-2">
-      <a href={`tel:${phone}`} className="font-mono tracking-wider text-foreground hover:text-primary transition-colors">
-        {phone}
-      </a>
-      <button onClick={copyPhone} className="text-muted-foreground hover:text-primary transition-colors" title="Copy number">
-        {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
-      </button>
-    </div>
-  );
-}
+import { Star, MapPin, Phone, Globe, Mail, ArrowLeft, Facebook, Instagram, Twitter, MessageCircle, Clock, Tag, ChevronLeft, ChevronRight } from "lucide-react";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import StarRating from "../components/marketplace/StarRating";
-import ProductCard from "../components/marketplace/ProductCard";
 import { toast } from "sonner";
 
 export default function VendorDetailPage() {
-  const { username } = useParams();
-  const urlParams = new URLSearchParams(window.location.search);
-  const vendorId = urlParams.get("id");
+  const params = new URLSearchParams(window.location.search);
+  const vendorId = params.get("id");
   const queryClient = useQueryClient();
   const [galleryIdx, setGalleryIdx] = useState(0);
-  const [reviewForm, setReviewForm] = useState({ reviewer_name: "", reviewer_email: "", rating: 5, comment: "" });
+  const [reviewForm, setReviewForm] = useState({ reviewer_name: "", reviewer_email: "", rating: 5, title: "", comment: "" });
   const [submitting, setSubmitting] = useState(false);
 
   const { data: vendor } = useQuery({
-    queryKey: ["vendor", vendorId, username],
-    queryFn: async () => {
-      const results = username
-        ? await base44.entities.Vendor.filter({ marketplace_username: username, approval_status: "Approved" })
-        : await base44.entities.Vendor.filter({ id: vendorId });
-      const v = results[0];
-      if (v?.id) {
-        // Increment profile view counter (fire-and-forget)
-        base44.entities.Vendor.update(v.id, { profile_view_count: (v.profile_view_count || 0) + 1 }).catch(() => {});
-      }
-      return results;
-    },
+    queryKey: ["vendor", vendorId],
+    queryFn: () => base44.entities.Vendor.filter({ id: vendorId }),
     select: d => d[0],
-    enabled: !!(vendorId || username),
+    enabled: !!vendorId,
   });
 
   const { data: products = [] } = useQuery({
-    queryKey: ["vendor_products", vendor?.id],
-    queryFn: () => base44.entities.VendorProduct.filter({ vendor_id: vendor?.id, is_available: true }),
-    enabled: !!vendor?.id,
+    queryKey: ["vendor_products", vendorId],
+    queryFn: () => base44.entities.VendorProduct.filter({ vendor_id: vendorId, is_available: true }),
+    enabled: !!vendorId,
   });
 
   const { data: reviews = [] } = useQuery({
-    queryKey: ["vendor_reviews", vendor?.id],
-    queryFn: () => base44.entities.VendorReview.filter({ vendor_id: vendor?.id, is_approved: true }),
-    enabled: !!vendor?.id,
+    queryKey: ["vendor_reviews", vendorId],
+    queryFn: () => base44.entities.VendorReview.filter({ vendor_id: vendorId, is_approved: true }),
+    enabled: !!vendorId,
   });
 
   const submitReview = async (e) => {
@@ -124,11 +44,11 @@ export default function VendorDetailPage() {
     setSubmitting(true);
     await base44.entities.VendorReview.create({
       ...reviewForm,
-      vendor_id: vendor?.id,
+      vendor_id: vendorId,
       vendor_name: vendor?.business_name || "",
     });
     toast.success("Review submitted! It will appear after admin approval.");
-    setReviewForm({ reviewer_name: "", reviewer_email: "", rating: 5, comment: "" });
+    setReviewForm({ reviewer_name: "", reviewer_email: "", rating: 5, title: "", comment: "" });
     setSubmitting(false);
   };
 
@@ -192,19 +112,8 @@ export default function VendorDetailPage() {
                   {vendor.featured && <Badge className="bg-accent text-accent-foreground text-[10px]">⭐ Featured</Badge>}
                   <Badge variant="outline" className="text-[10px]">{vendor.category_name}</Badge>
                   {vendor.price_range && <span className={`text-xs font-semibold ${priceRangeColor[vendor.price_range] || ""}`}>{vendor.price_range}</span>}
-                  {(vendor.average_rating >= 4.5 && vendor.review_count >= 3) && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-amber-100 text-amber-700 border border-amber-300 rounded-full px-2 py-0.5">
-                      🏆 Top Rated
-                    </span>
-                  )}
                 </div>
-                <h1 className="font-heading text-3xl font-semibold flex items-center gap-2">
-                  {vendor.business_name}
-                  {vendor.verified_badge_enabled !== false && (
-                    <BadgeCheck className="w-7 h-7 shrink-0 fill-amber-400 text-white" title="Verified Vendor" />
-                  )}
-                </h1>
-
+                <h1 className="font-heading text-3xl font-semibold">{vendor.business_name}</h1>
                 <div className="flex items-center gap-2 mt-1">
                   <StarRating rating={vendor.average_rating || 0} />
                   <span className="text-sm text-muted-foreground">({vendor.review_count || 0} reviews)</span>
@@ -232,7 +141,27 @@ export default function VendorDetailPage() {
                 <h2 className="font-heading text-xl font-semibold mb-4">Listings & Pricing</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {products.map(p => (
-                    <ProductCard key={p.id} product={p} vendor={vendor} />
+                    <div key={p.id} className="border border-border rounded-xl overflow-hidden bg-card hover:shadow-md transition-shadow">
+                      {p.image_urls?.[0] && (
+                        <img src={p.image_urls[0]} alt={p.name} className="w-full h-36 object-cover" />
+                      )}
+                      <div className="p-3">
+                        <p className="font-semibold text-sm">{p.name}</p>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          {p.discount_percent > 0 ? (
+                            <>
+                              <span className="text-sm font-bold text-primary">₦{(p.discounted_price || p.price * (1 - p.discount_percent / 100)).toLocaleString()}</span>
+                              <span className="text-xs line-through text-muted-foreground">₦{p.price?.toLocaleString()}</span>
+                              <Badge className="text-[9px] bg-red-100 text-red-700 border-red-300">-{p.discount_percent}%</Badge>
+                            </>
+                          ) : (
+                            <span className="text-sm font-bold text-primary">₦{p.price?.toLocaleString()}</span>
+                          )}
+                          {p.unit && <span className="text-xs text-muted-foreground">/ {p.unit}</span>}
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -251,6 +180,7 @@ export default function VendorDetailPage() {
                         <p className="font-semibold text-sm">{r.reviewer_name}</p>
                         <StarRating rating={r.rating} size="sm" />
                       </div>
+                      {r.title && <p className="text-sm font-medium mb-1">{r.title}</p>}
                       <p className="text-sm text-muted-foreground">{r.comment}</p>
                     </div>
                   ))}
@@ -272,6 +202,7 @@ export default function VendorDetailPage() {
                         className={`text-xl transition-colors ${n <= reviewForm.rating ? "text-amber-400" : "text-muted-foreground/30"}`}>★</button>
                     ))}
                   </div>
+                  <Input placeholder="Review title" value={reviewForm.title} onChange={e => setReviewForm(f => ({ ...f, title: e.target.value }))} />
                   <Textarea placeholder="Write your review... *" value={reviewForm.comment} onChange={e => setReviewForm(f => ({ ...f, comment: e.target.value }))} className="h-24" />
                   <Button type="submit" disabled={submitting}>{submitting ? "Submitting..." : "Submit Review"}</Button>
                 </form>
@@ -291,10 +222,10 @@ export default function VendorDetailPage() {
                   </div>
                 )}
                 {vendor.phone && (
-                  <div className="flex gap-2">
+                  <a href={`tel:${vendor.phone}`} className="flex gap-2 text-muted-foreground hover:text-foreground transition-colors">
                     <Phone className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
-                    <MaskedPhone phone={vendor.phone} />
-                  </div>
+                    <span>{vendor.phone}</span>
+                  </a>
                 )}
                 {vendor.email && (
                   <a href={`mailto:${vendor.email}`} className="flex gap-2 text-muted-foreground hover:text-foreground transition-colors">
@@ -338,6 +269,11 @@ export default function VendorDetailPage() {
               )}
 
               <div className="mt-4 pt-4 border-t border-border space-y-2">
+                {vendor.phone && (
+                  <Button asChild className="w-full" size="sm">
+                    <a href={`tel:${vendor.phone}`}><Phone className="w-4 h-4 mr-2" />Call Now</a>
+                  </Button>
+                )}
                 {vendor.social_whatsapp && (
                   <Button asChild variant="outline" className="w-full border-green-500 text-green-600 hover:bg-green-50" size="sm">
                     <a href={`https://wa.me/${vendor.social_whatsapp}`} target="_blank" rel="noreferrer">

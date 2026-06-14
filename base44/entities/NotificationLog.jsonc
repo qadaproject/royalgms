@@ -43,49 +43,5 @@
     "guest_id",
     "guest_name",
     "channel"
-  ],
-  "rls": {
-    "create": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chairman",
-            "data_manager"
-          ]
-        }
-      }
-    },
-    "read": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chairman",
-            "data_manager"
-          ]
-        }
-      }
-    },
-    "update": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chairman"
-          ]
-        }
-      }
-    },
-    "delete": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chairman"
-          ]
-        }
-      }
-    }
-  }
+  ]
 }

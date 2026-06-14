@@ -10,8 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Store, CheckCircle, XCircle, Clock, Star, Tag, Plus, Pencil, Trash2, Eye, Package, BarChart2, Upload, Loader2, BadgeCheck, BadgeX, Flag, Mail, TrendingUp, Users, Heart, Share2, MessageSquare, Trophy, History, CheckSquare, Square } from "lucide-react";
-import AdminVendorMessaging from "../components/marketplace/AdminVendorMessaging";
+import { Store, CheckCircle, XCircle, Clock, Star, Tag, Plus, Pencil, Trash2, Eye, Package, BarChart2, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import PageHeader from "../components/shared/PageHeader";
@@ -44,12 +43,6 @@ const emptyProductForm = {
 export default function AdminMarketplace() {
   const queryClient = useQueryClient();
   const [approvalFilter, setApprovalFilter] = useState("Pending");
-  const [selectedIds, setSelectedIds] = useState(new Set());
-  const [bulkAction, setBulkAction] = useState("");
-  const [bulkMessageDialog, setBulkMessageDialog] = useState(false);
-  const [bulkSubject, setBulkSubject] = useState("");
-  const [bulkBody, setBulkBody] = useState("");
-  const [bulkSending, setBulkSending] = useState(false);
 
   // Dialogs & state
   const [reviewVendor, setReviewVendor] = useState(null);
@@ -87,11 +80,6 @@ export default function AdminMarketplace() {
     queryFn: () => base44.entities.VendorReview.list("-created_date", 200),
   });
 
-  const { data: flaggedInteractions = [] } = useQuery({
-    queryKey: ["flagged_interactions"],
-    queryFn: () => base44.entities.VendorProductInteraction.filter({ type: "report" }),
-  });
-
   // --- Helpers ---
   const ask = (title, description, onConfirm) => setConfirm({ title, description, onConfirm });
 
@@ -116,26 +104,6 @@ export default function AdminMarketplace() {
     setRejectReason("");
     setReviewVendor(null);
   };
-
-  const toggleVerifiedBadge = (v) => ask(
-    v.verified_badge_enabled === false ? "Enable Verified Badge?" : "Disable Verified Badge?",
-    v.verified_badge_enabled === false
-      ? `Re-enable the verified badge for ${v.business_name}?`
-      : `Remove the verified badge from ${v.business_name}? Their listing stays approved but the badge is hidden.`,
-    async () => {
-      const enabling = v.verified_badge_enabled === false;
-      await base44.entities.Vendor.update(v.id, { verified_badge_enabled: enabling });
-      await base44.entities.VendorAdminLog.create({
-        vendor_id: v.id,
-        vendor_name: v.business_name,
-        action: enabling ? "badge_enabled" : "badge_disabled",
-        notes: enabling ? "Verified badge re-enabled by admin" : "Verified badge disabled by admin",
-      });
-      queryClient.invalidateQueries({ queryKey: ["all_vendors"] });
-      queryClient.invalidateQueries({ queryKey: ["vendor_admin_logs"] });
-      toast.success(enabling ? "Verified badge enabled" : "Verified badge disabled");
-    }
-  );
 
   const toggleFeatured = (v) => ask(
     v.featured ? "Remove from Featured?" : "Mark as Featured?",
@@ -291,55 +259,7 @@ export default function AdminMarketplace() {
     setUploadingProductImg(false);
   };
 
-  const { data: adminLogs = [] } = useQuery({
-    queryKey: ["vendor_admin_logs"],
-    queryFn: () => base44.entities.VendorAdminLog.list("-created_date", 200),
-  });
-
   const filteredVendors = vendors.filter(v => approvalFilter === "all" ? true : v.approval_status === approvalFilter);
-
-  const toggleSelect = (id) => setSelectedIds(prev => {
-    const next = new Set(prev);
-    next.has(id) ? next.delete(id) : next.add(id);
-    return next;
-  });
-
-  const toggleSelectAll = () => {
-    if (selectedIds.size === filteredVendors.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filteredVendors.map(v => v.id)));
-    }
-  };
-
-  const applyBulkAction = async () => {
-    if (!bulkAction || selectedIds.size === 0) return;
-    const ids = [...selectedIds];
-    await Promise.all(ids.map(id => {
-      if (bulkAction === "Approved") return base44.entities.Vendor.update(id, { approval_status: "Approved" });
-      if (bulkAction === "Suspended") return base44.entities.Vendor.update(id, { approval_status: "Suspended" });
-      if (bulkAction === "badge_on") return base44.entities.Vendor.update(id, { verified_badge_enabled: true });
-      if (bulkAction === "badge_off") return base44.entities.Vendor.update(id, { verified_badge_enabled: false });
-      return Promise.resolve();
-    }));
-    queryClient.invalidateQueries({ queryKey: ["all_vendors"] });
-    toast.success(`Updated ${ids.length} vendor${ids.length > 1 ? "s" : ""}`);
-    setSelectedIds(new Set());
-    setBulkAction("");
-  };
-
-  const sendBulkMessage = async () => {
-    if (!bulkSubject || !bulkBody) { toast.error("Subject and message required"); return; }
-    setBulkSending(true);
-    const targets = filteredVendors.filter(v => selectedIds.has(v.id));
-    await Promise.all(targets.map(v => sendMarketplaceMail(v.email, bulkSubject, `<p>Dear ${v.owner_full_name},</p>${bulkBody.split("\n").map(l => `<p>${l}</p>`).join("")}<br/><p>${MARKETPLACE_NAME}<br/>Warri Kingdom</p>`)));
-    setBulkSending(false);
-    setBulkMessageDialog(false);
-    setBulkSubject("");
-    setBulkBody("");
-    toast.success(`Message sent to ${targets.length} vendor${targets.length > 1 ? "s" : ""}`);
-    setSelectedIds(new Set());
-  };
 
   const metrics = {
     total: vendors.length,
@@ -349,12 +269,6 @@ export default function AdminMarketplace() {
     products: products.length,
     reviews: reviews.length,
     pendingReviews: reviews.filter(r => !r.is_approved).length,
-    flagged: flaggedInteractions.filter(i => !i.is_resolved).length,
-    totalViews: products.reduce((a, p) => a + (p.view_count || 0), 0),
-    totalFavs: products.reduce((a, p) => a + (p.favourite_count || 0), 0),
-    totalShares: products.reduce((a, p) => a + (p.share_count || 0), 0),
-    topRated: vendors.filter(v => v.average_rating >= 4.5 && v.review_count >= 3).length,
-    profileViews: vendors.reduce((a, v) => a + (v.profile_view_count || 0), 0),
   };
 
   const statusColor = {
@@ -378,14 +292,15 @@ export default function AdminMarketplace() {
       </PageHeader>
 
       {/* Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
         {[
           { label: "Total Vendors", value: metrics.total, icon: <Store className="w-4 h-4 text-primary" /> },
           { label: "Approved", value: metrics.approved, icon: <CheckCircle className="w-4 h-4 text-emerald-500" /> },
           { label: "Pending", value: metrics.pending, icon: <Clock className="w-4 h-4 text-amber-500" /> },
+          { label: "Featured", value: metrics.featured, icon: <Star className="w-4 h-4 text-amber-400" /> },
           { label: "Products", value: metrics.products, icon: <Package className="w-4 h-4 text-blue-500" /> },
+          { label: "Reviews", value: metrics.reviews, icon: <BarChart2 className="w-4 h-4 text-purple-500" /> },
           { label: "Pending Reviews", value: metrics.pendingReviews, icon: <Clock className="w-4 h-4 text-orange-500" /> },
-          { label: "Flagged Reports", value: metrics.flagged, icon: <Flag className="w-4 h-4 text-red-500" /> },
         ].map(m => (
           <div key={m.label} className="bg-card border border-border rounded-xl p-3">
             <div className="flex items-center gap-1.5 mb-1">{m.icon}<span className="text-[10px] text-muted-foreground uppercase tracking-wide">{m.label}</span></div>
@@ -393,87 +308,31 @@ export default function AdminMarketplace() {
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-        {[
-          { label: "Profile Visits", value: metrics.profileViews, icon: <Users className="w-4 h-4 text-indigo-500" /> },
-          { label: "Total Views", value: metrics.totalViews, icon: <Eye className="w-4 h-4 text-blue-400" /> },
-          { label: "Total Favourites", value: metrics.totalFavs, icon: <Heart className="w-4 h-4 text-red-400" /> },
-          { label: "Top Rated Vendors", value: metrics.topRated, icon: <Trophy className="w-4 h-4 text-amber-500" /> },
-        ].map(m => (
-          <div key={m.label} className="bg-card border border-border rounded-xl p-3">
-            <div className="flex items-center gap-1.5 mb-1">{m.icon}<span className="text-[10px] text-muted-foreground uppercase tracking-wide">{m.label}</span></div>
-            <p className="font-heading text-2xl font-semibold">{m.value.toLocaleString()}</p>
-          </div>
-        ))}
-      </div>
 
       <Tabs defaultValue="vendors">
-        <TabsList className="mb-6 flex-wrap h-auto gap-1">
+        <TabsList className="mb-6">
           <TabsTrigger value="vendors"><Store className="w-4 h-4 mr-1" />Vendors</TabsTrigger>
           <TabsTrigger value="products"><Package className="w-4 h-4 mr-1" />Products</TabsTrigger>
           <TabsTrigger value="categories"><Tag className="w-4 h-4 mr-1" />Categories</TabsTrigger>
           <TabsTrigger value="reviews"><Star className="w-4 h-4 mr-1" />Reviews {metrics.pendingReviews > 0 && <Badge className="ml-1 h-4 min-w-4 text-[9px] bg-amber-500">{metrics.pendingReviews}</Badge>}</TabsTrigger>
-          <TabsTrigger value="flagged"><Flag className="w-4 h-4 mr-1" />Flagged {metrics.flagged > 0 && <Badge className="ml-1 h-4 min-w-4 text-[9px] bg-red-500">{metrics.flagged}</Badge>}</TabsTrigger>
-          <TabsTrigger value="messaging"><Mail className="w-4 h-4 mr-1" />Messaging</TabsTrigger>
-          <TabsTrigger value="activitylog"><History className="w-4 h-4 mr-1" />Activity Log</TabsTrigger>
         </TabsList>
 
         {/* Vendors Tab */}
         <TabsContent value="vendors">
           <div className="flex items-center gap-3 mb-4 flex-wrap">
             {["all", "Pending", "Approved", "Rejected", "Suspended"].map(s => (
-              <Button key={s} size="sm" variant={approvalFilter === s ? "default" : "outline"} onClick={() => { setApprovalFilter(s); setSelectedIds(new Set()); }} className="capitalize">
+              <Button key={s} size="sm" variant={approvalFilter === s ? "default" : "outline"} onClick={() => setApprovalFilter(s)} className="capitalize">
                 {s === "all" ? "All" : s}
                 {s !== "all" && <Badge variant="outline" className="ml-1 text-[9px]">{vendors.filter(v => v.approval_status === s).length}</Badge>}
               </Button>
             ))}
           </div>
-
-          {/* Bulk action toolbar */}
-          {filteredVendors.length > 0 && (
-            <div className="flex items-center gap-3 mb-3 p-3 bg-muted/50 rounded-xl flex-wrap">
-              <button onClick={toggleSelectAll} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                {selectedIds.size === filteredVendors.length && filteredVendors.length > 0
-                  ? <CheckSquare className="w-4 h-4 text-primary" />
-                  : <Square className="w-4 h-4" />}
-                {selectedIds.size === 0 ? "Select All" : `${selectedIds.size} selected`}
-              </button>
-              {selectedIds.size > 0 && (
-                <>
-                  <Select value={bulkAction} onValueChange={setBulkAction}>
-                    <SelectTrigger className="w-44 h-8 text-xs"><SelectValue placeholder="Bulk action..." /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Approved">Set Approved</SelectItem>
-                      <SelectItem value="Suspended">Set Suspended</SelectItem>
-                      <SelectItem value="badge_on">Enable Badge</SelectItem>
-                      <SelectItem value="badge_off">Disable Badge</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {bulkAction && (
-                    <Button size="sm" className="h-8 text-xs" onClick={() => ask("Apply Bulk Action?", `Apply "${bulkAction}" to ${selectedIds.size} vendor(s)?`, applyBulkAction)}>
-                      Apply
-                    </Button>
-                  )}
-                  <Button size="sm" variant="outline" className="h-8 text-xs gap-1" onClick={() => setBulkMessageDialog(true)}>
-                    <Mail className="w-3.5 h-3.5" />Message Selected
-                  </Button>
-                  <button onClick={() => setSelectedIds(new Set())} className="text-xs text-muted-foreground hover:text-foreground ml-auto">Clear</button>
-                </>
-              )}
-            </div>
-          )}
-
           <div className="space-y-3">
             {filteredVendors.length === 0 ? (
               <p className="text-center text-muted-foreground py-12">No vendors found.</p>
             ) : filteredVendors.map(v => (
-              <div key={v.id} className={`bg-card border rounded-xl p-4 flex items-start gap-4 flex-wrap transition-colors ${selectedIds.has(v.id) ? "border-primary/50 bg-primary/5" : "border-border"}`}>
+              <div key={v.id} className="bg-card border border-border rounded-xl p-4 flex items-start gap-4 flex-wrap">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <button onClick={() => toggleSelect(v.id)} className="shrink-0">
-                    {selectedIds.has(v.id)
-                      ? <CheckSquare className="w-4 h-4 text-primary" />
-                      : <Square className="w-4 h-4 text-muted-foreground hover:text-foreground" />}
-                  </button>
                   {v.logo_url ? (
                     <img src={v.logo_url} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0 border border-border" />
                   ) : (
@@ -500,11 +359,6 @@ export default function AdminMarketplace() {
                   <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setReviewVendor(v)}>
                     <Eye className="w-3 h-3 mr-1" />Review
                   </Button>
-                  <a href={v.marketplace_username ? `/marketplace/vendor/${v.marketplace_username}` : `/marketplace/vendor/detail?id=${v.id}`} target="_blank" rel="noreferrer">
-                    <Button size="sm" variant="outline" className="h-7 text-xs text-indigo-600 border-indigo-300 hover:bg-indigo-50">
-                      <Eye className="w-3 h-3 mr-1" />Preview
-                    </Button>
-                  </a>
                   <Button size="sm" variant="outline" className="h-7 text-xs"
                     onClick={() => { setVendorForm({ ...emptyVendorForm, ...v }); setVendorDialog(v); }}>
                     <Pencil className="w-3 h-3 mr-1" />Edit
@@ -512,13 +366,6 @@ export default function AdminMarketplace() {
                   <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => toggleFeatured(v)}>
                     <Star className="w-3 h-3 mr-1" />{v.featured ? "Unfeature" : "Feature"}
                   </Button>
-                  {v.approval_status === "Approved" && (
-                    <Button size="sm" variant="outline" className={`h-7 text-xs ${v.verified_badge_enabled === false ? "text-gray-500" : "text-blue-600"}`}
-                      onClick={() => toggleVerifiedBadge(v)} title={v.verified_badge_enabled === false ? "Enable verified badge" : "Disable verified badge"}>
-                      {v.verified_badge_enabled === false ? <BadgeX className="w-3 h-3 mr-1" /> : <BadgeCheck className="w-3 h-3 mr-1" />}
-                      {v.verified_badge_enabled === false ? "Badge Off" : "Badge On"}
-                    </Button>
-                  )}
                   <Button size="sm" variant="outline" className={`h-7 text-xs ${v.approval_status === "Suspended" ? "text-emerald-600" : "text-orange-600"}`}
                     onClick={() => toggleSuspend(v)}>
                     {v.approval_status === "Suspended" ? "Reinstate" : "Suspend"}
@@ -626,85 +473,6 @@ export default function AdminMarketplace() {
                     <Trash2 className="w-3 h-3" />
                   </Button>
                 </div>
-              </div>
-            ))}
-          </div>
-        </TabsContent>
-        {/* Flagged Reports Tab */}
-        <TabsContent value="flagged">
-          <div className="space-y-3">
-            {flaggedInteractions.length === 0 ? (
-              <p className="text-center text-muted-foreground py-12">No flagged reports.</p>
-            ) : flaggedInteractions.map(f => {
-              const product = products.find(p => p.id === f.product_id);
-              const vendor = vendors.find(v => v.id === f.vendor_id);
-              return (
-                <div key={f.id} className="bg-card border border-border rounded-xl p-4 flex items-start gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <Flag className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                      <p className="font-semibold text-sm">{f.author_name || "Anonymous"}</p>
-                      {product && <Badge variant="outline" className="text-[9px]">{product.name}</Badge>}
-                      {vendor && <Badge variant="outline" className="text-[9px] text-muted-foreground">{vendor.business_name}</Badge>}
-                      {f.is_resolved
-                        ? <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-300">Resolved</Badge>
-                        : <Badge variant="outline" className="text-[9px] text-red-600 border-red-300">Open</Badge>}
-                    </div>
-                    {f.report_reason && <p className="text-xs font-medium text-amber-700 mb-0.5">Reason: {f.report_reason}</p>}
-                    {f.content && <p className="text-sm text-muted-foreground">{f.content}</p>}
-                    <p className="text-[10px] text-muted-foreground mt-1">{new Date(f.created_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
-                  </div>
-                  <div className="flex gap-2 shrink-0">
-                    {!f.is_resolved && (
-                      <Button size="sm" className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
-                        onClick={() => ask("Mark as Resolved?", "Mark this report as resolved?", async () => {
-                          await base44.entities.VendorProductInteraction.update(f.id, { is_resolved: true });
-                          queryClient.invalidateQueries({ queryKey: ["flagged_interactions"] });
-                          toast.success("Report resolved");
-                        })}>
-                        <CheckCircle className="w-3 h-3 mr-1" />Resolve
-                      </Button>
-                    )}
-                    <Button size="sm" variant="outline" className="h-7 text-xs text-red-600"
-                      onClick={() => ask("Delete Report?", "Permanently delete this report?", async () => {
-                        await base44.entities.VendorProductInteraction.delete(f.id);
-                        queryClient.invalidateQueries({ queryKey: ["flagged_interactions"] });
-                        toast.success("Report deleted");
-                      })}>
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </TabsContent>
-
-        {/* Messaging Tab */}
-        <TabsContent value="messaging">
-          <AdminVendorMessaging vendors={vendors} categories={categories} />
-        </TabsContent>
-
-        {/* Activity Log Tab */}
-        <TabsContent value="activitylog">
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground mb-2">{adminLogs.length} admin action{adminLogs.length !== 1 ? "s" : ""} recorded</p>
-            {adminLogs.length === 0 ? (
-              <p className="text-center text-muted-foreground py-12">No admin activity recorded yet.</p>
-            ) : adminLogs.map(log => (
-              <div key={log.id} className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${log.action === "badge_enabled" ? "bg-amber-100" : "bg-gray-100"}`}>
-                  {log.action === "badge_enabled"
-                    ? <BadgeCheck className="w-4 h-4 fill-amber-400 text-white" />
-                    : <BadgeX className="w-4 h-4 text-gray-500" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold">{log.vendor_name}</p>
-                  <p className="text-xs text-muted-foreground">{log.notes || log.action}</p>
-                </div>
-                <p className="text-[10px] text-muted-foreground shrink-0">
-                  {new Date(log.created_date).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-                </p>
               </div>
             ))}
           </div>
@@ -944,27 +712,6 @@ export default function AdminMarketplace() {
               productDialog?.product?.id ? `Update "${productForm.name}"?` : `Add "${productForm.name}" to the marketplace?`,
               saveProduct
             )}>Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Bulk Message Dialog */}
-      <Dialog open={bulkMessageDialog} onOpenChange={o => { if (!o) setBulkMessageDialog(false); }}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="font-heading">Message {selectedIds.size} Vendor{selectedIds.size !== 1 ? "s" : ""}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1.5"><Label>Subject *</Label><Input value={bulkSubject} onChange={e => setBulkSubject(e.target.value)} placeholder="e.g. Important update from Royal Marketplace" /></div>
-            <div className="space-y-1.5"><Label>Message *</Label><Textarea value={bulkBody} onChange={e => setBulkBody(e.target.value)} className="h-32" placeholder="Write your message here..." /></div>
-            <p className="text-xs text-muted-foreground">Will be sent to: {filteredVendors.filter(v => selectedIds.has(v.id)).map(v => v.business_name).join(", ")}</p>
-          </div>
-          <DialogFooter className="pt-2">
-            <Button variant="outline" onClick={() => setBulkMessageDialog(false)}>Cancel</Button>
-            <Button onClick={sendBulkMessage} disabled={bulkSending}>
-              {bulkSending ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Mail className="w-4 h-4 mr-1" />}
-              Send
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

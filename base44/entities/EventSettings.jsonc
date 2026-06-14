@@ -75,38 +75,5 @@
   },
   "required": [
     "event_name"
-  ],
-  "rls": {
-    "create": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chairman"
-          ]
-        }
-      }
-    },
-    "read": {},
-    "update": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chairman"
-          ]
-        }
-      }
-    },
-    "delete": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chairman"
-          ]
-        }
-      }
-    }
-  }
+  ]
 }
