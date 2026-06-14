@@ -113,6 +113,24 @@ export default function Guests() {
     setSelectedIds(new Set());
   };
 
+  const handleClearRSVP = async (ids) => {
+    await Promise.all(ids.map((id) => base44.entities.Guest.update(id, { rsvp_status: "Pending" })));
+    queryClient.invalidateQueries({ queryKey: ["guests"] });
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkDelivery = async (ids, newStatus) => {
+    // Update all invitations whose guest_id is in the selected set
+    const affected = invitations.filter((inv) => ids.includes(inv.guest_id));
+    if (affected.length === 0) {
+      toast.warning("No invitations found for selected guests");
+      return;
+    }
+    await Promise.all(affected.map((inv) => base44.entities.Invitation.update(inv.id, { delivery_status: newStatus })));
+    queryClient.invalidateQueries({ queryKey: ["invitations"] });
+    setSelectedIds(new Set());
+  };
+
   const handleExportCSV = () => {
     const cols = [
       "full_name", "formal_salutation", "official_title", "post_nominals",
@@ -195,7 +213,10 @@ export default function Guests() {
       <BulkRSVPAction
         selectedIds={selectedIds}
         guests={guests}
-        onUpdate={handleBulkRSVP}
+        invitations={invitations}
+        onUpdateRSVP={handleBulkRSVP}
+        onClearRSVP={handleClearRSVP}
+        onUpdateDelivery={handleBulkDelivery}
         onClearSelection={() => setSelectedIds(new Set())}
       />
 
