@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "sonner";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import StarRating from "../components/marketplace/StarRating";
+import VerifiedBadge from "../components/marketplace/VerifiedBadge";
 
 export default function VendorDashboardPage() {
   const [email, setEmail] = useState("");
@@ -134,7 +135,10 @@ export default function VendorDashboardPage() {
               {statusBadge(vendor.approval_status)}
               <Badge variant="outline" className="text-[10px]">{vendor.category_name}</Badge>
             </div>
-            <h1 className="font-heading text-2xl font-semibold">{vendor.business_name}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="font-heading text-2xl font-semibold">{vendor.business_name}</h1>
+              {vendor.is_verified && <VerifiedBadge size="md" />}
+            </div>
             <p className="text-sm text-muted-foreground">{vendor.email}</p>
           </div>
           {vendor.approval_status === "Approved" && (
