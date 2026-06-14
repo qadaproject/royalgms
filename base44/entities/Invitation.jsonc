@@ -67,5 +67,54 @@
     "guest_name",
     "dispatch_type",
     "tier"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chairman",
+            "data_manager",
+            "dispatch_unit"
+          ]
+        }
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chairman",
+            "data_manager",
+            "dispatch_unit",
+            "protocol_liaison"
+          ]
+        }
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chairman",
+            "data_manager",
+            "dispatch_unit"
+          ]
+        }
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chairman"
+          ]
+        }
+      }
+    }
+  }
 }

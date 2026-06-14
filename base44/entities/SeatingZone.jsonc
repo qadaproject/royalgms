@@ -29,5 +29,52 @@
   "required": [
     "name",
     "capacity"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chairman",
+            "protocol_liaison"
+          ]
+        }
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chairman",
+            "protocol_liaison",
+            "security",
+            "data_manager"
+          ]
+        }
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chairman",
+            "protocol_liaison"
+          ]
+        }
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chairman"
+          ]
+        }
+      }
+    }
+  }
 }
