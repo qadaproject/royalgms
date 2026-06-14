@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Loader2, AlertTriangle, CheckCircle2, MapPin, Calendar, Clock, Shirt, Printer } from "lucide-react";
+import { Loader2, AlertTriangle, CheckCircle2, MapPin, Calendar, Clock, Shirt, Printer, ExternalLink } from "lucide-react";
 import RoyalCrest from "../components/layout/RoyalCrest";
 import CategoryBadge from "../components/shared/CategoryBadge";
-import InviteDetailPrintSidebar from "../components/invitations/InviteDetailPrintSidebar";
 
 const rsvpColors = {
   Accepted: "text-emerald-400 bg-emerald-400/10 border-emerald-400/30",
@@ -20,7 +19,6 @@ export default function InviteDetail() {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [printOpen, setPrintOpen] = useState(false);
 
   useEffect(() => {
     if (!token) { setNotFound(true); setLoading(false); return; }
@@ -54,35 +52,33 @@ export default function InviteDetail() {
 
   const rsvpClass = rsvpColors[guest.rsvp_status] || rsvpColors.Pending;
 
+  const handlePrint = () => window.print();
+  const itineraryUrl = `/itinerary?ref=${guest?.qr_code}`;
+
   return (
     <div className="min-h-screen bg-[#1a0a06] text-[#f5ede0]">
-      <InviteDetailPrintSidebar
-        guest={guest}
-        settings={settings}
-        open={printOpen}
-        onClose={() => setPrintOpen(false)}
-      />
+      <style>{`@media print { .no-print { display: none !important; } }`}</style>
 
       {/* Header */}
-      <header className="text-center py-10 px-4 border-b border-[#c9a84c]/20">
-        <div className="flex justify-end px-4 pt-2 absolute top-4 right-4">
+      <header className="text-center py-5 px-4 border-b border-[#c9a84c]/20 relative">
+        <div className="no-print flex justify-end px-4 pt-1 absolute top-3 right-4">
           <button
-            onClick={() => setPrintOpen(true)}
+            onClick={handlePrint}
             className="flex items-center gap-2 text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/10 transition-colors rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider"
           >
             <Printer className="w-3.5 h-3.5" />
             Print
           </button>
         </div>
-        <div className="flex justify-center mb-4">
-          <RoyalCrest size="xl" />
+        <div className="flex justify-center mb-2">
+          <RoyalCrest size="lg" />
         </div>
-        <p className="text-[#c9a84c] text-xs uppercase tracking-[0.3em] mb-2">Official Invitation</p>
-        <h1 className="font-heading text-3xl sm:text-4xl font-semibold text-[#f5ede0] tracking-wide">
+        <p className="text-[#c9a84c] text-xs uppercase tracking-[0.3em] mb-1">Official Invitation</p>
+        <h1 className="font-heading text-2xl font-semibold text-[#f5ede0] tracking-wide">
           {settings?.event_name || "5th Coronation Anniversary"}
         </h1>
-        <p className="text-[#c9a84c]/80 text-sm mt-1">Ògíame Atúwàtse III, CFR — The Olu of Warri</p>
-        <div className="w-24 h-px bg-[#c9a84c]/40 mx-auto mt-4" />
+        <p className="text-[#c9a84c]/80 text-xs mt-0.5">Ògíame Atúwàtse III, CFR — The Olu of Warri</p>
+        <div className="w-20 h-px bg-[#c9a84c]/40 mx-auto mt-3" />
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-8 space-y-6">
@@ -104,10 +100,17 @@ export default function InviteDetail() {
         {/* RSVP Status */}
         <div className={`border rounded-xl p-4 flex items-center gap-3 ${rsvpClass}`}>
           <CheckCircle2 className="w-5 h-5 shrink-0" />
-          <div>
+          <div className="flex-1">
             <p className="text-xs uppercase tracking-wider font-semibold">RSVP Status</p>
             <p className="text-base font-semibold">{guest.rsvp_status || "Pending"}</p>
           </div>
+          <a
+            href={itineraryUrl}
+            className="no-print flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider border border-current rounded-lg px-3 py-1.5 hover:bg-white/10 transition-colors shrink-0"
+          >
+            <ExternalLink className="w-3 h-3" />
+            Update Itinerary
+          </a>
         </div>
 
         {/* Event Details */}
@@ -161,8 +164,19 @@ export default function InviteDetail() {
         </div>
 
         {settings?.footer_note && (
-          <p className="text-center text-[#f5ede0]/30 text-xs italic pb-6">{settings.footer_note}</p>
+          <p className="text-center text-[#f5ede0]/30 text-xs italic">{settings.footer_note}</p>
         )}
+
+        {/* Footer print button */}
+        <div className="no-print pt-6 pb-4 flex justify-center">
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 text-[#c9a84c] border border-[#c9a84c]/40 hover:bg-[#c9a84c]/10 transition-colors rounded-lg px-4 py-2 text-xs font-semibold uppercase tracking-wider"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            Print Invitation
+          </button>
+        </div>
       </main>
     </div>
   );
