@@ -22,8 +22,8 @@ export default function DirectoryPage() {
   const [viewMode, setViewMode] = useState("list");
 
   useEffect(() => {
-    base44.entities.DirectoryCategory.filter({ is_active: true }, "sort_order", 50).then(setCategories);
-    base44.entities.DirectoryListing.filter({ status: "active" }, "-rating", 200).then(setListings);
+    base44.entities.DirectoryCategory.filter({ is_active: true }, "sort_order", 50).then(setCategories).catch(() => {});
+    base44.entities.DirectoryListing.filter({ status: "active" }, "-rating", 200).then(setListings).catch(() => {});
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),

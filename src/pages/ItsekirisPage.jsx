@@ -148,7 +148,7 @@ export default function ItsekirisPage() {
       setPersons(p);
       setCategories(c);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, []);
 
   const handleReact = async (personId, reactionKey) => {
