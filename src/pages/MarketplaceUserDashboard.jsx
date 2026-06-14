@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { toast } from "sonner";
 
 export default function MarketplaceUserDashboard() {
   const { user, refresh } = useMpUser();
+  const navigate = useNavigate();
   const [settingsForm, setSettingsForm] = useState({});
   const [savingSettings, setSavingSettings] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -94,7 +95,8 @@ export default function MarketplaceUserDashboard() {
       await base44.entities.MarketplaceUser.update(user.id, { account_type: "vendor" });
       await refresh();
       setShowVendorConfirm(false);
-      toast.success("Account switched to Vendor! You can now register your business.");
+      toast.success("Account switched to Vendor! Redirecting to register your business...");
+      setTimeout(() => navigate("/marketplace/register"), 1500);
     } catch { toast.error("Failed to switch account type"); } finally { setSwitchingToVendor(false); }
   };
 

@@ -15,8 +15,12 @@ import { toast } from "sonner";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import StarRating from "../components/marketplace/StarRating";
 import VerifiedBadge from "../components/marketplace/VerifiedBadge";
+import useMpUser from "@/hooks/useMpUser";
+import { useNavigate } from "react-router-dom";
 
 export default function VendorDashboardPage() {
+  const { user: mpUser } = useMpUser();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [lookupEmail, setLookupEmail] = useState("");
   const [vendor, setVendor] = useState(null);
@@ -27,6 +31,20 @@ export default function VendorDashboardPage() {
   const [productForm, setProductForm] = useState({ name: "", description: "", price: "", discount_percent: 0, unit: "", is_available: true });
   const [uploadingImg, setUploadingImg] = useState(false);
   const queryClient = useQueryClient();
+
+  // Auto-load vendor for logged-in marketplace users with vendor account type
+  useQuery({
+    queryKey: ["vendor_by_user_id", mpUser?.id],
+    queryFn: async () => {
+      if (!mpUser?.id || mpUser.account_type !== "vendor") return null;
+      const results = await base44.entities.Vendor.filter({ user_id: mpUser.id });
+      if (results.length > 0) { setVendor(results[0]); return results[0]; }
+      // Vendor account but no business registered yet — redirect to register
+      navigate("/marketplace/register");
+      return null;
+    },
+    enabled: !!mpUser?.id && mpUser.account_type === "vendor" && !vendor,
+  });
 
   const { data: products = [], refetch: refetchProducts } = useQuery({
     queryKey: ["my_products", vendor?.id],
@@ -120,31 +138,42 @@ export default function VendorDashboardPage() {
   };
 
   // Login screen
-  if (!vendor) return (
-    <div className="min-h-screen bg-background"><MarketplaceNav />
-      <div className="max-w-md mx-auto px-4 py-20">
-        <div className="text-center mb-8">
-          <Store className="w-14 h-14 mx-auto mb-4 text-primary" />
-          <h1 className="font-heading text-3xl font-semibold mb-2">Vendor Dashboard</h1>
-          <p className="text-muted-foreground text-sm">Enter your registered business email to access your dashboard.</p>
-        </div>
-        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-          <div className="space-y-1.5">
-            <Label>Business Email</Label>
-            <Input type="email" value={lookupEmail} onChange={e => setLookupEmail(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && lookupVendor()}
-              placeholder="your@business.com" />
-          </div>
-          <Button onClick={lookupVendor} disabled={loading} className="w-full">
-            {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Looking up...</> : "Access Dashboard"}
-          </Button>
-          <p className="text-center text-xs text-muted-foreground">
-            Not registered? <Link to="/marketplace/register" className="text-primary underline">Register here</Link>
-          </p>
+  if (!vendor) {
+    // If logged-in vendor user, show a loading spinner while auto-lookup runs
+    if (mpUser?.account_type === "vendor") return (
+      <div className="min-h-screen bg-background"><MarketplaceNav />
+        <div className="max-w-md mx-auto px-4 py-20 text-center">
+          <Loader2 className="w-10 h-10 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading your vendor dashboard...</p>
         </div>
       </div>
-    </div>
-  );
+    );
+    return (
+      <div className="min-h-screen bg-background"><MarketplaceNav />
+        <div className="max-w-md mx-auto px-4 py-20">
+          <div className="text-center mb-8">
+            <Store className="w-14 h-14 mx-auto mb-4 text-primary" />
+            <h1 className="font-heading text-3xl font-semibold mb-2">Vendor Dashboard</h1>
+            <p className="text-muted-foreground text-sm">Enter your registered business email to access your dashboard.</p>
+          </div>
+          <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+            <div className="space-y-1.5">
+              <Label>Business Email</Label>
+              <Input type="email" value={lookupEmail} onChange={e => setLookupEmail(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && lookupVendor()}
+                placeholder="your@business.com" />
+            </div>
+            <Button onClick={lookupVendor} disabled={loading} className="w-full">
+              {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Looking up...</> : "Access Dashboard"}
+            </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              Not registered? <Link to="/marketplace/register" className="text-primary underline">Register here</Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background"><MarketplaceNav />

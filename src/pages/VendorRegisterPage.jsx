@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Upload, CheckCircle2, Loader2, Mail } from "lucide-react";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
+import useMpUser from "@/hooks/useMpUser";
 import { toast } from "sonner";
 
 const STEPS = ["Business Info", "Contact & Location", "Media & Docs", "Review & Submit"];
@@ -17,6 +18,7 @@ const MARKETPLACE_EMAIL = "marketplace@royalgms.com";
 const MARKETPLACE_NAME = "Royal Marketplace";
 
 export default function VendorRegisterPage() {
+  const { user: mpUser } = useMpUser();
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -26,8 +28,8 @@ export default function VendorRegisterPage() {
   const [uploadingGallery, setUploadingGallery] = useState(false);
 
   const [form, setForm] = useState({
-    business_name: "", owner_full_name: "", category_id: "", category_name: "",
-    description: "", services_products: "", email: "", phone: "",
+    business_name: "", owner_full_name: mpUser?.full_name || "", category_id: "", category_name: "",
+    description: "", services_products: "", email: mpUser?.email || "", phone: "",
     website: "", location_address: "", location_city: "", location_state: "",
     price_range: "", opening_hours: "",
     social_facebook: "", social_instagram: "", social_twitter: "", social_whatsapp: "",
@@ -81,6 +83,7 @@ export default function VendorRegisterPage() {
       approval_status: "Pending",
       email_verified: false,
       email_verification_token: token,
+      ...(mpUser?.id ? { user_id: mpUser.id } : {}),
     });
 
     // Send email verification
