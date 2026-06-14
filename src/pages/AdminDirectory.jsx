@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Edit2, Trash2, MapPin, Flag, CheckCircle2, XCircle, Globe, Building2, Tag, Star, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Plus, Edit2, Trash2, MapPin, Flag, CheckCircle2, XCircle, Globe, Building2, Tag, Star, AlertTriangle, ShieldCheck, Eye } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -199,6 +200,9 @@ export default function AdminDirectory() {
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => handleToggleStatus(l)} title="Toggle active/suspended" className="h-7 w-7 p-0">
                           {l.status === "active" ? <XCircle className="w-3.5 h-3.5 text-muted-foreground" /> : <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
+                        </Button>
+                        <Button size="sm" variant="ghost" asChild className="h-7 w-7 p-0" title="View public listing">
+                          <Link to={`/directory/listing?id=${l.id}`} target="_blank"><Eye className="w-3.5 h-3.5" /></Link>
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => { setEditingListing(l); setShowListingForm(true); }} className="h-7 w-7 p-0">
                           <Edit2 className="w-3.5 h-3.5" />
