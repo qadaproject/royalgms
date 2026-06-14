@@ -10,14 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, Loader2, Save, Users, Tag, Settings2, Search } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 const EMPTY_PERSON = { full_name: "", category_id: "", category_name: "", bio: "", photo_url: "", email: "", phone: "", location: "", social_facebook: "", social_instagram: "", social_twitter: "", social_linkedin: "", is_active: true, sort_order: 0 };
 const EMPTY_CAT = { name: "", icon: "", description: "", sort_order: 0, is_active: true };
 
 export default function AdminItsekiri() {
   const qc = useQueryClient();
-  const { toast } = useToast();
   const [personDialog, setPersonDialog] = useState(null);
   const [catDialog, setCatDialog] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -49,7 +48,7 @@ export default function AdminItsekiri() {
 
   /* ── Category CRUD ── */
   const saveCategory = async () => {
-    if (!catDialog.name?.trim()) return toast({ title: "Name required", variant: "destructive" });
+    if (!catDialog.name?.trim()) return toast.error("Name required");
     setSaving(true);
     try {
       if (catDialog.id) await base44.entities.ItsekiriCategory.update(catDialog.id, catDialog);
@@ -57,7 +56,7 @@ export default function AdminItsekiri() {
       qc.invalidateQueries({ queryKey: ["itsekiri-categories-admin"] });
       qc.invalidateQueries({ queryKey: ["itsekiri-categories"] });
       setCatDialog(null);
-      toast({ title: "Category saved" });
+      toast.success("Category saved");
     } finally { setSaving(false); }
   };
 
@@ -70,7 +69,7 @@ export default function AdminItsekiri() {
 
   /* ── Person CRUD ── */
   const savePerson = async () => {
-    if (!personDialog.full_name?.trim() || !personDialog.category_id) return toast({ title: "Name and category required", variant: "destructive" });
+    if (!personDialog.full_name?.trim() || !personDialog.category_id) return toast.error("Name and category required");
     setSaving(true);
     try {
       const cat = categories.find(c => c.id === personDialog.category_id);
@@ -79,7 +78,7 @@ export default function AdminItsekiri() {
       else await base44.entities.ItsekiriPerson.create(data);
       invalidate();
       setPersonDialog(null);
-      toast({ title: "Person saved" });
+      toast.success("Person saved");
     } finally { setSaving(false); }
   };
 
