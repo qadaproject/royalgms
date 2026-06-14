@@ -210,9 +210,9 @@ export default function VendorDashboardPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
             { label: "Products", value: products.length, icon: <Package className="w-5 h-5 text-primary" /> },
+            { label: "Comments", value: comments.length, icon: <MessageSquare className="w-5 h-5 text-blue-500" /> },
             { label: "Reviews", value: reviews.length, icon: <Star className="w-5 h-5 text-amber-400" /> },
             { label: "Avg. Rating", value: (vendor.average_rating || 0).toFixed(1), icon: <Star className="w-5 h-5 text-amber-400 fill-amber-400" /> },
-            { label: "Status", value: vendor.approval_status, icon: <Store className="w-5 h-5 text-primary" /> },
           ].map(s => (
             <div key={s.label} className="bg-card border border-border rounded-xl p-4">
               <div className="flex items-center gap-2 mb-1">{s.icon}<span className="text-xs text-muted-foreground">{s.label}</span></div>

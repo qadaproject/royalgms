@@ -30,10 +30,6 @@ import VendorRegisterPage from './pages/VendorRegisterPage';
 import VendorDashboardPage from './pages/VendorDashboardPage';
 import AdminMarketplace from './pages/AdminMarketplace';
 import VerifyVendorEmail from './pages/VerifyVendorEmail';
-import MarketplaceLoginPage from './pages/MarketplaceLoginPage';
-import MarketplaceUserVerify from './pages/MarketplaceUserVerify';
-import MarketplaceUserDashboard from './pages/MarketplaceUserDashboard';
-import VendorProfileByUsername from './pages/VendorProfileByUsername';
 import DirectoryPage from './pages/DirectoryPage';
 import DirectoryListingDetail from './pages/DirectoryListingDetail';
 import AdminDirectory from './pages/AdminDirectory';
@@ -41,6 +37,10 @@ import ItsekirisPage from './pages/ItsekirisPage';
 import AdminItsekiris from './pages/AdminItsekiris';
 import AdminLogin from './pages/AdminLogin';
 import AdminUserManagement from './pages/AdminUserManagement';
+import MarketplaceLoginPage from './pages/MarketplaceLoginPage';
+import VerifyMarketplaceUser from './pages/VerifyMarketplaceUser';
+import MarketplaceUserDashboard from './pages/MarketplaceUserDashboard';
+import VendorByUsername from './pages/VendorByUsername';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -79,9 +79,9 @@ const AuthenticatedApp = () => {
       <Route path="/marketplace/vendor-dashboard" element={<VendorDashboardPage />} />
       <Route path="/marketplace/verify-email" element={<VerifyVendorEmail />} />
       <Route path="/marketplace/login" element={<MarketplaceLoginPage />} />
-      <Route path="/marketplace/user-verify" element={<MarketplaceUserVerify />} />
-      <Route path="/marketplace/user-dashboard" element={<MarketplaceUserDashboard />} />
-      <Route path="/marketplace/:username" element={<VendorProfileByUsername />} />
+      <Route path="/marketplace/verify-user" element={<VerifyMarketplaceUser />} />
+      <Route path="/marketplace/my-dashboard" element={<MarketplaceUserDashboard />} />
+      <Route path="/marketplace/:username" element={<VendorByUsername />} />
       <Route path="/directory" element={<DirectoryPage />} />
       <Route path="/directory/listing" element={<DirectoryListingDetail />} />
       <Route path="/itsekiris" element={<ItsekirisPage />} />
