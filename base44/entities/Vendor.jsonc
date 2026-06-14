@@ -92,6 +92,11 @@
       "default": "Pending",
       "description": "Admin approval status"
     },
+    "is_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Admin-granted verified badge \u2014 shown as a gold checkmark on the vendor's public listing"
+    },
     "email_verified": {
       "type": "boolean",
       "default": false

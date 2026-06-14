@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Store, CheckCircle, XCircle, Clock, Star, Tag, Plus, Pencil, Trash2, Eye, Package, BarChart2, Upload, Loader2 } from "lucide-react";
+import { Store, CheckCircle, XCircle, Clock, Star, Tag, Plus, Pencil, Trash2, Eye, Package, BarChart2, Upload, Loader2, BadgeCheck } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import PageHeader from "../components/shared/PageHeader";
@@ -112,6 +112,16 @@ export default function AdminMarketplace() {
       await base44.entities.Vendor.update(v.id, { featured: !v.featured });
       queryClient.invalidateQueries({ queryKey: ["all_vendors"] });
       toast.success(v.featured ? "Removed from featured" : "Marked as featured");
+    }
+  );
+
+  const toggleVerified = (v) => ask(
+    v.is_verified ? "Remove Verified Badge?" : "Grant Verified Badge?",
+    v.is_verified ? `Remove the verified badge from ${v.business_name}?` : `Grant a gold verified badge to ${v.business_name}?`,
+    async () => {
+      await base44.entities.Vendor.update(v.id, { is_verified: !v.is_verified });
+      queryClient.invalidateQueries({ queryKey: ["all_vendors"] });
+      toast.success(v.is_verified ? "Verified badge removed" : "Vendor verified!");
     }
   );
 
@@ -340,7 +350,10 @@ export default function AdminMarketplace() {
                   )}
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                      <p className="font-semibold text-sm truncate">{v.business_name}</p>
+                      <div className="flex items-center gap-1">
+                        <p className="font-semibold text-sm truncate">{v.business_name}</p>
+                        {v.is_verified && <BadgeCheck className="w-4 h-4 shrink-0 text-amber-500 fill-amber-500" title="Verified" />}
+                      </div>
                       {v.featured && <Badge className="text-[9px] bg-accent text-accent-foreground">⭐ Featured</Badge>}
                       <Badge variant="outline" className={`text-[9px] ${statusColor[v.approval_status]}`}>{v.approval_status}</Badge>
                       {!v.email_verified && <Badge variant="outline" className="text-[9px] text-orange-600 border-orange-300">Email Unverified</Badge>}
@@ -365,6 +378,9 @@ export default function AdminMarketplace() {
                   </Button>
                   <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => toggleFeatured(v)}>
                     <Star className="w-3 h-3 mr-1" />{v.featured ? "Unfeature" : "Feature"}
+                  </Button>
+                  <Button size="sm" variant="outline" className={`h-7 text-xs ${v.is_verified ? "text-amber-600 border-amber-400" : ""}`} onClick={() => toggleVerified(v)}>
+                    <BadgeCheck className="w-3 h-3 mr-1" />{v.is_verified ? "Unverify" : "Verify"}
                   </Button>
                   <Button size="sm" variant="outline" className={`h-7 text-xs ${v.approval_status === "Suspended" ? "text-emerald-600" : "text-orange-600"}`}
                     onClick={() => toggleSuspend(v)}>
