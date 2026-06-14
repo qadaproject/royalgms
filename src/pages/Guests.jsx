@@ -43,7 +43,7 @@ export default function Guests() {
 
   const { data: invitations = [] } = useQuery({
     queryKey: ["invitations"],
-    queryFn: () => base44.entities.Invitation.list("-created_date", 500),
+    queryFn: () => base44.entities.Invitation.list("-created_date", 10000),
   });
 
   const createMutation = useMutation({

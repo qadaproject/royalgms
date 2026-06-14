@@ -34,7 +34,7 @@ function maskPhone(phone) {
   return digits.slice(0, 4) + "****" + digits.slice(-3);
 }
 
-function PersonCard({ person, onReact }) {
+function PersonCard({ person, onReact, myReaction }) {
   const total = REACTIONS.reduce((sum, r) => sum + (person[r.key] || 0), 0);
 
   return (
@@ -83,24 +83,51 @@ function PersonCard({ person, onReact }) {
         <div className="border-t border-[#c9a84c]/10 pt-3">
           <div className="flex items-center gap-1 mb-2">
             <span className="text-[#f5ede0]/30 text-[10px] font-sans uppercase tracking-wider">{total} reaction{total !== 1 ? "s" : ""}</span>
+            {myReaction && <span className="text-[#c9a84c] text-[10px] font-sans ml-1">· you reacted</span>}
           </div>
           <div className="flex gap-1 flex-wrap">
-            {REACTIONS.map((r) => (
-              <button
-                key={r.key}
-                onClick={() => onReact(person.id, r.key)}
-                className="flex items-center gap-1 bg-[#0d0603] hover:bg-[#c9a84c]/10 border border-[#c9a84c]/10 hover:border-[#c9a84c]/40 rounded-full px-2.5 py-1 transition-all"
-                title={r.label}
-              >
-                <span className="text-sm">{r.emoji}</span>
-                <span className="text-[#f5ede0]/50 text-[10px] font-sans tabular-nums">{person[r.key] || 0}</span>
-              </button>
-            ))}
+            {REACTIONS.map((r) => {
+              const isActive = myReaction === r.key;
+              return (
+                <button
+                  key={r.key}
+                  onClick={() => onReact(person.id, r.key)}
+                  className={`flex items-center gap-1 border rounded-full px-2.5 py-1 transition-all ${isActive ? "bg-[#c9a84c]/20 border-[#c9a84c]/60 scale-110" : "bg-[#0d0603] hover:bg-[#c9a84c]/10 border-[#c9a84c]/10 hover:border-[#c9a84c]/40"}`}
+                  title={isActive ? `Your reaction — click another to switch` : r.label}
+                >
+                  <span className="text-sm">{r.emoji}</span>
+                  <span className={`text-[10px] font-sans tabular-nums ${isActive ? "text-[#c9a84c]" : "text-[#f5ede0]/50"}`}>{person[r.key] || 0}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
     </div>
   );
+}
+
+// Returns a stable visitor ID stored in localStorage
+function getVisitorId() {
+  let vid = localStorage.getItem("itsekiri_vid");
+  if (!vid) {
+    vid = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem("itsekiri_vid", vid);
+  }
+  return vid;
+}
+
+// Storage key for all reactions: { [personId]: reactionKey }
+const REACTIONS_STORAGE_KEY = "itsekiri_reactions";
+
+function getStoredReactions() {
+  try { return JSON.parse(localStorage.getItem(REACTIONS_STORAGE_KEY) || "{}"); } catch { return {}; }
+}
+
+function setStoredReaction(personId, reactionKey) {
+  const stored = getStoredReactions();
+  stored[personId] = reactionKey;
+  localStorage.setItem(REACTIONS_STORAGE_KEY, JSON.stringify(stored));
 }
 
 export default function ItsekirisPage() {
@@ -110,8 +137,10 @@ export default function ItsekirisPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [myReactions, setMyReactions] = useState({});
 
   useEffect(() => {
+    setMyReactions(getStoredReactions());
     Promise.all([
       base44.entities.ItsekiriPerson.filter({ is_active: true }),
       base44.entities.ItsekiriCategory.filter({ is_active: true }, "sort_order", 50),
@@ -125,9 +154,20 @@ export default function ItsekirisPage() {
   const handleReact = async (personId, reactionKey) => {
     const person = persons.find((p) => p.id === personId);
     if (!person) return;
-    const newVal = (person[reactionKey] || 0) + 1;
-    setPersons((prev) => prev.map((p) => p.id === personId ? { ...p, [reactionKey]: newVal } : p));
-    await base44.entities.ItsekiriPerson.update(personId, { [reactionKey]: newVal });
+
+    const prevReaction = myReactions[personId];
+    if (prevReaction === reactionKey) return; // already reacted with this — no double counting
+
+    const updates = { [reactionKey]: (person[reactionKey] || 0) + 1 };
+    // Remove from previous reaction if switching
+    if (prevReaction) {
+      updates[prevReaction] = Math.max(0, (person[prevReaction] || 0) - 1);
+    }
+
+    setMyReactions((prev) => ({ ...prev, [personId]: reactionKey }));
+    setStoredReaction(personId, reactionKey);
+    setPersons((prev) => prev.map((p) => p.id === personId ? { ...p, ...updates } : p));
+    await base44.entities.ItsekiriPerson.update(personId, updates);
   };
 
   const filtered = persons.filter((p) => {
@@ -217,7 +257,7 @@ export default function ItsekirisPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered.map((p) => (
-              <PersonCard key={p.id} person={p} onReact={handleReact} />
+              <PersonCard key={p.id} person={p} onReact={handleReact} myReaction={myReactions[p.id]} />
             ))}
           </div>
         )}
