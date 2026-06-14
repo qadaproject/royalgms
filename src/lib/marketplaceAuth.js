@@ -47,6 +47,18 @@ export async function loginUser(email, password) {
   return freshUser;
 }
 
+export async function loginVendor(email, password) {
+  const vendors = await base44.entities.Vendor.filter({ email: email.trim().toLowerCase() });
+  if (!vendors.length) throw new Error("No vendor account found with that email.");
+  const vendor = vendors[0];
+  if (!vendor.email_verified) throw new Error("Please verify your email before logging in.");
+  if (vendor.approval_status === "Rejected") throw new Error("Your vendor application was rejected. Contact support.");
+  if (vendor.approval_status === "Suspended") throw new Error("Your vendor account has been suspended. Contact support.");
+  const hash = await hashPassword(password);
+  if (vendor.password_hash !== hash) throw new Error("Incorrect password.");
+  return vendor;
+}
+
 export async function refreshMpUser(userId) {
   const users = await base44.entities.MarketplaceUser.filter({ id: userId });
   if (users.length) {

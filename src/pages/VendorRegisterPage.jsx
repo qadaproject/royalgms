@@ -114,7 +114,10 @@ export default function VendorRegisterPage() {
         <Store className="w-12 h-12 mx-auto mb-4 text-primary opacity-50" />
         <h2 className="font-heading text-2xl font-semibold mb-2">Sign in to Register</h2>
         <p className="text-muted-foreground text-sm mb-6">You need a marketplace account to list your business.</p>
-        <Button asChild><Link to="/marketplace/login">Sign In / Register</Link></Button>
+        <div className="flex gap-3 justify-center">
+          <Button asChild variant="outline"><Link to="/marketplace/user-register">Register as User First</Link></Button>
+          <Button asChild><Link to="/marketplace/vendor-login">Vendor Sign In</Link></Button>
+        </div>
       </div>
     </div>
   );
