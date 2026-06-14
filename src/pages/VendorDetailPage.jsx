@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Star, MapPin, Phone, Globe, Mail, ArrowLeft, Facebook, Instagram, Twitter, MessageCircle, Clock, Tag, ChevronLeft, ChevronRight } from "lucide-react";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import StarRating from "../components/marketplace/StarRating";
+import VerifiedBadge from "../components/marketplace/VerifiedBadge";
 import { toast } from "sonner";
 
 export default function VendorDetailPage() {
@@ -113,7 +114,10 @@ export default function VendorDetailPage() {
                   <Badge variant="outline" className="text-[10px]">{vendor.category_name}</Badge>
                   {vendor.price_range && <span className={`text-xs font-semibold ${priceRangeColor[vendor.price_range] || ""}`}>{vendor.price_range}</span>}
                 </div>
-                <h1 className="font-heading text-3xl font-semibold">{vendor.business_name}</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="font-heading text-3xl font-semibold">{vendor.business_name}</h1>
+                  {vendor.is_verified && <VerifiedBadge size="lg" />}
+                </div>
                 <div className="flex items-center gap-2 mt-1">
                   <StarRating rating={vendor.average_rating || 0} />
                   <span className="text-sm text-muted-foreground">({vendor.review_count || 0} reviews)</span>

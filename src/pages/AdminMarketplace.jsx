@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Store, CheckCircle, XCircle, Clock, Star, Tag, Plus, Pencil, Trash2, Eye, Package, BarChart2, Upload, Loader2, BadgeCheck } from "lucide-react";
+import VerifiedBadge from "../components/marketplace/VerifiedBadge";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import PageHeader from "../components/shared/PageHeader";
@@ -352,7 +353,7 @@ export default function AdminMarketplace() {
                     <div className="flex items-center gap-2 flex-wrap mb-0.5">
                       <div className="flex items-center gap-1">
                         <p className="font-semibold text-sm truncate">{v.business_name}</p>
-                        {v.is_verified && <BadgeCheck className="w-4 h-4 shrink-0 text-amber-500 fill-amber-500" title="Verified" />}
+                        {v.is_verified && <VerifiedBadge size="sm" />}
                       </div>
                       {v.featured && <Badge className="text-[9px] bg-accent text-accent-foreground">⭐ Featured</Badge>}
                       <Badge variant="outline" className={`text-[9px] ${statusColor[v.approval_status]}`}>{v.approval_status}</Badge>
