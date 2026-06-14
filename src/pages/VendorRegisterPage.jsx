@@ -107,21 +107,6 @@ export default function VendorRegisterPage() {
     setSubmitting(false);
   };
 
-  if (!mpUser) return (
-    <div className="min-h-screen bg-background">
-      <MarketplaceNav />
-      <div className="max-w-md mx-auto px-4 py-20 text-center">
-        <Store className="w-12 h-12 mx-auto mb-4 text-primary opacity-50" />
-        <h2 className="font-heading text-2xl font-semibold mb-2">Sign in to Register</h2>
-        <p className="text-muted-foreground text-sm mb-6">You need a marketplace account to list your business.</p>
-        <div className="flex gap-3 justify-center">
-          <Button asChild variant="outline"><Link to="/marketplace/user-register">Register as User First</Link></Button>
-          <Button asChild><Link to="/marketplace/vendor-login">Vendor Sign In</Link></Button>
-        </div>
-      </div>
-    </div>
-  );
-
   if (submitted) return (
     <div className="min-h-screen bg-background">
       <MarketplaceNav />
