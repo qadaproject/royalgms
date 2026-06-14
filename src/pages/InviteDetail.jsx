@@ -84,20 +84,20 @@ export default function InviteDetail() {
             Print
           </button>
         </div>
-        <div className="flex justify-center mb-1">
-          <RoyalCrest size="md" />
+        <div className="flex justify-center mb-2">
+          <RoyalCrest size="lg" />
         </div>
-        <p className="text-[#c9a84c] text-xs uppercase tracking-[0.3em] mb-0.5">Official Invitation</p>
-        <h1 className="font-heading text-xl font-semibold text-[#f5ede0] tracking-wide">
+        <p className="text-[#c9a84c] text-xs uppercase tracking-[0.3em] mb-1">Official Invitation</p>
+        <h1 className="font-heading text-2xl font-semibold text-[#f5ede0] tracking-wide">
           {settings?.event_name || "5th Coronation Anniversary"}
         </h1>
         <p className="text-[#c9a84c]/80 text-xs mt-0.5">Ògíame Atúwàtse III, CFR — The Olu of Warri</p>
-        <div className="w-16 h-px bg-[#c9a84c]/40 mx-auto mt-2" />
+        <div className="w-20 h-px bg-[#c9a84c]/40 mx-auto mt-3" />
       </header>
 
-      <main className="max-w-lg mx-auto px-4 py-6 space-y-4">
+      <main className="max-w-lg mx-auto px-4 py-8 space-y-6">
         {/* Invitee */}
-        <div className="bg-[#2a110a]/60 border border-[#c9a84c]/20 rounded-xl p-4 text-center print-card">
+        <div className="bg-[#2a110a]/60 border border-[#c9a84c]/20 rounded-xl p-6 text-center">
           <p className="text-[#c9a84c]/70 text-[10px] uppercase tracking-[0.3em] mb-3">This Invitation is Extended to</p>
           <p className="font-heading text-2xl font-semibold text-[#f5ede0]">
             {guest.formal_salutation} {guest.full_name}
@@ -128,7 +128,7 @@ export default function InviteDetail() {
         </div>
 
         {/* Event Details */}
-        <div className="bg-[#2a110a]/60 border border-[#c9a84c]/20 rounded-xl p-4 space-y-3 print-card">
+        <div className="bg-[#2a110a]/60 border border-[#c9a84c]/20 rounded-xl p-5 space-y-4">
           <p className="text-[#c9a84c] text-[10px] uppercase tracking-[0.25em] font-semibold">Event Details</p>
           {[
             { icon: Calendar, label: "Date", value: settings?.event_date },
@@ -149,7 +149,7 @@ export default function InviteDetail() {
 
         {/* Seating */}
         {(guest.seating_zone || guest.category) && (
-          <div className="bg-[#2a110a]/60 border border-[#c9a84c]/20 rounded-xl p-4 space-y-2 print-card">
+          <div className="bg-[#2a110a]/60 border border-[#c9a84c]/20 rounded-xl p-5 space-y-3">
             <p className="text-[#c9a84c] text-[10px] uppercase tracking-[0.25em] font-semibold">Guest Assignment</p>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -165,13 +165,13 @@ export default function InviteDetail() {
         )}
 
         {/* Admission Token */}
-        <div className="text-center print-qr">
-          <p className="text-[#f5ede0]/30 text-xs uppercase tracking-wider mb-2">Admission Token</p>
-          <div className="inline-block bg-white p-2 rounded-xl">
+        <div className="text-center">
+          <p className="text-[#f5ede0]/30 text-xs uppercase tracking-wider mb-3">Admission Token</p>
+          <div className="inline-block bg-white p-3 rounded-xl">
             <img
               src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(window.location.href)}`}
               alt="QR"
-              className="w-28 h-28"
+              className="w-32 h-32"
             />
           </div>
           <p className="text-[#c9a84c] text-sm font-mono font-bold tracking-[0.25em] mt-2">{guest.qr_code}</p>
