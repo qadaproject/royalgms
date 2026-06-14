@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Store, Package, Star, Settings, Plus, Pencil, Trash2, ArrowLeft, Loader2, Upload, CheckCircle, XCircle, Clock, MessageSquare, Send } from "lucide-react";
+import { Store, Package, Star, Settings, Plus, Pencil, Trash2, ArrowLeft, Loader2, Upload, CheckCircle, XCircle, Clock, MessageSquare } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
@@ -17,6 +17,8 @@ import StarRating from "../components/marketplace/StarRating";
 import VerifiedBadge from "../components/marketplace/VerifiedBadge";
 import useMpUser from "@/hooks/useMpUser";
 import { useNavigate } from "react-router-dom";
+import VendorProductsTab from "../components/vendor/VendorProductsTab";
+import VendorCommentsTab from "../components/vendor/VendorCommentsTab";
 
 export default function VendorDashboardPage() {
   const { user: mpUser } = useMpUser();
@@ -63,22 +65,6 @@ export default function VendorDashboardPage() {
     queryFn: () => base44.entities.VendorComment.filter({ vendor_id: vendor?.id }, "-created_date", 100),
     enabled: !!vendor?.id,
   });
-
-  const [replyText, setReplyText] = useState({});
-  const [replyingTo, setReplyingTo] = useState(null);
-
-  const submitReply = async (commentId) => {
-    const text = replyText[commentId]?.trim();
-    if (!text) return;
-    await base44.entities.VendorComment.update(commentId, {
-      vendor_reply: text,
-      vendor_replied_at: new Date().toISOString(),
-    });
-    setReplyText(r => ({ ...r, [commentId]: "" }));
-    setReplyingTo(null);
-    refetchComments();
-    toast.success("Reply posted!");
-  };
 
   const lookupVendor = async () => {
     if (!lookupEmail.trim()) return;
@@ -260,98 +246,28 @@ export default function VendorDashboardPage() {
 
           {/* Products */}
           <TabsContent value="products">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading text-lg font-semibold">Your Listings</h2>
-              <Button size="sm" onClick={() => { setProductForm({ name: "", description: "", price: "", discount_percent: 0, unit: "", is_available: true, image_urls: [] }); setProductDialog("new"); }}>
-                <Plus className="w-4 h-4 mr-1" />Add Listing
-              </Button>
-            </div>
-            {products.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground border border-dashed border-border rounded-xl">
-                <Package className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                <p>No listings yet. Add your products or services.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {products.map(p => (
-                  <div key={p.id} className="bg-card border border-border rounded-xl p-4 flex gap-3">
-                    {p.image_urls?.[0] && <img src={p.image_urls[0]} alt={p.name} className="w-16 h-16 rounded-lg object-cover shrink-0" />}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                        <p className="font-semibold text-sm truncate">{p.name}</p>
-                        {p.is_approved
-                          ? <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-300 bg-emerald-50">✓ Live</Badge>
-                          : <Badge variant="outline" className="text-[9px] text-amber-600 border-amber-300 bg-amber-50">⏳ Pending Approval</Badge>
-                        }
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
-                      <p className="text-sm font-bold text-primary mt-1">₦{p.price?.toLocaleString()}{p.unit ? ` / ${p.unit}` : ""}</p>
-                    </div>
-                    <div className="flex flex-col gap-1 shrink-0">
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setProductForm({ ...p }); setProductDialog(p); }}>
-                        <Pencil className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteProduct(p.id)}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <VendorProductsTab
+              products={products}
+              onAdd={() => { setProductForm({ name: "", description: "", price: "", discount_percent: 0, unit: "", is_available: true, image_urls: [] }); setProductDialog("new"); }}
+              onEdit={(p) => { setProductForm({ ...p }); setProductDialog(p); }}
+              onDelete={deleteProduct}
+            />
           </TabsContent>
 
           {/* Comments */}
           <TabsContent value="comments">
-            <h2 className="font-heading text-lg font-semibold mb-4">Customer Comments</h2>
-            {comments.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No comments yet.</p>
-            ) : (
-              <div className="space-y-4">
-                {comments.map(c => (
-                  <div key={c.id} className="bg-card border border-border rounded-xl p-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <span className="font-semibold text-sm">{c.user_name}</span>
-                          {c.product_name && <Badge variant="outline" className="text-[9px]">📦 {c.product_name}</Badge>}
-                          {!c.vendor_reply && <Badge className="text-[9px] bg-amber-100 text-amber-700 border-amber-300">Awaiting reply</Badge>}
-                        </div>
-                        <p className="text-sm text-muted-foreground">{c.comment}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1">👍 {c.thumbs_up || 0} · 👎 {c.thumbs_down || 0}</p>
-                      </div>
-                      <span className="text-[10px] text-muted-foreground shrink-0">{new Date(c.created_date).toLocaleDateString()}</span>
-                    </div>
-                    {c.vendor_reply ? (
-                      <div className="mt-3 pl-3 border-l-2 border-primary/20 text-sm">
-                        <p className="text-xs text-muted-foreground mb-0.5">Your reply:</p>
-                        <p className="text-foreground">{c.vendor_reply}</p>
-                        <button onClick={() => setReplyingTo(c.id)} className="text-xs text-primary underline mt-1">Edit reply</button>
-                      </div>
-                    ) : null}
-                    {(replyingTo === c.id || (!c.vendor_reply && replyingTo !== null)) && replyingTo === c.id ? (
-                      <div className="mt-3 flex gap-2">
-                        <Textarea
-                          value={replyText[c.id] || ""}
-                          onChange={e => setReplyText(r => ({ ...r, [c.id]: e.target.value }))}
-                          placeholder="Write your reply..."
-                          className="h-16 text-sm flex-1"
-                        />
-                        <div className="flex flex-col gap-1">
-                          <Button size="sm" onClick={() => submitReply(c.id)}><Send className="w-3 h-3" /></Button>
-                          <Button size="sm" variant="ghost" onClick={() => setReplyingTo(null)}>✕</Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <button onClick={() => { setReplyingTo(c.id); setReplyText(r => ({ ...r, [c.id]: c.vendor_reply || "" })); }}
-                        className="mt-2 text-xs text-primary hover:underline flex items-center gap-1">
-                        <MessageSquare className="w-3 h-3" /> {c.vendor_reply ? "Edit reply" : "Reply to this comment"}
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+            <VendorCommentsTab
+              comments={comments}
+              products={products}
+              onReply={async (commentId, text) => {
+                await base44.entities.VendorComment.update(commentId, {
+                  vendor_reply: text,
+                  vendor_replied_at: new Date().toISOString(),
+                });
+                refetchComments();
+                toast.success("Reply posted!");
+              }}
+            />
           </TabsContent>
 
           {/* Reviews */}
