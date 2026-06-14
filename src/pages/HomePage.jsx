@@ -41,7 +41,9 @@ export default function HomePage() {
   const countdown = useCountdown(eventTarget);
 
   useEffect(() => {
-    base44.entities.EventSettings.list("-created_date", 1).then((r) => setSettings(r[0] || null));
+    base44.entities.EventSettings.list("-created_date", 1)
+      .then((r) => setSettings(r[0] || null))
+      .catch(() => {});
   }, []);
 
   const timelineItems = [
