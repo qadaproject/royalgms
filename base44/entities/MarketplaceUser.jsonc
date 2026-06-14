@@ -2,25 +2,35 @@
   "name": "MarketplaceUser",
   "type": "object",
   "properties": {
-    "user_id": {
-      "type": "string",
-      "description": "Linked app user ID"
-    },
-    "display_name": {
-      "type": "string",
-      "description": "Public display name"
+    "full_name": {
+      "type": "string"
     },
     "email": {
       "type": "string",
-      "description": "Email address"
+      "description": "Unique email for login"
     },
     "password_hash": {
       "type": "string",
-      "description": "Base64 encoded password hash"
+      "description": "bcrypt hash \u2014 never expose in UI"
     },
-    "avatar_url": {
+    "username": {
       "type": "string",
-      "description": "Profile picture URL"
+      "description": "Unique marketplace username"
+    },
+    "photo_url": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "user",
+        "vendor"
+      ],
+      "default": "user",
+      "description": "Account type \u2014 once set to vendor, cannot revert to user"
     },
     "email_verified": {
       "type": "boolean",
@@ -33,22 +43,31 @@
       "type": "boolean",
       "default": false
     },
-    "favorite_vendors": {
+    "favorites_vendor_ids": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Array of vendor IDs"
+      "description": "IDs of favourite vendors"
     },
-    "favorite_products": {
+    "favorites_product_ids": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Array of product IDs"
+      "description": "IDs of favourite products"
+    },
+    "auth_token": {
+      "type": "string",
+      "description": "Session token"
+    },
+    "google_id": {
+      "type": "string",
+      "description": "Google OAuth ID"
     }
   },
   "required": [
+    "full_name",
     "email"
   ]
 }

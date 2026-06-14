@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { User, Heart, MessageSquare, Settings, Upload, Loader2, LogOut, Star } from "lucide-react";
+import { User, Heart, MessageSquare, Settings, Upload, Loader2, LogOut, Star, Store, AlertTriangle } from "lucide-react";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import useMpUser, { logoutMpUser } from "@/hooks/useMpUser";
 import { hashPassword, setMpSession } from "@/lib/marketplaceAuth";
@@ -23,6 +23,8 @@ export default function MarketplaceUserDashboard() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
+  const [showVendorConfirm, setShowVendorConfirm] = useState(false);
+  const [switchingToVendor, setSwitchingToVendor] = useState(false);
 
   useEffect(() => {
     if (user) setSettingsForm({ full_name: user.full_name || "", username: user.username || "", bio: user.bio || "" });
@@ -84,6 +86,16 @@ export default function MarketplaceUserDashboard() {
     await refresh();
     setUploadingPhoto(false);
     toast.success("Photo updated!");
+  };
+
+  const switchToVendor = async () => {
+    setSwitchingToVendor(true);
+    try {
+      await base44.entities.MarketplaceUser.update(user.id, { account_type: "vendor" });
+      await refresh();
+      setShowVendorConfirm(false);
+      toast.success("Account switched to Vendor! You can now register your business.");
+    } catch { toast.error("Failed to switch account type"); } finally { setSwitchingToVendor(false); }
   };
 
   const unfavoriteVendor = async (vendorId) => {
@@ -209,6 +221,35 @@ export default function MarketplaceUserDashboard() {
                   {savingSettings ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null} Save Changes
                 </Button>
               </div>
+              {user.account_type !== "vendor" && (
+                <div className="bg-card border border-amber-200 rounded-xl p-5 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <Store className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <h3 className="font-heading text-base font-semibold">Become a Vendor</h3>
+                      <p className="text-sm text-muted-foreground mt-0.5">Switch your account to a Vendor account to list your business on the marketplace. <strong>This cannot be undone.</strong></p>
+                    </div>
+                  </div>
+                  {!showVendorConfirm ? (
+                    <Button variant="outline" size="sm" className="border-amber-400 text-amber-700 hover:bg-amber-50" onClick={() => setShowVendorConfirm(true)}>
+                      <Store className="w-4 h-4 mr-1" /> Switch to Vendor Account
+                    </Button>
+                  ) : (
+                    <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 space-y-3">
+                      <div className="flex items-center gap-2 text-amber-700 text-sm font-semibold">
+                        <AlertTriangle className="w-4 h-4" /> Are you sure?
+                      </div>
+                      <p className="text-xs text-amber-700">Once you switch to a Vendor account, you <strong>cannot switch back</strong> to a regular user account.</p>
+                      <div className="flex gap-2">
+                        <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white" onClick={switchToVendor} disabled={switchingToVendor}>
+                          {switchingToVendor ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null} Yes, Switch to Vendor
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setShowVendorConfirm(false)}>Cancel</Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="bg-card border border-border rounded-xl p-5 space-y-4">
                 <h3 className="font-heading text-base font-semibold">Change Password</h3>
                 <div className="space-y-1.5"><Label>New Password</Label>
