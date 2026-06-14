@@ -35,6 +35,8 @@ import DirectoryListingDetail from './pages/DirectoryListingDetail';
 import AdminDirectory from './pages/AdminDirectory';
 import ItsekirisPage from './pages/ItsekirisPage';
 import AdminItsekiris from './pages/AdminItsekiris';
+import AdminLogin from './pages/AdminLogin';
+import AdminUserManagement from './pages/AdminUserManagement';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -62,6 +64,7 @@ const AuthenticatedApp = () => {
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/itinerary" element={<ItineraryPage />} />
+      <Route path="/admin-login" element={<AdminLogin />} />
       <Route path="/rsvp" element={<RSVPPortal />} />
       <Route path="/invite-detail" element={<InviteDetail />} />
       <Route path="/checkpoint" element={<SecurityCheckpoint />} />
@@ -88,6 +91,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/marketplace" element={<AdminMarketplace />} />
         <Route path="/admin/directory" element={<AdminDirectory />} />
         <Route path="/admin/itsekiris" element={<AdminItsekiris />} />
+        <Route path="/admin/users" element={<AdminUserManagement />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

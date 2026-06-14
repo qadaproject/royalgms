@@ -180,6 +180,7 @@ export default function HomePage() {
           © 2026 Royal Guest Management System. All rights reserved.
         </p>
         <p className="text-[#f5ede0]/20 text-[10px] font-sans mt-1 uppercase tracking-widest">Royal Palace · Warri Kingdom · Delta State, Nigeria</p>
+        <a href="/admin-login" className="text-[#f5ede0]/10 hover:text-[#c9a84c]/40 text-[9px] font-sans mt-3 block transition-colors tracking-widest uppercase">Admin</a>
       </footer>
     </div>
   );

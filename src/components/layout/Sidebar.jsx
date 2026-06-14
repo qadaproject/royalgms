@@ -34,6 +34,7 @@ const navItems = [
   { path: "/admin/marketplace", label: "Marketplace Mgmt", icon: Store, roles: ["admin", "chairman"] },
   { path: "/admin/directory", label: "Directory Mgmt", icon: MapPin, roles: ["admin", "chairman"] },
   { path: "/admin/itsekiris", label: "Itsekiris Mgmt", icon: BookUser, roles: ["admin", "chairman"] },
+  { path: "/admin/users", label: "User Management", icon: Users, roles: ["admin"] },
   { path: "/", label: "Public Homepage", icon: Globe, roles: ["admin", "chairman"] },
 ];
 
