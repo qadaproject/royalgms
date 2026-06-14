@@ -34,7 +34,7 @@ export default function VendorDetailPage() {
 
   const { data: products = [] } = useQuery({
     queryKey: ["vendor_products", vendorId],
-    queryFn: () => base44.entities.VendorProduct.filter({ vendor_id: vendorId, is_available: true }),
+    queryFn: () => base44.entities.VendorProduct.filter({ vendor_id: vendorId, is_available: true, is_approved: true }),
     enabled: !!vendorId,
   });
 

@@ -277,7 +277,13 @@ export default function VendorDashboardPage() {
                   <div key={p.id} className="bg-card border border-border rounded-xl p-4 flex gap-3">
                     {p.image_urls?.[0] && <img src={p.image_urls[0]} alt={p.name} className="w-16 h-16 rounded-lg object-cover shrink-0" />}
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate">{p.name}</p>
+                      <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                        <p className="font-semibold text-sm truncate">{p.name}</p>
+                        {p.is_approved
+                          ? <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-300 bg-emerald-50">✓ Live</Badge>
+                          : <Badge variant="outline" className="text-[9px] text-amber-600 border-amber-300 bg-amber-50">⏳ Pending Approval</Badge>
+                        }
+                      </div>
                       <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
                       <p className="text-sm font-bold text-primary mt-1">₦{p.price?.toLocaleString()}{p.unit ? ` / ${p.unit}` : ""}</p>
                     </div>

@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Store, CheckCircle, XCircle, Clock, Star, Tag, Plus, Pencil, Trash2, Eye, Package, BarChart2, Upload, Loader2, BadgeCheck } from "lucide-react";
+import { Store, CheckCircle, XCircle, Clock, Star, Tag, Plus, Pencil, Trash2, Eye, Package, BarChart2, Upload, Loader2, BadgeCheck, ShieldCheck } from "lucide-react";
 import VerifiedBadge from "../components/marketplace/VerifiedBadge";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -44,6 +44,7 @@ const emptyProductForm = {
 export default function AdminMarketplace() {
   const queryClient = useQueryClient();
   const [approvalFilter, setApprovalFilter] = useState("Pending");
+  const [productFilter, setProductFilter] = useState("pending");
 
   // Dialogs & state
   const [reviewVendor, setReviewVendor] = useState(null);
@@ -209,6 +210,27 @@ export default function AdminMarketplace() {
     }
   );
 
+  // --- Product Approval ---
+  const approveProduct = (p) => ask(
+    "Approve Product?",
+    `Make "${p.name}" by ${p.vendor_name} publicly visible in the marketplace?`,
+    async () => {
+      await base44.entities.VendorProduct.update(p.id, { is_approved: true });
+      refetchProducts();
+      toast.success("Product approved and now live");
+    }
+  );
+
+  const rejectProduct = (p) => ask(
+    "Reject Product?",
+    `Remove "${p.name}" and decline it from the marketplace?`,
+    async () => {
+      await base44.entities.VendorProduct.delete(p.id);
+      refetchProducts();
+      toast.success("Product rejected and removed");
+    }
+  );
+
   // --- Review Actions ---
   const approveReview = (r) => ask(
     "Approve Review?",
@@ -278,6 +300,7 @@ export default function AdminMarketplace() {
     pending: vendors.filter(v => v.approval_status === "Pending").length,
     featured: vendors.filter(v => v.featured).length,
     products: products.length,
+    pendingProducts: products.filter(p => !p.is_approved).length,
     reviews: reviews.length,
     pendingReviews: reviews.filter(r => !r.is_approved).length,
   };
@@ -310,6 +333,7 @@ export default function AdminMarketplace() {
           { label: "Pending", value: metrics.pending, icon: <Clock className="w-4 h-4 text-amber-500" /> },
           { label: "Featured", value: metrics.featured, icon: <Star className="w-4 h-4 text-amber-400" /> },
           { label: "Products", value: metrics.products, icon: <Package className="w-4 h-4 text-blue-500" /> },
+          { label: "Pending Products", value: metrics.pendingProducts, icon: <Clock className="w-4 h-4 text-blue-400" /> },
           { label: "Reviews", value: metrics.reviews, icon: <BarChart2 className="w-4 h-4 text-purple-500" /> },
           { label: "Pending Reviews", value: metrics.pendingReviews, icon: <Clock className="w-4 h-4 text-orange-500" /> },
         ].map(m => (
@@ -323,7 +347,7 @@ export default function AdminMarketplace() {
       <Tabs defaultValue="vendors">
         <TabsList className="mb-6">
           <TabsTrigger value="vendors"><Store className="w-4 h-4 mr-1" />Vendors</TabsTrigger>
-          <TabsTrigger value="products"><Package className="w-4 h-4 mr-1" />Products</TabsTrigger>
+          <TabsTrigger value="products"><Package className="w-4 h-4 mr-1" />Products {metrics.pendingProducts > 0 && <Badge className="ml-1 h-4 min-w-4 text-[9px] bg-blue-500">{metrics.pendingProducts}</Badge>}</TabsTrigger>
           <TabsTrigger value="categories"><Tag className="w-4 h-4 mr-1" />Categories</TabsTrigger>
           <TabsTrigger value="reviews"><Star className="w-4 h-4 mr-1" />Reviews {metrics.pendingReviews > 0 && <Badge className="ml-1 h-4 min-w-4 text-[9px] bg-amber-500">{metrics.pendingReviews}</Badge>}</TabsTrigger>
         </TabsList>
@@ -398,24 +422,44 @@ export default function AdminMarketplace() {
 
         {/* Products Tab */}
         <TabsContent value="products">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-muted-foreground">{products.length} total products across all vendors</p>
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <div className="flex gap-2">
+              {["pending", "approved", "all"].map(f => (
+                <Button key={f} size="sm" variant={productFilter === f ? "default" : "outline"} onClick={() => setProductFilter(f)} className="capitalize">
+                  {f === "pending" ? "Pending" : f === "approved" ? "Approved" : "All"}
+                  <Badge variant="outline" className="ml-1 text-[9px]">
+                    {f === "pending" ? products.filter(p => !p.is_approved).length : f === "approved" ? products.filter(p => p.is_approved).length : products.length}
+                  </Badge>
+                </Button>
+              ))}
+            </div>
             <Button size="sm" onClick={() => { setProductForm(emptyProductForm); setProductDialog({ vendorId: null }); }}>
               <Plus className="w-4 h-4 mr-1" />Add Product
             </Button>
           </div>
           <div className="space-y-3">
-            {products.length === 0 ? (
-              <p className="text-center text-muted-foreground py-12">No products yet.</p>
-            ) : products.map(p => (
+            {products.filter(p => productFilter === "all" ? true : productFilter === "approved" ? p.is_approved : !p.is_approved).length === 0 ? (
+              <p className="text-center text-muted-foreground py-12">No products found.</p>
+            ) : products.filter(p => productFilter === "all" ? true : productFilter === "approved" ? p.is_approved : !p.is_approved).map(p => (
               <div key={p.id} className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
                 {p.image_urls?.[0] && <img src={p.image_urls[0]} alt={p.name} className="w-14 h-14 rounded-lg object-cover shrink-0 border border-border" />}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm">{p.name}</p>
+                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <p className="font-semibold text-sm">{p.name}</p>
+                    {p.is_approved
+                      ? <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-300 bg-emerald-50">✓ Live</Badge>
+                      : <Badge variant="outline" className="text-[9px] text-amber-600 border-amber-300 bg-amber-50">⏳ Pending</Badge>
+                    }
+                  </div>
                   <p className="text-xs text-muted-foreground">{p.vendor_name} · ₦{p.price?.toLocaleString()}{p.unit ? ` / ${p.unit}` : ""}</p>
                   {p.description && <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
+                  {!p.is_approved && (
+                    <Button size="sm" className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => approveProduct(p)}>
+                      <ShieldCheck className="w-3 h-3 mr-1" />Approve
+                    </Button>
+                  )}
                   <Button size="icon" variant="ghost" className="h-7 w-7"
                     onClick={() => { setProductForm({ ...p, price: p.price?.toString() || "" }); setProductDialog({ vendorId: p.vendor_id, product: p }); }}>
                     <Pencil className="w-3.5 h-3.5" />
