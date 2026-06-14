@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, MapPin, Phone, Globe, Mail, ArrowLeft, Facebook, Instagram, Twitter, MessageCircle, Clock, Tag, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, MapPin, Phone, Globe, Mail, ArrowLeft, Facebook, Instagram, Twitter, MessageCircle, Clock, Tag, ChevronLeft, ChevronRight, Share2, Eye, EyeOff } from "lucide-react";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import StarRating from "../components/marketplace/StarRating";
 import VerifiedBadge from "../components/marketplace/VerifiedBadge";
@@ -19,6 +19,7 @@ export default function VendorDetailPage() {
   const [galleryIdx, setGalleryIdx] = useState(0);
   const [reviewForm, setReviewForm] = useState({ reviewer_name: "", reviewer_email: "", rating: 5, comment: "" });
   const [submitting, setSubmitting] = useState(false);
+  const [phoneRevealed, setPhoneRevealed] = useState(false);
 
   const { data: vendor } = useQuery({
     queryKey: ["vendor", vendorId],
@@ -60,8 +61,35 @@ export default function VendorDetailPage() {
   );
 
   const allImages = [vendor.cover_image_url, ...(vendor.gallery_urls || [])].filter(Boolean);
-
   const priceRangeColor = { Budget: "text-emerald-600", "Mid-range": "text-blue-600", Premium: "text-amber-600", Luxury: "text-purple-600" };
+
+  const maskPhone = (phone) => {
+    if (!phone) return "";
+    const str = phone.toString();
+    return str.slice(0, 4) + "•".repeat(Math.max(0, str.length - 7)) + str.slice(-3);
+  };
+
+  const shareProductOnWhatsApp = (product) => {
+    const price = product.discount_percent > 0
+      ? `₦${(product.discounted_price || product.price * (1 - product.discount_percent / 100)).toLocaleString()} (${product.discount_percent}% off ₦${product.price?.toLocaleString()})`
+      : `₦${product.price?.toLocaleString()}`;
+    const unit = product.unit ? ` / ${product.unit}` : "";
+    const vendorUrl = `${window.location.origin}/marketplace/vendor?id=${vendorId}`;
+    const lines = [
+      `🛍️ *${product.name}*`,
+      product.description ? product.description : "",
+      `💰 Price: ${price}${unit}`,
+      ``,
+      `🏪 *${vendor.business_name}*${vendor.is_verified ? " ✅" : ""}`,
+      vendor.category_name ? `📂 ${vendor.category_name}` : "",
+      vendor.location_city ? `📍 ${vendor.location_city}${vendor.location_state ? `, ${vendor.location_state}` : ""}` : "",
+      vendor.phone ? `📞 ${vendor.phone}` : "",
+      vendor.social_whatsapp ? `💬 WhatsApp: wa.me/${vendor.social_whatsapp}` : "",
+      ``,
+      `🔗 View full listing: ${vendorUrl}`,
+    ].filter(Boolean).join("\n");
+    window.open(`https://wa.me/?text=${encodeURIComponent(lines)}`, "_blank");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -152,17 +180,26 @@ export default function VendorDetailPage() {
                       <div className="p-3">
                         <p className="font-semibold text-sm">{p.name}</p>
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          {p.discount_percent > 0 ? (
-                            <>
-                              <span className="text-sm font-bold text-primary">₦{(p.discounted_price || p.price * (1 - p.discount_percent / 100)).toLocaleString()}</span>
-                              <span className="text-xs line-through text-muted-foreground">₦{p.price?.toLocaleString()}</span>
-                              <Badge className="text-[9px] bg-red-100 text-red-700 border-red-300">-{p.discount_percent}%</Badge>
-                            </>
-                          ) : (
-                            <span className="text-sm font-bold text-primary">₦{p.price?.toLocaleString()}</span>
-                          )}
-                          {p.unit && <span className="text-xs text-muted-foreground">/ {p.unit}</span>}
+                        <div className="flex items-center justify-between mt-2 gap-2">
+                          <div className="flex items-center gap-2">
+                            {p.discount_percent > 0 ? (
+                              <>
+                                <span className="text-sm font-bold text-primary">₦{(p.discounted_price || p.price * (1 - p.discount_percent / 100)).toLocaleString()}</span>
+                                <span className="text-xs line-through text-muted-foreground">₦{p.price?.toLocaleString()}</span>
+                                <Badge className="text-[9px] bg-red-100 text-red-700 border-red-300">-{p.discount_percent}%</Badge>
+                              </>
+                            ) : (
+                              <span className="text-sm font-bold text-primary">₦{p.price?.toLocaleString()}</span>
+                            )}
+                            {p.unit && <span className="text-xs text-muted-foreground">/ {p.unit}</span>}
+                          </div>
+                          <button
+                            onClick={() => shareProductOnWhatsApp(p)}
+                            className="flex items-center gap-1 text-[10px] text-green-600 hover:text-green-700 border border-green-300 rounded-md px-1.5 py-0.5 hover:bg-green-50 transition-colors shrink-0"
+                            title="Share on WhatsApp"
+                          >
+                            <Share2 className="w-3 h-3" /> Share
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -184,7 +221,6 @@ export default function VendorDetailPage() {
                         <p className="font-semibold text-sm">{r.reviewer_name}</p>
                         <StarRating rating={r.rating} size="sm" />
                       </div>
-
                       <p className="text-sm text-muted-foreground">{r.comment}</p>
                     </div>
                   ))}
@@ -226,10 +262,19 @@ export default function VendorDetailPage() {
                   </div>
                 )}
                 {vendor.phone && (
-                  <a href={`tel:${vendor.phone}`} className="flex gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                    <Phone className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
-                    <span>{vendor.phone}</span>
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 shrink-0 text-primary" />
+                    <button
+                      onClick={() => setPhoneRevealed(r => !r)}
+                      className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <span className="font-mono">{phoneRevealed ? vendor.phone : maskPhone(vendor.phone)}</span>
+                      {phoneRevealed ? <EyeOff className="w-3.5 h-3.5 opacity-50" /> : <Eye className="w-3.5 h-3.5 opacity-50" />}
+                    </button>
+                    {phoneRevealed && (
+                      <a href={`tel:${vendor.phone}`} className="text-xs text-primary underline ml-1">Call</a>
+                    )}
+                  </div>
                 )}
                 {vendor.email && (
                   <a href={`mailto:${vendor.email}`} className="flex gap-2 text-muted-foreground hover:text-foreground transition-colors">
