@@ -31,6 +31,18 @@ export default function AdminItsekiris() {
   const [personForm, setPersonForm] = useState(emptyPerson);
   const [catForm, setCatForm] = useState(emptyCategory);
   const [saving, setSaving] = useState(false);
+  const [globalVisibility, setGlobalVisibility] = useState({ show_bio: true, show_email: false, show_phone: false, show_social: true });
+  const [applyingGlobal, setApplyingGlobal] = useState(false);
+
+  const applyGlobalVisibility = async (field, value) => {
+    const updated = { ...globalVisibility, [field]: value };
+    setGlobalVisibility(updated);
+    setApplyingGlobal(true);
+    const all = await base44.entities.ItsekiriPerson.list("-created_date", 500);
+    await Promise.all(all.map((p) => base44.entities.ItsekiriPerson.update(p.id, { [field]: value })));
+    setApplyingGlobal(false);
+    loadData();
+  };
 
   const loadData = () => {
     base44.entities.ItsekiriPerson.list("-created_date", 200).then(setPersons);
@@ -116,6 +128,34 @@ export default function AdminItsekiris() {
 
         {/* PERSONS TAB */}
         <TabsContent value="persons">
+          {/* Global Visibility Panel */}
+          <div className="border rounded-lg p-4 mb-5 bg-muted/30">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="font-medium text-sm">Global Profile Visibility</p>
+                <p className="text-muted-foreground text-xs">These toggles apply to <strong>all profiles at once</strong>.</p>
+              </div>
+              {applyingGlobal && <span className="text-xs text-muted-foreground animate-pulse">Applying to all…</span>}
+            </div>
+            <div className="flex flex-wrap gap-4">
+              {[
+                { key: "show_bio", label: "Show Bio" },
+                { key: "show_email", label: "Show Email (masked)" },
+                { key: "show_phone", label: "Show Phone (masked)" },
+                { key: "show_social", label: "Show Social Links" },
+              ].map(({ key, label }) => (
+                <div key={key} className="flex items-center gap-2">
+                  <Switch
+                    checked={globalVisibility[key]}
+                    onCheckedChange={(v) => applyGlobalVisibility(key, v)}
+                    disabled={applyingGlobal}
+                  />
+                  <Label className="text-sm cursor-pointer">{label}</Label>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="flex gap-3 mb-4">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -131,7 +171,6 @@ export default function AdminItsekiris() {
                   <th className="text-left px-4 py-3 font-medium">Name</th>
                   <th className="text-left px-4 py-3 font-medium">Profession</th>
                   <th className="text-left px-4 py-3 font-medium">Category</th>
-                  <th className="text-left px-4 py-3 font-medium">Visible Fields</th>
                   <th className="text-left px-4 py-3 font-medium">Status</th>
                   <th className="text-right px-4 py-3 font-medium">Actions</th>
                 </tr>
@@ -152,33 +191,6 @@ export default function AdminItsekiris() {
                     <td className="px-4 py-3 text-muted-foreground">{p.profession || "—"}</td>
                     <td className="px-4 py-3"><Badge variant="outline">{p.category_name || "—"}</Badge></td>
                     <td className="px-4 py-3">
-                      <div className="flex gap-1 flex-wrap">
-                        {[
-                          { key: "show_bio", label: "Bio" },
-                          { key: "show_email", label: "Email" },
-                          { key: "show_phone", label: "Phone" },
-                          { key: "show_social", label: "Social" },
-                        ].map(({ key, label }) => (
-                          <button
-                            key={key}
-                            onClick={async () => {
-                              const updated = { [key]: !p[key] };
-                              await base44.entities.ItsekiriPerson.update(p.id, updated);
-                              loadData();
-                            }}
-                            title={`Click to ${p[key] ? "hide" : "show"} ${label}`}
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-sans border transition-all ${
-                              p[key]
-                                ? "bg-green-100 text-green-700 border-green-300 hover:bg-red-100 hover:text-red-600 hover:border-red-300"
-                                : "bg-muted text-muted-foreground border-border hover:bg-green-100 hover:text-green-700 hover:border-green-300"
-                            }`}
-                          >
-                            {p[key] ? "✓" : "✗"} {label}
-                          </button>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
                       <button onClick={() => togglePersonActive(p)} className="flex items-center gap-1 text-xs">
                         {p.is_active
                           ? <><ToggleRight className="w-5 h-5 text-green-600" /> <span className="text-green-600">Active</span></>
@@ -195,7 +207,7 @@ export default function AdminItsekiris() {
                   </tr>
                 ))}
                 {filteredPersons.length === 0 && (
-                  <tr><td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">No people found.</td></tr>
+                  <tr><td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">No people found.</td></tr>
                 )}
               </tbody>
             </table>
