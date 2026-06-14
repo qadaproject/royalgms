@@ -43,14 +43,24 @@ function PersonCard({ person, onReact, myReaction }) {
       <div className="p-5">
         <div className="flex gap-4 items-start mb-4">
           {person.photo_url ? (
-            <img src={person.photo_url} alt={person.full_name} className="w-16 h-16 rounded-full object-cover border-2 border-[#c9a84c]/30 shrink-0" />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-[#c9a84c]/10 border-2 border-[#c9a84c]/20 flex items-center justify-center shrink-0">
-              <span className="text-[#c9a84c] text-xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                {person.full_name?.charAt(0)}
-              </span>
-            </div>
-          )}
+            <img
+              src={person.photo_url}
+              alt={person.full_name}
+              className="w-16 h-16 rounded-full object-cover border-2 border-[#c9a84c]/30 shrink-0"
+              onError={(e) => {
+                e.target.style.display = "none";
+                e.target.nextSibling.style.display = "flex";
+              }}
+            />
+          ) : null}
+          <div
+            className="w-16 h-16 rounded-full bg-[#c9a84c]/10 border-2 border-[#c9a84c]/20 items-center justify-center shrink-0"
+            style={{ display: person.photo_url ? "none" : "flex" }}
+          >
+            <span className="text-[#c9a84c] text-xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              {person.full_name?.charAt(0)}
+            </span>
+          </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-[#f5ede0] font-semibold text-base leading-snug mb-0.5" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{person.full_name}</h3>
             {person.profession && <p className="text-[#c9a84c] text-xs font-sans uppercase tracking-wider">{person.profession}</p>}

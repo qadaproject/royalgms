@@ -68,7 +68,10 @@ export default function AdminItsekiris() {
     }
     setSaving(false);
     setPersonDialog(false);
-    loadData();
+    await base44.entities.ItsekiriPerson.list("-created_date", 200).then((data) => {
+      setPersons(data);
+      base44.entities.ItsekiriCategory.list("sort_order", 100).then(setCategories);
+    });
   };
 
   const deletePerson = async (id) => {
@@ -113,10 +116,18 @@ export default function AdminItsekiris() {
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Reset input so same file can be re-selected if needed
+    e.target.value = "";
     setUploadingPhoto(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    upd("photo_url", file_url);
-    setUploadingPhoto(false);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      const file_url = result?.file_url || result?.url || result;
+      if (file_url && typeof file_url === "string") {
+        upd("photo_url", file_url);
+      }
+    } finally {
+      setUploadingPhoto(false);
+    }
   };
 
   const upd = (f, v) => setPersonForm((prev) => ({ ...prev, [f]: v }));
@@ -192,10 +203,11 @@ export default function AdminItsekiris() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {p.photo_url ? (
-                          <img src={p.photo_url} className="w-8 h-8 rounded-full object-cover" alt="" />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold">{p.full_name?.charAt(0)}</div>
-                        )}
+                          <img src={p.photo_url} className="w-8 h-8 rounded-full object-cover" alt=""
+                            onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
+                          />
+                        ) : null}
+                        <div className="w-8 h-8 rounded-full bg-primary/10 items-center justify-center text-primary text-xs font-semibold" style={{ display: p.photo_url ? "none" : "flex" }}>{p.full_name?.charAt(0)}</div>
                         <span className="font-medium">{p.full_name}</span>
                       </div>
                     </td>
@@ -352,10 +364,11 @@ export default function AdminItsekiris() {
             <div className="space-y-4 mt-2">
               <div className="flex items-center gap-4">
                 {viewPerson.photo_url ? (
-                  <img src={viewPerson.photo_url} alt="" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
-                ) : (
-                  <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-semibold">{viewPerson.full_name?.charAt(0)}</div>
-                )}
+                  <img src={viewPerson.photo_url} alt="" className="w-20 h-20 rounded-full object-cover border-2 border-border"
+                    onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
+                  />
+                ) : null}
+                <div className="w-20 h-20 rounded-full bg-primary/10 items-center justify-center text-primary text-2xl font-semibold" style={{ display: viewPerson.photo_url ? "none" : "flex" }}>{viewPerson.full_name?.charAt(0)}</div>
                 <div>
                   <p className="font-semibold text-lg">{viewPerson.full_name}</p>
                   {viewPerson.profession && <p className="text-sm text-muted-foreground">{viewPerson.profession}</p>}
