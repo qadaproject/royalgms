@@ -33,6 +33,8 @@ import VerifyVendorEmail from './pages/VerifyVendorEmail';
 import DirectoryPage from './pages/DirectoryPage';
 import DirectoryListingDetail from './pages/DirectoryListingDetail';
 import AdminDirectory from './pages/AdminDirectory';
+import ItsekirisPage from './pages/ItsekirisPage';
+import AdminItsekiris from './pages/AdminItsekiris';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -71,6 +73,7 @@ const AuthenticatedApp = () => {
       <Route path="/marketplace/verify-email" element={<VerifyVendorEmail />} />
       <Route path="/directory" element={<DirectoryPage />} />
       <Route path="/directory/listing" element={<DirectoryListingDetail />} />
+      <Route path="/itsekiris" element={<ItsekirisPage />} />
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/guests" element={<Guests />} />
@@ -84,6 +87,7 @@ const AuthenticatedApp = () => {
         <Route path="/event-history" element={<EventHistoryPage />} />
         <Route path="/admin/marketplace" element={<AdminMarketplace />} />
         <Route path="/admin/directory" element={<AdminDirectory />} />
+        <Route path="/admin/itsekiris" element={<AdminItsekiris />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

@@ -15,6 +15,7 @@ import {
   Globe,
   Store,
   MapPin,
+  BookUser,
 } from "lucide-react";
 import RoyalCrest from "./RoyalCrest";
 import { base44 } from "@/api/base44Client";
@@ -32,6 +33,7 @@ const navItems = [
   { path: "/checkpoint", label: "Security Checkpoint", icon: Shield, roles: ["admin", "security"] },
   { path: "/admin/marketplace", label: "Marketplace Mgmt", icon: Store, roles: ["admin", "chairman"] },
   { path: "/admin/directory", label: "Directory Mgmt", icon: MapPin, roles: ["admin", "chairman"] },
+  { path: "/admin/itsekiris", label: "Itsekiris Mgmt", icon: BookUser, roles: ["admin", "chairman"] },
   { path: "/", label: "Public Homepage", icon: Globe, roles: ["admin", "chairman"] },
 ];
 
