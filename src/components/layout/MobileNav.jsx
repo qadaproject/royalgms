@@ -36,10 +36,7 @@ export default function MobileNav({ user }) {
     <>
       <header className="fixed top-0 left-0 right-0 h-16 bg-sidebar z-50 flex items-center justify-between px-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <RoyalCrest size="sm" />
-          <span className="font-heading text-base font-semibold text-sidebar-primary tracking-wide">
-            R-GMS
-          </span>
+          <RoyalCrest size="md" />
         </div>
         <button onClick={() => setOpen(!open)} className="text-sidebar-foreground">
           {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}

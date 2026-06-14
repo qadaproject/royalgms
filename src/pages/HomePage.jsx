@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Menu, X, ChevronDown } from "lucide-react";
+import RoyalCrest from "../components/layout/RoyalCrest";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -59,9 +60,8 @@ export default function HomePage() {
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0d0603]/90 backdrop-blur-md border-b border-[#c9a84c]/20">
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
-          <Link to="/" className="flex flex-col leading-tight">
-            <span className="text-[#c9a84c] text-[10px] uppercase tracking-[0.25em] font-sans">Royal Palace</span>
-            <span className="text-[#f5ede0] text-sm font-semibold tracking-wider">Warri Kingdom</span>
+          <Link to="/">
+            <RoyalCrest size="md" />
           </Link>
           <div className="hidden md:flex items-center gap-8">
             {NAV_LINKS.map((l) => (
