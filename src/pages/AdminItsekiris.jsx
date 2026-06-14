@@ -52,7 +52,7 @@ export default function AdminItsekiris() {
   useEffect(() => { loadData(); }, []);
 
   // --- Person CRUD ---
-  const openAddPerson = () => { setEditPerson(null); setPersonForm(emptyPerson); setPersonDialog(true); };
+  const openAddPerson = () => { setEditPerson(null); setPersonForm({ ...emptyPerson, ...globalVisibility }); setPersonDialog(true); };
   const openEditPerson = (p) => { setEditPerson(p); setPersonForm({ ...emptyPerson, ...p }); setPersonDialog(true); };
 
   const savePerson = async () => {
@@ -290,21 +290,28 @@ export default function AdminItsekiris() {
             </div>
 
             <div className="border-t pt-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Visibility Controls</p>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { key: "show_bio", label: "Show Bio" },
-                  { key: "show_email", label: "Show Email (masked)" },
-                  { key: "show_phone", label: "Show Phone (masked)" },
-                  { key: "show_social", label: "Show Social Links" },
-                  { key: "is_active", label: "Profile Active" },
-                ].map(({ key, label }) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <Label className="text-sm">{label}</Label>
-                    <Switch checked={!!personForm[key]} onCheckedChange={(v) => upd(key, v)} />
-                  </div>
-                ))}
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">Profile Active</Label>
+                <Switch checked={!!personForm.is_active} onCheckedChange={(v) => upd("is_active", v)} />
               </div>
+              {!editPerson && (
+                <p className="text-xs text-muted-foreground mt-2">Visibility settings (Bio, Email, Phone, Social) are controlled globally from the People tab.</p>
+              )}
+              {editPerson && (
+                <div className="grid grid-cols-2 gap-3 mt-3">
+                  {[
+                    { key: "show_bio", label: "Show Bio" },
+                    { key: "show_email", label: "Show Email (masked)" },
+                    { key: "show_phone", label: "Show Phone (masked)" },
+                    { key: "show_social", label: "Show Social Links" },
+                  ].map(({ key, label }) => (
+                    <div key={key} className="flex items-center justify-between">
+                      <Label className="text-sm">{label}</Label>
+                      <Switch checked={!!personForm[key]} onCheckedChange={(v) => upd(key, v)} />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <div className="flex justify-end gap-3 mt-4 pt-4 border-t">
