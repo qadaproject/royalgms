@@ -202,100 +202,107 @@ export default function Notifications() {
   });
 
   const sendNotification = async (guest, ch) => {
+    setSending((prev) => ({ ...prev, [guest.id]: true }));
     if (!guest.qr_code) {
       toast.error(`${guest.full_name} has no QR token. Re-save the guest to generate one.`);
+      setSending((prev) => ({ ...prev, [guest.id]: false }));
       return;
     }
-    setSending((prev) => ({ ...prev, [guest.id]: true }));
-
-    const emailTemplate = eventSettings.email_template || DEFAULT_EMAIL_TEMPLATE;
-    const smsTemplate = eventSettings.sms_template || DEFAULT_SMS_TEMPLATE;
-    const emailSubject = eventSettings.email_subject || DEFAULT_EMAIL_SUBJECT;
-    const emailBody = applyTemplate(emailTemplate, guest);
-    const smsBody = applyTemplate(smsTemplate, guest);
 
     let success = true;
+    let emailBody = "";
+    try {
+      const emailTemplate = eventSettings.email_template || DEFAULT_EMAIL_TEMPLATE;
+      const smsTemplate = eventSettings.sms_template || DEFAULT_SMS_TEMPLATE;
+      const emailSubject = eventSettings.email_subject || DEFAULT_EMAIL_SUBJECT;
+      emailBody = applyTemplate(emailTemplate, guest);
+      const smsBody = applyTemplate(smsTemplate, guest);
 
-    if (ch === "Email" || ch === "Email + SMS" || ch === "Email + WhatsApp") {
-      const htmlBody = buildHtmlEmail(guest, emailBody, eventSettings);
-      const emailRecipients = [guest.email, guest.contact_person_email].filter(Boolean);
-      const uniqueRecipients = [...new Set(emailRecipients)];
-      if (uniqueRecipients.length > 0) {
-        for (const to of uniqueRecipients) {
+      if (ch === "Email" || ch === "Email + SMS" || ch === "Email + WhatsApp") {
+        const htmlBody = buildHtmlEmail(guest, emailBody, eventSettings);
+        const emailRecipients = [guest.email, guest.contact_person_email].filter(Boolean);
+        const uniqueRecipients = [...new Set(emailRecipients)];
+        if (uniqueRecipients.length > 0) {
+          for (const to of uniqueRecipients) {
+            try {
+              const res = await base44.functions.invoke("sendEmail", {
+                to,
+                subject: emailSubject,
+                html: htmlBody,
+                from_name: "Royal Protocol Office Warri Kingdom",
+              });
+              if (res?.data?.error) success = false;
+            } catch {
+              success = false;
+            }
+          }
+        } else {
+          success = false;
+        }
+      }
+
+      if (ch === "SMS" || ch === "Email + SMS") {
+        const rawPhone = guest.phone || guest.contact_person_phone;
+        const phone = formatPhone(rawPhone);
+        if (phone) {
           try {
-            const res = await base44.functions.invoke("sendEmail", {
-              to,
-              subject: emailSubject,
-              html: htmlBody,
-              from_name: "Royal Protocol Office Warri Kingdom",
-            });
-            if (res?.data?.error) success = false;
+            const res = await base44.functions.invoke("sendSMS", { phone, messageBody: smsBody });
+            if (res?.data?.error || res?.data?.result?.status === "error") success = false;
           } catch {
             success = false;
           }
-        }
-      } else {
-        success = false;
-      }
-    }
-
-    if (ch === "SMS" || ch === "Email + SMS") {
-      const rawPhone = guest.phone || guest.contact_person_phone;
-      const phone = formatPhone(rawPhone);
-      if (phone) {
-        try {
-          const res = await base44.functions.invoke("sendSMS", { phone, messageBody: smsBody });
-          if (res?.data?.error || res?.data?.result?.status === "error") {
-            success = false;
-          }
-        } catch {
+        } else {
           success = false;
         }
-      } else {
-        success = false;
       }
-    }
 
-    if (ch === "WhatsApp" || ch === "Email + WhatsApp") {
-      const rawPhone = guest.phone || guest.contact_person_phone;
-      const phone = formatPhone(rawPhone);
-      const guestName = `${guest.formal_salutation || ""} ${guest.full_name}`.trim();
-      const inviteLink = buildInviteLink(guest);
-      if (phone) {
-        await base44.functions.invoke("sendWhatsApp", {
-          phone,
-          name: guestName,
-          link: inviteLink,
-        }).catch(() => { success = false; });
-      } else {
-        success = false;
+      if (ch === "WhatsApp" || ch === "Email + WhatsApp") {
+        const rawPhone = guest.phone || guest.contact_person_phone;
+        const phone = formatPhone(rawPhone);
+        const guestName = `${guest.formal_salutation || ""} ${guest.full_name}`.trim();
+        const inviteLink = buildInviteLink(guest);
+        if (phone) {
+          await base44.functions.invoke("sendWhatsApp", {
+            phone,
+            name: guestName,
+            link: inviteLink,
+          }).catch(() => { success = false; });
+        } else {
+          success = false;
+        }
       }
-    }
 
-    await logMutation.mutateAsync({
-      guest_id: guest.id,
-      guest_name: guest.full_name,
-      guest_email: guest.email || guest.contact_person_email || "",
-      guest_phone: guest.phone || guest.contact_person_phone || "",
-      channel: ch,
-      status: success ? "Sent" : "Failed",
-      message_preview: emailBody.substring(0, 200),
-      rsvp_token: guest.qr_code,
-    });
+      try {
+        await logMutation.mutateAsync({
+          guest_id: guest.id,
+          guest_name: guest.full_name,
+          guest_email: guest.email || guest.contact_person_email || "",
+          guest_phone: guest.phone || guest.contact_person_phone || "",
+          channel: ch,
+          status: success ? "Sent" : "Failed",
+          message_preview: emailBody.substring(0, 200),
+          rsvp_token: guest.qr_code,
+        });
+        base44.entities.GuestActivityLog.create({
+          guest_id: guest.id,
+          guest_name: guest.full_name,
+          event_type: "notification_sent",
+          description: `${ch} notification ${success ? "sent" : "failed"}`,
+          new_value: success ? "Sent" : "Failed",
+        }).catch(() => {});
+      } catch {
+        // log failure is non-critical
+      }
 
-    base44.entities.GuestActivityLog.create({
-      guest_id: guest.id,
-      guest_name: guest.full_name,
-      event_type: "notification_sent",
-      description: `${ch} notification ${success ? "sent" : "failed"}`,
-      new_value: success ? "Sent" : "Failed",
-    }).catch(() => {});
-
-    setSending((prev) => ({ ...prev, [guest.id]: false }));
-    if (success) {
-      toast.success(`Notification sent to ${guest.full_name}`);
-    } else {
-      toast.error(`Failed to send to ${guest.full_name}`);
+      if (success) {
+        toast.success(`Notification sent to ${guest.full_name}`);
+      } else {
+        toast.error(`Failed to send to ${guest.full_name}`);
+      }
+    } catch (err) {
+      toast.error(`Error sending to ${guest.full_name}: ${err?.message || "Unknown error"}`);
+    } finally {
+      setSending((prev) => ({ ...prev, [guest.id]: false }));
     }
   };
 
