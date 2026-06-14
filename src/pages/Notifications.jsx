@@ -127,6 +127,7 @@ export default function Notifications() {
   const [channel, setChannel] = useState("Email");
   const [bulkSending, setBulkSending] = useState(false);
   const [search, setSearch] = useState("");
+  const [rsvpFilter, setRsvpFilter] = useState("All");
   const queryClient = useQueryClient();
 
   const { data: guests = [] } = useQuery({
@@ -177,20 +178,23 @@ export default function Notifications() {
   }, [logs]);
 
   const sentGuestIds = new Set(logs.map((l) => l.guest_id));
-  const pendingGuests = guests.filter((g) => g.rsvp_status === "Pending" && g.qr_code);
 
   const filteredGuests = useMemo(() => {
-    if (!search.trim()) return pendingGuests;
-    const q = search.toLowerCase();
-    return pendingGuests.filter((g) =>
-      `${g.formal_salutation || ""} ${g.full_name}`.toLowerCase().includes(q) ||
-      (g.email || "").toLowerCase().includes(q) ||
-      (g.contact_person_email || "").toLowerCase().includes(q) ||
-      (g.phone || "").includes(q) ||
-      (g.contact_person_phone || "").includes(q) ||
-      (g.category || "").toLowerCase().includes(q)
-    );
-  }, [pendingGuests, search]);
+    let result = guests;
+    if (rsvpFilter !== "All") result = result.filter((g) => g.rsvp_status === rsvpFilter);
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter((g) =>
+        `${g.formal_salutation || ""} ${g.full_name}`.toLowerCase().includes(q) ||
+        (g.email || "").toLowerCase().includes(q) ||
+        (g.contact_person_email || "").toLowerCase().includes(q) ||
+        (g.phone || "").includes(q) ||
+        (g.contact_person_phone || "").includes(q) ||
+        (g.category || "").toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [guests, search, rsvpFilter]);
 
   const logMutation = useMutation({
     mutationFn: (data) => base44.entities.NotificationLog.create(data),
@@ -315,7 +319,7 @@ export default function Notifications() {
 
   return (
     <div>
-      <PageHeader title="Notifications" subtitle="Send personalized RSVP reminders to pending guests">
+      <PageHeader title="Notifications" subtitle="Send notifications to any guest regardless of RSVP status">
         <Select value={channel} onValueChange={setChannel}>
           <SelectTrigger className="w-44 h-9">
             <SelectValue />
@@ -340,28 +344,42 @@ export default function Notifications() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Pending Guests */}
+        {/* All Guests */}
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-heading text-lg font-semibold">Pending RSVP Guests</h2>
+            <h2 className="font-heading text-lg font-semibold">All Guests</h2>
             <Badge variant="outline" className="text-[10px]">{filteredGuests.length} shown</Badge>
           </div>
 
-          {/* Search */}
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name, email, phone, category..."
-              className="pl-8 h-9 text-sm"
-            />
+          {/* Search + RSVP Filter */}
+          <div className="flex gap-2 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by name, email, phone, category..."
+                className="pl-8 h-9 text-sm"
+              />
+            </div>
+            <Select value={rsvpFilter} onValueChange={setRsvpFilter}>
+              <SelectTrigger className="w-36 h-9 shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Status</SelectItem>
+                <SelectItem value="Pending">Pending</SelectItem>
+                <SelectItem value="Accepted">Accepted</SelectItem>
+                <SelectItem value="Declined">Declined</SelectItem>
+                <SelectItem value="Proxy">Proxy</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {filteredGuests.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-emerald-500" />
-              <p className="font-heading text-lg">{search ? "No matching guests" : "All guests have responded"}</p>
+              <p className="font-heading text-lg">{search || rsvpFilter !== "All" ? "No matching guests" : "No guests found"}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -376,6 +394,12 @@ export default function Notifications() {
                       </p>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <CategoryBadge category={g.category} />
+                        <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full border ${
+                          g.rsvp_status === "Accepted" ? "text-emerald-700 border-emerald-400/40 bg-emerald-500/10" :
+                          g.rsvp_status === "Declined" ? "text-red-700 border-red-400/40 bg-red-500/10" :
+                          g.rsvp_status === "Proxy" ? "text-blue-700 border-blue-400/40 bg-blue-500/10" :
+                          "text-amber-700 border-amber-400/40 bg-amber-500/10"
+                        }`}>{g.rsvp_status || "Pending"}</span>
                         <span className={`text-[10px] truncate ${!hasEmail ? "text-amber-600 font-medium" : "text-muted-foreground"}`}>
                           {hasEmail ? (g.email || g.contact_person_email) : "No email"}
                         </span>
