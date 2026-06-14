@@ -477,7 +477,7 @@ export default function AdminMarketplace() {
                       <span key={i} className={`text-xs ${i < r.rating ? "text-amber-400" : "text-muted-foreground/30"}`}>★</span>
                     ))}
                   </div>
-                  {r.title && <p className="text-sm font-medium">{r.title}</p>}
+
                   <p className="text-sm text-muted-foreground">{r.comment}</p>
                 </div>
                 <div className="flex gap-2 shrink-0">

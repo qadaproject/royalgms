@@ -255,7 +255,7 @@ export default function VendorDashboardPage() {
                       </div>
                       <StarRating rating={r.rating} size="sm" />
                     </div>
-                    {r.title && <p className="text-sm font-medium">{r.title}</p>}
+
                     <p className="text-sm text-muted-foreground">{r.comment}</p>
                   </div>
                 ))}
