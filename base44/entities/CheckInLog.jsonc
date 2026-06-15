@@ -1,0 +1,48 @@
+{
+  "name": "CheckInLog",
+  "type": "object",
+  "properties": {
+    "guest_id": {
+      "type": "string",
+      "description": "Reference to Guest"
+    },
+    "guest_name": {
+      "type": "string"
+    },
+    "formal_salutation": {
+      "type": "string"
+    },
+    "official_title": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "description": "Guest category e.g. A - Royal"
+    },
+    "rsvp_status": {
+      "type": "string",
+      "description": "Status at time of check-in"
+    },
+    "seating_zone": {
+      "type": "string"
+    },
+    "gate": {
+      "type": "string",
+      "description": "Gate or checkpoint where scanned"
+    },
+    "checked_in_at": {
+      "type": "string",
+      "description": "ISO timestamp of check-in"
+    },
+    "qr_code": {
+      "type": "string"
+    },
+    "security_detail_size": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "guest_id",
+    "guest_name"
+  ]
+}
