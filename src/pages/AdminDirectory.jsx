@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Edit2, Trash2, MapPin, Flag, CheckCircle2, XCircle, Globe, Building2, Tag, Star, AlertTriangle, ShieldCheck, Eye } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Edit2, Trash2, MapPin, Flag, CheckCircle2, XCircle, Globe, Building2, Tag, Star, AlertTriangle, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -27,10 +25,6 @@ export default function AdminDirectory() {
   const [editingCategory, setEditingCategory] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [filterCategory, setFilterCategory] = useState("all");
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
 
   const fetchAll = async () => {
     const [l, c, s] = await Promise.all([
@@ -92,32 +86,9 @@ export default function AdminDirectory() {
     fetchAll();
   };
 
-  const filteredListings = listings.filter(l => {
-    const matchSearch = !searchQuery || l.name.toLowerCase().includes(searchQuery.toLowerCase()) || l.category?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchStatus = filterStatus === "all" || l.status === filterStatus;
-    const matchCategory = filterCategory === "all" || l.category === filterCategory;
-    return matchSearch && matchStatus && matchCategory;
-  });
-
-  const allSelected = filteredListings.length > 0 && filteredListings.every(l => selectedIds.includes(l.id));
-
-  const toggleSelectAll = () => {
-    if (allSelected) setSelectedIds(ids => ids.filter(id => !filteredListings.find(l => l.id === id)));
-    else setSelectedIds(ids => [...new Set([...ids, ...filteredListings.map(l => l.id)])]);
-  };
-
-  const toggleSelect = (id) => {
-    setSelectedIds(ids => ids.includes(id) ? ids.filter(i => i !== id) : [...ids, id]);
-  };
-
-  const handleBulkDelete = async () => {
-    await Promise.all(selectedIds.map(id => base44.entities.DirectoryListing.delete(id)));
-    setSelectedIds([]);
-    setConfirmBulkDelete(false);
-    fetchAll();
-  };
-
-  const uniqueCategories = [...new Set(listings.map(l => l.category).filter(Boolean))].sort();
+  const filteredListings = listings.filter(l =>
+    !searchQuery || l.name.toLowerCase().includes(searchQuery.toLowerCase()) || l.category?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const pendingCount = submissions.filter(s => s.status === "pending").length;
   const flagCount = submissions.filter(s => s.status === "pending" && s.type === "flag_report").length;
@@ -171,46 +142,18 @@ export default function AdminDirectory() {
 
         {/* Listings Tab */}
         <TabsContent value="listings">
-          <div className="flex flex-wrap gap-3 mb-4 items-center">
+          <div className="mb-4">
             <Input
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search by name or category..."
-              className="w-56"
+              placeholder="Search listings by name or category..."
+              className="max-w-sm"
             />
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-36">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="suspended">Suspended</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-44">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {uniqueCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            {selectedIds.length > 0 && (
-              <Button size="sm" variant="destructive" onClick={() => setConfirmBulkDelete(true)} className="ml-auto gap-1">
-                <Trash2 className="w-3.5 h-3.5" /> Delete {selectedIds.length} selected
-              </Button>
-            )}
           </div>
           <div className="bg-card border border-border rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="p-3 w-8">
-                    <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="cursor-pointer" />
-                  </th>
                   <th className="text-left p-3 font-medium text-muted-foreground text-xs">Business</th>
                   <th className="text-left p-3 font-medium text-muted-foreground text-xs hidden md:table-cell">Category</th>
                   <th className="text-left p-3 font-medium text-muted-foreground text-xs hidden lg:table-cell">Address</th>
@@ -220,10 +163,7 @@ export default function AdminDirectory() {
               </thead>
               <tbody className="divide-y divide-border">
                 {filteredListings.map(l => (
-                  <tr key={l.id} className={`hover:bg-muted/20 transition-colors ${selectedIds.includes(l.id) ? "bg-muted/30" : ""}`}>
-                    <td className="p-3 w-8">
-                      <input type="checkbox" checked={selectedIds.includes(l.id)} onChange={() => toggleSelect(l.id)} className="cursor-pointer" />
-                    </td>
+                  <tr key={l.id} className="hover:bg-muted/20 transition-colors">
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         {l.is_featured && <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />}
@@ -259,9 +199,6 @@ export default function AdminDirectory() {
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => handleToggleStatus(l)} title="Toggle active/suspended" className="h-7 w-7 p-0">
                           {l.status === "active" ? <XCircle className="w-3.5 h-3.5 text-muted-foreground" /> : <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
-                        </Button>
-                        <Button size="sm" variant="ghost" asChild className="h-7 w-7 p-0" title="View public listing">
-                          <Link to={`/directory/listing?id=${l.id}`} target="_blank"><Eye className="w-3.5 h-3.5" /></Link>
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => { setEditingListing(l); setShowListingForm(true); }} className="h-7 w-7 p-0">
                           <Edit2 className="w-3.5 h-3.5" />
@@ -387,23 +324,6 @@ export default function AdminDirectory() {
           onSaved={() => { setShowCategoryForm(false); setEditingCategory(null); fetchAll(); }}
         />
       )}
-
-      <AlertDialog open={confirmBulkDelete} onOpenChange={() => setConfirmBulkDelete(false)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete {selectedIds.length} Listings</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to permanently delete <strong>{selectedIds.length}</strong> listing(s)? This cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete All
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <AlertDialog open={!!confirmDelete} onOpenChange={() => setConfirmDelete(null)}>
         <AlertDialogContent>

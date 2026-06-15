@@ -49,7 +49,7 @@ export default function VerifyVendorEmail() {
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Button asChild>
-                <Link to="/marketplace/vendor-login">Sign In to Dashboard</Link>
+                <Link to="/marketplace/vendor-dashboard">Go to Vendor Dashboard</Link>
               </Button>
               <Button asChild variant="outline">
                 <Link to="/marketplace">Back to Marketplace</Link>

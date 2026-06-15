@@ -38,9 +38,6 @@ import AdminItsekiris from './pages/AdminItsekiris';
 import AdminLogin from './pages/AdminLogin';
 import AdminUserManagement from './pages/AdminUserManagement';
 import MarketplaceLoginPage from './pages/MarketplaceLoginPage';
-import MarketplaceUserLogin from './pages/MarketplaceUserLogin';
-import MarketplaceUserRegister from './pages/MarketplaceUserRegister';
-import VendorLoginPage from './pages/VendorLoginPage';
 import VerifyMarketplaceUser from './pages/VerifyMarketplaceUser';
 import MarketplaceUserDashboard from './pages/MarketplaceUserDashboard';
 import VendorByUsername from './pages/VendorByUsername';
@@ -82,9 +79,6 @@ const AuthenticatedApp = () => {
       <Route path="/marketplace/vendor-dashboard" element={<VendorDashboardPage />} />
       <Route path="/marketplace/verify-email" element={<VerifyVendorEmail />} />
       <Route path="/marketplace/login" element={<MarketplaceLoginPage />} />
-      <Route path="/marketplace/user-login" element={<MarketplaceUserLogin />} />
-      <Route path="/marketplace/user-register" element={<MarketplaceUserRegister />} />
-      <Route path="/marketplace/vendor-login" element={<VendorLoginPage />} />
       <Route path="/marketplace/verify-user" element={<VerifyMarketplaceUser />} />
       <Route path="/marketplace/my-dashboard" element={<MarketplaceUserDashboard />} />
       <Route path="/marketplace/:username" element={<VendorByUsername />} />

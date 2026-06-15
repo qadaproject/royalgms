@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, ShieldAlert, QrCode, Phone, Mail, User, MapPin, Utensils, AlertCircle, FileText, FileImage } from "lucide-react";
+import { ShieldCheck, ShieldAlert, QrCode, Phone, Mail, User, MapPin, Utensils, AlertCircle, FileText } from "lucide-react";
 import CategoryBadge from "../shared/CategoryBadge";
 import StatusBadge from "../shared/StatusBadge";
 
@@ -97,30 +97,6 @@ export default function GuestViewModal({ guest, open, onOpenChange }) {
               <Field label="Notes" value={guest.notes} icon={FileText} />
               <Field label="QR / Admission Token" value={guest.qr_code} icon={QrCode} />
             </Section>
-          )}
-
-          {(guest.gallery_urls || []).length > 0 && (
-            <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold text-accent mb-3 border-b border-border pb-1">Files & Photos</p>
-              <div className="grid grid-cols-3 gap-3">
-                {guest.gallery_urls.map((url, idx) => {
-                  const isPdf = url.includes(".pdf") || url.includes("pdf");
-                  return (
-                    <a key={idx} href={url} target="_blank" rel="noopener noreferrer"
-                      className="rounded-lg overflow-hidden border border-border bg-muted aspect-square flex items-center justify-center hover:opacity-80 transition-opacity">
-                      {isPdf ? (
-                        <div className="flex flex-col items-center gap-1 p-2 text-center">
-                          <FileImage className="w-8 h-8 text-primary" />
-                          <span className="text-[10px] text-muted-foreground">PDF</span>
-                        </div>
-                      ) : (
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                      )}
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
           )}
         </div>
       </DialogContent>

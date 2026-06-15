@@ -109,13 +109,6 @@
     "notes": {
       "type": "string",
       "description": "Internal notes"
-    },
-    "gallery_urls": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Event-related photos and documents for this guest"
     }
   },
   "required": [
