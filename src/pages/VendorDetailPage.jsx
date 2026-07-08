@@ -1,17 +1,14 @@
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, MapPin, Phone, Globe, Mail, ArrowLeft, Facebook, Instagram, Twitter, MessageCircle, Clock, Tag, ChevronLeft, ChevronRight, Share2, Eye, EyeOff, Heart } from "lucide-react";
+import { Star, MapPin, Phone, Globe, Mail, ArrowLeft, Facebook, Instagram, Twitter, MessageCircle, Clock, Tag, ChevronLeft, ChevronRight } from "lucide-react";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import StarRating from "../components/marketplace/StarRating";
-import VerifiedBadge from "../components/marketplace/VerifiedBadge";
-import CommentsSection from "../components/marketplace/CommentsSection";
-import { getMpUser } from "@/lib/marketplaceAuth";
 import { toast } from "sonner";
 
 export default function VendorDetailPage() {
@@ -19,11 +16,8 @@ export default function VendorDetailPage() {
   const vendorId = params.get("id");
   const queryClient = useQueryClient();
   const [galleryIdx, setGalleryIdx] = useState(0);
-  const [reviewForm, setReviewForm] = useState({ reviewer_name: "", reviewer_email: "", rating: 5, comment: "" });
+  const [reviewForm, setReviewForm] = useState({ reviewer_name: "", reviewer_email: "", rating: 5, title: "", comment: "" });
   const [submitting, setSubmitting] = useState(false);
-  const [phoneRevealed, setPhoneRevealed] = useState(false);
-  const [isFavorited, setIsFavorited] = useState(false);
-  const mpUser = getMpUser();
 
   const { data: vendor } = useQuery({
     queryKey: ["vendor", vendorId],
@@ -34,7 +28,7 @@ export default function VendorDetailPage() {
 
   const { data: products = [] } = useQuery({
     queryKey: ["vendor_products", vendorId],
-    queryFn: () => base44.entities.VendorProduct.filter({ vendor_id: vendorId, is_available: true, is_approved: true }),
+    queryFn: () => base44.entities.VendorProduct.filter({ vendor_id: vendorId, is_available: true }),
     enabled: !!vendorId,
   });
 
@@ -44,41 +38,17 @@ export default function VendorDetailPage() {
     enabled: !!vendorId,
   });
 
-  const { data: favoriteRecord } = useQuery({
-    queryKey: ["vendor_fav", vendorId, mpUser?.id],
-    queryFn: () => base44.entities.VendorFavorite.filter({ user_id: mpUser.id, target_type: "vendor", target_id: vendorId }),
-    enabled: !!mpUser?.id && !!vendorId,
-    select: d => d[0],
-  });
-
-  const toggleFavorite = async () => {
-    if (!mpUser) { toast.info("Sign in to favourite vendors"); return; }
-    if (favoriteRecord) {
-      await base44.entities.VendorFavorite.delete(favoriteRecord.id);
-      queryClient.invalidateQueries(["vendor_fav", vendorId, mpUser.id]);
-      toast.success("Removed from favourites");
-    } else {
-      await base44.entities.VendorFavorite.create({ user_id: mpUser.id, target_type: "vendor", target_id: vendorId });
-      queryClient.invalidateQueries(["vendor_fav", vendorId, mpUser.id]);
-      toast.success("Added to favourites!");
-    }
-  };
-
   const submitReview = async (e) => {
     e.preventDefault();
-    const name = mpUser ? mpUser.full_name : reviewForm.reviewer_name;
-    const email = mpUser ? mpUser.email : reviewForm.reviewer_email;
-    if (!name || !reviewForm.comment) { toast.error("Please fill all required fields"); return; }
+    if (!reviewForm.reviewer_name || !reviewForm.comment) { toast.error("Please fill all required fields"); return; }
     setSubmitting(true);
     await base44.entities.VendorReview.create({
       ...reviewForm,
-      reviewer_name: name,
-      reviewer_email: email,
       vendor_id: vendorId,
       vendor_name: vendor?.business_name || "",
     });
     toast.success("Review submitted! It will appear after admin approval.");
-    setReviewForm({ reviewer_name: "", reviewer_email: "", rating: 5, comment: "" });
+    setReviewForm({ reviewer_name: "", reviewer_email: "", rating: 5, title: "", comment: "" });
     setSubmitting(false);
   };
 
@@ -89,35 +59,8 @@ export default function VendorDetailPage() {
   );
 
   const allImages = [vendor.cover_image_url, ...(vendor.gallery_urls || [])].filter(Boolean);
+
   const priceRangeColor = { Budget: "text-emerald-600", "Mid-range": "text-blue-600", Premium: "text-amber-600", Luxury: "text-purple-600" };
-
-  const maskPhone = (phone) => {
-    if (!phone) return "";
-    const str = phone.toString();
-    return str.slice(0, 4) + "•".repeat(Math.max(0, str.length - 7)) + str.slice(-3);
-  };
-
-  const shareProductOnWhatsApp = (product) => {
-    const price = product.discount_percent > 0
-      ? `₦${(product.discounted_price || product.price * (1 - product.discount_percent / 100)).toLocaleString()} (${product.discount_percent}% off ₦${product.price?.toLocaleString()})`
-      : `₦${product.price?.toLocaleString()}`;
-    const unit = product.unit ? ` / ${product.unit}` : "";
-    const vendorUrl = `${window.location.origin}/marketplace/vendor?id=${vendorId}`;
-    const lines = [
-      `🛍️ *${product.name}*`,
-      product.description ? product.description : "",
-      `💰 Price: ${price}${unit}`,
-      ``,
-      `🏪 *${vendor.business_name}*${vendor.is_verified ? " ✅" : ""}`,
-      vendor.category_name ? `📂 ${vendor.category_name}` : "",
-      vendor.location_city ? `📍 ${vendor.location_city}${vendor.location_state ? `, ${vendor.location_state}` : ""}` : "",
-      vendor.phone ? `📞 ${vendor.phone}` : "",
-      vendor.social_whatsapp ? `💬 WhatsApp: wa.me/${vendor.social_whatsapp}` : "",
-      ``,
-      `🔗 View full listing: ${vendorUrl}`,
-    ].filter(Boolean).join("\n");
-    window.open(`https://wa.me/?text=${encodeURIComponent(lines)}`, "_blank");
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -170,17 +113,7 @@ export default function VendorDetailPage() {
                   <Badge variant="outline" className="text-[10px]">{vendor.category_name}</Badge>
                   {vendor.price_range && <span className={`text-xs font-semibold ${priceRangeColor[vendor.price_range] || ""}`}>{vendor.price_range}</span>}
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="font-heading text-3xl font-semibold">{vendor.business_name}</h1>
-                  {vendor.is_verified && <VerifiedBadge size="lg" />}
-                  <button
-                    onClick={toggleFavorite}
-                    title={favoriteRecord ? "Remove from favourites" : "Add to favourites"}
-                    className={`ml-1 transition-colors ${favoriteRecord ? "text-red-500" : "text-muted-foreground hover:text-red-400"}`}
-                  >
-                    <Heart className={`w-5 h-5 ${favoriteRecord ? "fill-red-500" : ""}`} />
-                  </button>
-                </div>
+                <h1 className="font-heading text-3xl font-semibold">{vendor.business_name}</h1>
                 <div className="flex items-center gap-2 mt-1">
                   <StarRating rating={vendor.average_rating || 0} />
                   <span className="text-sm text-muted-foreground">({vendor.review_count || 0} reviews)</span>
@@ -215,26 +148,17 @@ export default function VendorDetailPage() {
                       <div className="p-3">
                         <p className="font-semibold text-sm">{p.name}</p>
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>
-                        <div className="flex items-center justify-between mt-2 gap-2">
-                          <div className="flex items-center gap-2">
-                            {p.discount_percent > 0 ? (
-                              <>
-                                <span className="text-sm font-bold text-primary">₦{(p.discounted_price || p.price * (1 - p.discount_percent / 100)).toLocaleString()}</span>
-                                <span className="text-xs line-through text-muted-foreground">₦{p.price?.toLocaleString()}</span>
-                                <Badge className="text-[9px] bg-red-100 text-red-700 border-red-300">-{p.discount_percent}%</Badge>
-                              </>
-                            ) : (
-                              <span className="text-sm font-bold text-primary">₦{p.price?.toLocaleString()}</span>
-                            )}
-                            {p.unit && <span className="text-xs text-muted-foreground">/ {p.unit}</span>}
-                          </div>
-                          <button
-                            onClick={() => shareProductOnWhatsApp(p)}
-                            className="flex items-center gap-1 text-[10px] text-green-600 hover:text-green-700 border border-green-300 rounded-md px-1.5 py-0.5 hover:bg-green-50 transition-colors shrink-0"
-                            title="Share on WhatsApp"
-                          >
-                            <Share2 className="w-3 h-3" /> Share
-                          </button>
+                        <div className="flex items-center gap-2 mt-2">
+                          {p.discount_percent > 0 ? (
+                            <>
+                              <span className="text-sm font-bold text-primary">₦{(p.discounted_price || p.price * (1 - p.discount_percent / 100)).toLocaleString()}</span>
+                              <span className="text-xs line-through text-muted-foreground">₦{p.price?.toLocaleString()}</span>
+                              <Badge className="text-[9px] bg-red-100 text-red-700 border-red-300">-{p.discount_percent}%</Badge>
+                            </>
+                          ) : (
+                            <span className="text-sm font-bold text-primary">₦{p.price?.toLocaleString()}</span>
+                          )}
+                          {p.unit && <span className="text-xs text-muted-foreground">/ {p.unit}</span>}
                         </div>
                       </div>
                     </div>
@@ -242,9 +166,6 @@ export default function VendorDetailPage() {
                 </div>
               </div>
             )}
-
-            {/* Comments */}
-            <CommentsSection vendorId={vendorId} />
 
             {/* Reviews */}
             <div>
@@ -259,6 +180,7 @@ export default function VendorDetailPage() {
                         <p className="font-semibold text-sm">{r.reviewer_name}</p>
                         <StarRating rating={r.rating} size="sm" />
                       </div>
+                      {r.title && <p className="text-sm font-medium mb-1">{r.title}</p>}
                       <p className="text-sm text-muted-foreground">{r.comment}</p>
                     </div>
                   ))}
@@ -269,12 +191,10 @@ export default function VendorDetailPage() {
               <div className="border border-border rounded-xl p-5 bg-card">
                 <h3 className="font-heading text-base font-semibold mb-4">Leave a Review</h3>
                 <form onSubmit={submitReview} className="space-y-3">
-                  {!mpUser && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <Input placeholder="Your name *" value={reviewForm.reviewer_name} onChange={e => setReviewForm(f => ({ ...f, reviewer_name: e.target.value }))} />
-                      <Input placeholder="Your email" value={reviewForm.reviewer_email} onChange={e => setReviewForm(f => ({ ...f, reviewer_email: e.target.value }))} />
-                    </div>
-                  )}
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input placeholder="Your name *" value={reviewForm.reviewer_name} onChange={e => setReviewForm(f => ({ ...f, reviewer_name: e.target.value }))} />
+                    <Input placeholder="Your email" value={reviewForm.reviewer_email} onChange={e => setReviewForm(f => ({ ...f, reviewer_email: e.target.value }))} />
+                  </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">Rating:</span>
                     {[1, 2, 3, 4, 5].map(n => (
@@ -282,7 +202,7 @@ export default function VendorDetailPage() {
                         className={`text-xl transition-colors ${n <= reviewForm.rating ? "text-amber-400" : "text-muted-foreground/30"}`}>★</button>
                     ))}
                   </div>
-
+                  <Input placeholder="Review title" value={reviewForm.title} onChange={e => setReviewForm(f => ({ ...f, title: e.target.value }))} />
                   <Textarea placeholder="Write your review... *" value={reviewForm.comment} onChange={e => setReviewForm(f => ({ ...f, comment: e.target.value }))} className="h-24" />
                   <Button type="submit" disabled={submitting}>{submitting ? "Submitting..." : "Submit Review"}</Button>
                 </form>
@@ -302,19 +222,10 @@ export default function VendorDetailPage() {
                   </div>
                 )}
                 {vendor.phone && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 shrink-0 text-primary" />
-                    <button
-                      onClick={() => setPhoneRevealed(r => !r)}
-                      className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <span className="font-mono">{phoneRevealed ? vendor.phone : maskPhone(vendor.phone)}</span>
-                      {phoneRevealed ? <EyeOff className="w-3.5 h-3.5 opacity-50" /> : <Eye className="w-3.5 h-3.5 opacity-50" />}
-                    </button>
-                    {phoneRevealed && (
-                      <a href={`tel:${vendor.phone}`} className="text-xs text-primary underline ml-1">Call</a>
-                    )}
-                  </div>
+                  <a href={`tel:${vendor.phone}`} className="flex gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                    <Phone className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
+                    <span>{vendor.phone}</span>
+                  </a>
                 )}
                 {vendor.email && (
                   <a href={`mailto:${vendor.email}`} className="flex gap-2 text-muted-foreground hover:text-foreground transition-colors">

@@ -53,11 +53,6 @@
       "type": "boolean",
       "default": false
     },
-    "is_approved": {
-      "type": "boolean",
-      "default": false,
-      "description": "Admin must approve before product is visible in the marketplace"
-    },
     "tags": {
       "type": "array",
       "items": {

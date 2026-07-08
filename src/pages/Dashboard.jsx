@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users, CheckCircle2, Clock, Send, AlertTriangle, LayoutDashboard, Shield, KeyRound } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { useAuth } from "@/lib/AuthContext";
+import { Users, CheckCircle2, Clock, Send, AlertTriangle, LayoutDashboard, Shield } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import StatCard from "../components/shared/StatCard";
 import DashboardRSVPChart from "../components/dashboard/RSVPChart";
@@ -20,15 +17,6 @@ import SecurityActivityFeed from "../components/dashboard/SecurityActivityFeed";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
-  const { user } = useAuth();
-
-  const handlePasswordReset = async () => {
-    if (!user?.email) return;
-    try {
-      await base44.auth.resetPasswordRequest(user.email);
-    } catch {}
-    toast.success("Password reset link sent to your email");
-  };
 
   const { data: guests = [] } = useQuery({
     queryKey: ["guests"],
@@ -57,12 +45,7 @@ export default function Dashboard() {
       <PageHeader
         title="Dashboard"
         subtitle="5th Coronation Anniversary — Ògíame Atúwàtse III, CFR"
-      >
-        <Button variant="outline" size="sm" onClick={handlePasswordReset}>
-          <KeyRound className="w-3.5 h-3.5 mr-2" />
-          Reset My Password
-        </Button>
-      </PageHeader>
+      />
 
       {/* Tab switcher */}
       <div className="flex gap-1 mb-6 border-b border-border">

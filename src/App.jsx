@@ -33,14 +33,6 @@ import VerifyVendorEmail from './pages/VerifyVendorEmail';
 import DirectoryPage from './pages/DirectoryPage';
 import DirectoryListingDetail from './pages/DirectoryListingDetail';
 import AdminDirectory from './pages/AdminDirectory';
-import ItsekirisPage from './pages/ItsekirisPage';
-import AdminItsekiris from './pages/AdminItsekiris';
-import AdminLogin from './pages/AdminLogin';
-import AdminUserManagement from './pages/AdminUserManagement';
-import MarketplaceLoginPage from './pages/MarketplaceLoginPage';
-import VerifyMarketplaceUser from './pages/VerifyMarketplaceUser';
-import MarketplaceUserDashboard from './pages/MarketplaceUserDashboard';
-import VendorByUsername from './pages/VendorByUsername';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -68,7 +60,6 @@ const AuthenticatedApp = () => {
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/itinerary" element={<ItineraryPage />} />
-      <Route path="/admin-login" element={<AdminLogin />} />
       <Route path="/rsvp" element={<RSVPPortal />} />
       <Route path="/invite-detail" element={<InviteDetail />} />
       <Route path="/checkpoint" element={<SecurityCheckpoint />} />
@@ -78,13 +69,8 @@ const AuthenticatedApp = () => {
       <Route path="/marketplace/register" element={<VendorRegisterPage />} />
       <Route path="/marketplace/vendor-dashboard" element={<VendorDashboardPage />} />
       <Route path="/marketplace/verify-email" element={<VerifyVendorEmail />} />
-      <Route path="/marketplace/login" element={<MarketplaceLoginPage />} />
-      <Route path="/marketplace/verify-user" element={<VerifyMarketplaceUser />} />
-      <Route path="/marketplace/my-dashboard" element={<MarketplaceUserDashboard />} />
-      <Route path="/marketplace/:username" element={<VendorByUsername />} />
       <Route path="/directory" element={<DirectoryPage />} />
       <Route path="/directory/listing" element={<DirectoryListingDetail />} />
-      <Route path="/itsekiris" element={<ItsekirisPage />} />
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/guests" element={<Guests />} />
@@ -98,8 +84,6 @@ const AuthenticatedApp = () => {
         <Route path="/event-history" element={<EventHistoryPage />} />
         <Route path="/admin/marketplace" element={<AdminMarketplace />} />
         <Route path="/admin/directory" element={<AdminDirectory />} />
-        <Route path="/admin/itsekiris" element={<AdminItsekiris />} />
-        <Route path="/admin/users" element={<AdminUserManagement />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

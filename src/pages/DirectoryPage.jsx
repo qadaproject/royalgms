@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { MapPin, SlidersHorizontal, Plus, LayoutGrid, List } from "lucide-react";
-import RoyalCrest from "../components/layout/RoyalCrest";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import DirectoryCategoryGrid from "@/components/directory/DirectoryCategoryGrid";
@@ -23,8 +22,8 @@ export default function DirectoryPage() {
   const [viewMode, setViewMode] = useState("list");
 
   useEffect(() => {
-    base44.entities.DirectoryCategory.filter({ is_active: true }, "sort_order", 50).then(setCategories).catch(() => {});
-    base44.entities.DirectoryListing.filter({ status: "active" }, "-rating", 200).then(setListings).catch(() => {});
+    base44.entities.DirectoryCategory.filter({ is_active: true }, "sort_order", 50).then(setCategories);
+    base44.entities.DirectoryListing.filter({ status: "active" }, "-rating", 200).then(setListings);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
@@ -68,7 +67,10 @@ export default function DirectoryPage() {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0d0603]/95 backdrop-blur-md border-b border-[#c9a84c]/20">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
-          <Link to="/"><RoyalCrest size="md" /></Link>
+          <Link to="/" className="flex flex-col leading-tight">
+            <span className="text-[#c9a84c] text-[9px] uppercase tracking-[0.25em] font-sans">Royal Palace</span>
+            <span className="text-[#f5ede0] text-sm font-semibold tracking-wider">Warri Kingdom</span>
+          </Link>
           <div className="flex items-center gap-3">
             <Link to="/" className="text-[#f5ede0]/50 hover:text-[#c9a84c] text-xs uppercase tracking-widest font-sans">← Home</Link>
             <Button

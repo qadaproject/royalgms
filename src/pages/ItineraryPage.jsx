@@ -205,21 +205,14 @@ export default function ItineraryPage() {
               {/* Editable fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {Object.entries(FIELD_LABELS).map(([key, label]) => {
-                  const isLocked = !!(guest[key] && String(guest[key]).trim() !== "");
+                  const isLocked = false;
                   return (
                     <div key={key}>
-                      <label className="text-[#f5ede0]/50 text-[10px] uppercase tracking-wider font-sans block mb-1 flex items-center gap-1">
-                        {label} {isLocked && <Lock className="w-2.5 h-2.5 text-[#c9a84c]/40" />}
-                      </label>
+                      <label className="text-[#f5ede0]/50 text-[10px] uppercase tracking-wider font-sans block mb-1">{label}</label>
                       <input
                         value={form[key] || ""}
-                        onChange={(e) => !isLocked && setForm(p => ({ ...p, [key]: e.target.value }))}
-                        readOnly={isLocked}
-                        className={`w-full border rounded-lg px-3 py-2 text-sm font-sans focus:outline-none ${
-                          isLocked
-                            ? "bg-[#0d0603]/50 border-[#c9a84c]/10 text-[#f5ede0]/40 cursor-not-allowed"
-                            : "bg-[#0d0603] border-[#c9a84c]/15 text-[#f5ede0] focus:border-[#c9a84c]/50"
-                        }`}
+                        onChange={(e) => setForm(p => ({ ...p, [key]: e.target.value }))}
+                        className="w-full bg-[#0d0603] border border-[#c9a84c]/15 text-[#f5ede0] placeholder:text-[#f5ede0]/20 rounded-lg px-3 py-2 text-sm font-sans focus:outline-none focus:border-[#c9a84c]/50"
                       />
                     </div>
                   );

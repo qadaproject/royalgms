@@ -173,117 +173,27 @@ export default function InvitationCardModal({ open, onOpenChange, guest, eventSe
   const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}`;
 
   const handlePrint = () => {
+    const content = printRef.current?.innerHTML;
     const win = window.open("", "_blank");
-    const guestName = [guest.formal_salutation, guest.full_name, guest.post_nominals].filter(Boolean).join(" ");
-    const eventDate = formatEventDate(eventSettings?.event_date);
-    const venue = [eventSettings?.venue_name, eventSettings?.venue_address].filter(Boolean).join(", ") || "TBC";
-    const time = eventSettings?.event_time || "TBC";
-    const eventName = eventSettings?.event_name || "5th Coronation Anniversary";
-    const eventSubtitle = eventSettings?.event_subtitle || "Ogiame Atuwatse III, Olu of Warri Kingdom";
-
-    win.document.write(`<!DOCTYPE html>
-<html><head><title>Invitation — ${guest.full_name}</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  @page { size: A5 portrait; margin: 0; }
-  html, body { width: 148mm; height: 210mm; background: #1a0302; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  body { display: flex; align-items: center; justify-content: center; }
-  .card {
-    width: 138mm; height: 200mm;
-    background: radial-gradient(ellipse at 50% 30%, #8b1a10 0%, #5a0e08 40%, #3a0806 100%);
-    border: 2.5px solid #c9a84c;
-    border-radius: 10px;
-    position: relative;
-    display: flex; flex-direction: column; align-items: center;
-    padding: 12mm 10mm 8mm;
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    color: #f5ede0;
-    overflow: hidden;
-  }
-  .corner { position: absolute; width: 18px; height: 18px; border-color: #c9a84c; border-style: solid; border-width: 0; }
-  .c-tl { top: 10px; left: 10px; border-top-width: 2px; border-left-width: 2px; }
-  .c-tr { top: 10px; right: 10px; border-top-width: 2px; border-right-width: 2px; }
-  .c-bl { bottom: 10px; left: 10px; border-bottom-width: 2px; border-left-width: 2px; }
-  .c-br { bottom: 10px; right: 10px; border-bottom-width: 2px; border-right-width: 2px; }
-  .crest { width: 52px; height: 52px; object-fit: contain; margin-bottom: 6px; }
-  .label { color: #c9a84c; font-family: 'Inter', sans-serif; font-size: 7pt; letter-spacing: 0.28em; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
-  .king-name { font-size: 15pt; font-weight: 700; color: #f5ede0; letter-spacing: 0.04em; text-align: center; line-height: 1.2; }
-  .king-title { color: #c9a84c; font-size: 8pt; letter-spacing: 0.18em; text-transform: uppercase; margin-top: 2px; }
-  .divider { width: 60px; height: 1px; background: #c9a84c; margin: 6px auto; }
-  .formally { color: rgba(245,237,224,0.7); font-size: 8pt; letter-spacing: 0.22em; text-transform: uppercase; font-style: italic; margin: 4px 0; }
-  .guest-name { font-size: 18pt; font-weight: 700; color: #f5ede0; text-align: center; line-height: 1.25; margin: 4px 0 2px; }
-  .guest-title { color: rgba(201,168,76,0.85); font-size: 9pt; font-style: italic; margin-bottom: 2px; }
-  .to-the { color: rgba(245,237,224,0.7); font-size: 7.5pt; letter-spacing: 0.22em; text-transform: uppercase; font-style: italic; margin: 2px 0; }
-  .event-name { font-size: 14pt; font-weight: 700; color: #c9a84c; letter-spacing: 0.07em; text-transform: uppercase; text-align: center; line-height: 1.3; margin: 2px 0; }
-  .event-sub { color: rgba(245,237,224,0.4); font-size: 7.5pt; letter-spacing: 0.1em; margin-top: 3px; }
-  .details-box {
-    background: rgba(0,0,0,0.28);
-    border-radius: 6px; padding: 8px 12px;
-    width: 100%; margin: 6px 0;
-  }
-  .detail-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 5px; }
-  .detail-row:last-child { margin-bottom: 0; }
-  .dl { color: #c9a84c; font-family: 'Inter', sans-serif; font-size: 6.5pt; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; min-width: 36px; }
-  .dv { color: #f5ede0; font-size: 9pt; font-weight: 500; }
-  .cat-zone { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(201,168,76,0.25); }
-  .cz-label { color: rgba(201,168,76,0.7); font-family: 'Inter', sans-serif; font-size: 6pt; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 2px; }
-  .cz-val { color: #f5ede0; font-size: 9pt; font-weight: 600; }
-  .qr-wrap { background: #fff; padding: 6px; border-radius: 6px; border: 2px solid #c9a84c; margin: 6px 0 3px; }
-  .qr-wrap img { width: 80px; height: 80px; display: block; }
-  .scan-label { color: rgba(201,168,76,0.7); font-family: 'Inter', sans-serif; font-size: 6pt; letter-spacing: 0.18em; text-transform: uppercase; margin-top: 3px; }
-  .qr-code { color: #c9a84c; font-family: monospace; font-size: 9pt; font-weight: 700; letter-spacing: 0.2em; margin-top: 2px; }
-  .footer { color: rgba(245,237,224,0.3); font-family: 'Inter', sans-serif; font-size: 6pt; font-style: italic; letter-spacing: 0.03em; text-align: center; margin-top: 5px; line-height: 1.5; }
-</style></head>
-<body>
-<div class="card">
-  <div class="corner c-tl"></div>
-  <div class="corner c-tr"></div>
-  <div class="corner c-bl"></div>
-  <div class="corner c-br"></div>
-
-  <img class="crest" src="https://media.base44.com/images/public/69f83e971133ed44e3fc81f6/d9072c6be_atuwatseiii.png" alt="Crest" />
-
-  <p class="label">His Majesty</p>
-  <p class="king-name">Ògíame Atúwàtse III, CFR,</p>
-  <p class="king-title">The Olu of Warri,</p>
-
-  <div class="divider"></div>
-  <p class="formally">Formally Invites</p>
-  <div class="divider"></div>
-
-  <p class="guest-name">${guestName}</p>
-  ${guest.official_title ? `<p class="guest-title">${guest.official_title}</p>` : ""}
-
-  <div class="divider" style="margin-top:6px;"></div>
-
-  <p class="to-the">To the</p>
-  <p class="event-name">${eventName}</p>
-  <p class="event-sub">${eventSubtitle}</p>
-
-  <div class="divider"></div>
-
-  <div class="details-box">
-    <div class="detail-row"><span class="dl">Date</span><span class="dv">${eventDate}</span></div>
-    <div class="detail-row"><span class="dl">Venue</span><span class="dv">${venue}</span></div>
-    <div class="detail-row" style="margin-bottom:0"><span class="dl">Time</span><span class="dv">${time}</span></div>
-    <div class="cat-zone">
-      <div><p class="cz-label">Category</p><p class="cz-val">${guest.category || "—"}</p></div>
-      <div><p class="cz-label">Seating Zone</p><p class="cz-val">${guest.seating_zone || "To be assigned"}</p></div>
-    </div>
-  </div>
-
-  <div class="qr-wrap">
-    <img src="${qrImgUrl}" alt="QR" />
-  </div>
-  <p class="scan-label">Scan to view invitation</p>
-  <p class="qr-code">${guest.qr_code}</p>
-
-  <p class="footer">This invitation is non-transferable. Please present upon arrival at the security checkpoint.</p>
-</div>
-</body></html>`);
+    win.document.write(`
+      <html><head><title>Invitation — ${guest.full_name}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+      <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100%; }
+        body { background: #0d0300; display: flex; justify-content: center; align-items: center; padding: 0; }
+        @page { size: A4 portrait; margin: 8mm; }
+        @media print {
+          html, body { width: 100%; height: 100%; }
+          body { background: #3d0a06 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; padding: 0; margin: 0; }
+          .invite-card { max-width: 100% !important; width: 100% !important; min-height: calc(100vh - 0px) !important; page-break-inside: avoid; }
+        }
+        .invite-card { max-width: 600px; width: 100%; margin: 0 auto; }
+      </style></head>
+      <body><div class="invite-card">${content}</div></body></html>
+    `);
     win.document.close();
-    setTimeout(() => { win.print(); }, 900);
+    setTimeout(() => { win.print(); }, 800);
   };
 
   return (
