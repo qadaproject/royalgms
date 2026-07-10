@@ -1,0 +1,73 @@
+{
+  "name": "MarketplaceUser",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "description": "Unique email for login"
+    },
+    "password_hash": {
+      "type": "string",
+      "description": "bcrypt hash \u2014 never expose in UI"
+    },
+    "username": {
+      "type": "string",
+      "description": "Unique marketplace username"
+    },
+    "photo_url": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "user",
+        "vendor"
+      ],
+      "default": "user",
+      "description": "Account type \u2014 once set to vendor, cannot revert to user"
+    },
+    "email_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "email_verification_token": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": false
+    },
+    "favorites_vendor_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of favourite vendors"
+    },
+    "favorites_product_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of favourite products"
+    },
+    "auth_token": {
+      "type": "string",
+      "description": "Session token"
+    },
+    "google_id": {
+      "type": "string",
+      "description": "Google OAuth ID"
+    }
+  },
+  "required": [
+    "full_name",
+    "email"
+  ]
+}

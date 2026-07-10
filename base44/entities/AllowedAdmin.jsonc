@@ -1,0 +1,21 @@
+{
+  "name": "AllowedAdmin",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "Email address allowed to sign in as admin"
+    },
+    "label": {
+      "type": "string",
+      "description": "Optional label/name for this entry"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "email"
+  ]
+}

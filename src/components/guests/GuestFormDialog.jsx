@@ -7,10 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Upload, Loader2, X, FileImage } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 import GuestActivityLog from "./GuestActivityLog";
 
 const categories = ["A - Royal", "B - Federal", "C - State", "D - Corporate", "E - Diplomatic", "F - Traditional", "G - General", "H - Socials", "I - Communities", "J - Chiefs"];
-const salutations = ["His Imperial Majesty", "His Majesty", "His Royal Highness", "His Royal Majesty", "Her Royal Majesty", "His Excellency", "Her Excellency", "Senator", "Pastor", "Rt. Hon.", "Hon.", "Chief", "Dr.", "Prof.", "Engr.", "Barr.", "Alhaji", "Chief (Mrs.)", "Mr.", "Mrs.", "Ms."];
+const salutations = ["His Imperial Majesty", "His Majesty", "Her Majesty", "His Royal Highness", "His Royal Majesty", "Her Royal Majesty", "His Excellency", "Her Excellency", "Senator", "Pastor", "Rt. Hon.", "Hon.", "Chief", "Dr.", "Prof.", "Engr.", "Barr.", "Alhaji", "Chief (Mrs.)", "Mr.", "Mrs.", "Ms."];
 
 const emptyGuest = {
   formal_salutation: "",
@@ -31,10 +34,12 @@ const emptyGuest = {
   special_requirements: "",
   protocol_validated: false,
   notes: "",
+  gallery_urls: [],
 };
 
 export default function GuestFormDialog({ open, onOpenChange, guest, onSave }) {
   const [form, setForm] = useState(emptyGuest);
+  const [uploading, setUploading] = useState(false);
   const isEdit = !!guest?.id;
 
   useEffect(() => {
@@ -51,6 +56,25 @@ export default function GuestFormDialog({ open, onOpenChange, guest, onSave }) {
 
   const update = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
+  const handleFileUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      const uploads = await Promise.all(files.map(f => base44.integrations.Core.UploadFile({ file: f })));
+      const urls = uploads.map(r => r.file_url).filter(Boolean);
+      setForm(prev => ({ ...prev, gallery_urls: [...(prev.gallery_urls || []), ...urls] }));
+    } catch {
+      toast.error("Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeFile = (idx) => {
+    setForm(prev => ({ ...prev, gallery_urls: prev.gallery_urls.filter((_, i) => i !== idx) }));
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -61,10 +85,11 @@ export default function GuestFormDialog({ open, onOpenChange, guest, onSave }) {
         </DialogHeader>
 
         <Tabs defaultValue="basic" className="mt-4">
-          <TabsList className={`grid w-full ${isEdit ? "grid-cols-4" : "grid-cols-3"}`}>
+          <TabsList className={`grid w-full ${isEdit ? "grid-cols-5" : "grid-cols-4"}`}>
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
             <TabsTrigger value="contact">Contact & Liaison</TabsTrigger>
             <TabsTrigger value="protocol">Protocol & Security</TabsTrigger>
+            <TabsTrigger value="files">Files & Photos</TabsTrigger>
             {isEdit && <TabsTrigger value="activity">Activity Log</TabsTrigger>}
           </TabsList>
 
@@ -167,6 +192,56 @@ export default function GuestFormDialog({ open, onOpenChange, guest, onSave }) {
               <Label className="text-xs">Internal Notes</Label>
               <Textarea value={form.notes} onChange={(e) => update("notes", e.target.value)} />
             </div>
+          </TabsContent>
+
+          <TabsContent value="files" className="mt-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Photos & Documents</p>
+                <p className="text-xs text-muted-foreground">Upload event photos, ID documents, or any relevant files for this guest.</p>
+              </div>
+              <label className="cursor-pointer">
+                <Button type="button" variant="outline" size="sm" asChild disabled={uploading}>
+                  <span>
+                    {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Upload className="w-4 h-4 mr-1" />}
+                    {uploading ? "Uploading..." : "Upload Files"}
+                  </span>
+                </Button>
+                <input type="file" accept="image/*,application/pdf" multiple className="hidden" onChange={handleFileUpload} />
+              </label>
+            </div>
+
+            {(form.gallery_urls || []).length === 0 ? (
+              <div className="border-2 border-dashed border-border rounded-xl p-10 text-center">
+                <FileImage className="w-8 h-8 mx-auto mb-2 text-muted-foreground opacity-50" />
+                <p className="text-sm text-muted-foreground">No files uploaded yet</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-3">
+                {(form.gallery_urls || []).map((url, idx) => {
+                  const isPdf = url.includes(".pdf") || url.includes("pdf");
+                  return (
+                    <div key={idx} className="relative group rounded-lg overflow-hidden border border-border bg-muted aspect-square flex items-center justify-center">
+                      {isPdf ? (
+                        <a href={url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1 p-2 text-center">
+                          <FileImage className="w-8 h-8 text-primary" />
+                          <span className="text-[10px] text-muted-foreground truncate w-full">PDF Document</span>
+                        </a>
+                      ) : (
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeFile(idx)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </TabsContent>
 
           {isEdit && (

@@ -15,6 +15,7 @@ import {
   Globe,
   Store,
   MapPin,
+  BookUser,
 } from "lucide-react";
 import RoyalCrest from "./RoyalCrest";
 import { base44 } from "@/api/base44Client";
@@ -32,6 +33,8 @@ const navItems = [
   { path: "/checkpoint", label: "Security Checkpoint", icon: Shield, roles: ["admin", "security"] },
   { path: "/admin/marketplace", label: "Marketplace Mgmt", icon: Store, roles: ["admin", "chairman"] },
   { path: "/admin/directory", label: "Directory Mgmt", icon: MapPin, roles: ["admin", "chairman"] },
+  { path: "/admin/itsekiris", label: "Itsekiris Mgmt", icon: BookUser, roles: ["admin", "chairman"] },
+  { path: "/admin/users", label: "User Management", icon: Users, roles: ["admin"] },
   { path: "/", label: "Public Homepage", icon: Globe, roles: ["admin", "chairman"] },
 ];
 
@@ -48,15 +51,7 @@ export default function Sidebar({ user }) {
       {/* Header */}
       <div className="p-6 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <RoyalCrest size="sm" />
-          <div>
-            <h1 className="font-heading text-base font-semibold text-sidebar-primary tracking-wide leading-tight">
-              R-GMS
-            </h1>
-            <p className="text-[10px] uppercase tracking-[0.15em] text-sidebar-foreground/60 leading-snug">
-              Royal Guests Mgmt System
-            </p>
-          </div>
+          <RoyalCrest size="md" />
         </div>
       </div>
 

@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Star, Phone } from "lucide-react";
+import { MapPin } from "lucide-react";
 import StarRating from "./StarRating";
+import VerifiedBadge from "./VerifiedBadge";
 
 const priceRangeColor = {
   Budget: "text-emerald-600",
@@ -39,7 +40,10 @@ export default function VendorCard({ vendor, featured = false }) {
             <img src={vendor.logo_url} alt="Logo" className="w-9 h-9 rounded-lg object-cover border border-border shrink-0 -mt-6 relative shadow-sm bg-card" />
           )}
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm leading-tight truncate">{vendor.business_name}</p>
+            <div className="flex items-center gap-1">
+              <p className="font-semibold text-sm leading-tight truncate">{vendor.business_name}</p>
+              {vendor.is_verified && <VerifiedBadge size="sm" />}
+            </div>
             <Badge variant="outline" className="text-[9px] mt-0.5">{vendor.category_name}</Badge>
           </div>
         </div>

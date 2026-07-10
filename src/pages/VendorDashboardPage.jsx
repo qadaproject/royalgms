@@ -9,13 +9,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Store, Package, Star, Settings, Plus, Pencil, Trash2, ArrowLeft, Loader2, Upload, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Store, Package, Star, Settings, Plus, Pencil, Trash2, ArrowLeft, Loader2, Upload, CheckCircle, XCircle, Clock, MessageSquare } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import MarketplaceNav from "../components/marketplace/MarketplaceNav";
 import StarRating from "../components/marketplace/StarRating";
+import VerifiedBadge from "../components/marketplace/VerifiedBadge";
+import useMpUser from "@/hooks/useMpUser";
+import { useNavigate } from "react-router-dom";
+import VendorProductsTab from "../components/vendor/VendorProductsTab";
+import VendorCommentsTab from "../components/vendor/VendorCommentsTab";
 
 export default function VendorDashboardPage() {
+  const { user: mpUser } = useMpUser();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [lookupEmail, setLookupEmail] = useState("");
   const [vendor, setVendor] = useState(null);
@@ -27,6 +34,20 @@ export default function VendorDashboardPage() {
   const [uploadingImg, setUploadingImg] = useState(false);
   const queryClient = useQueryClient();
 
+  // Auto-load vendor for logged-in marketplace users with vendor account type
+  useQuery({
+    queryKey: ["vendor_by_user_id", mpUser?.id],
+    queryFn: async () => {
+      if (!mpUser?.id || mpUser.account_type !== "vendor") return null;
+      const results = await base44.entities.Vendor.filter({ user_id: mpUser.id });
+      if (results.length > 0) { setVendor(results[0]); return results[0]; }
+      // Vendor account but no business registered yet — redirect to register
+      navigate("/marketplace/register");
+      return null;
+    },
+    enabled: !!mpUser?.id && mpUser.account_type === "vendor" && !vendor,
+  });
+
   const { data: products = [], refetch: refetchProducts } = useQuery({
     queryKey: ["my_products", vendor?.id],
     queryFn: () => base44.entities.VendorProduct.filter({ vendor_id: vendor?.id }),
@@ -36,6 +57,12 @@ export default function VendorDashboardPage() {
   const { data: reviews = [] } = useQuery({
     queryKey: ["my_reviews", vendor?.id],
     queryFn: () => base44.entities.VendorReview.filter({ vendor_id: vendor?.id }),
+    enabled: !!vendor?.id,
+  });
+
+  const { data: comments = [], refetch: refetchComments } = useQuery({
+    queryKey: ["my_comments_vendor", vendor?.id],
+    queryFn: () => base44.entities.VendorComment.filter({ vendor_id: vendor?.id }, "-created_date", 100),
     enabled: !!vendor?.id,
   });
 
@@ -73,6 +100,10 @@ export default function VendorDashboardPage() {
   };
 
   const saveSettings = async () => {
+    if (settingsForm.username) {
+      const existing = await base44.entities.Vendor.filter({ username: settingsForm.username });
+      if (existing.length && existing[0].id !== vendor.id) { toast.error("Username already taken"); return; }
+    }
     await base44.entities.Vendor.update(vendor.id, settingsForm);
     setVendor(v => ({ ...v, ...settingsForm }));
     setEditSettings(false);
@@ -93,31 +124,42 @@ export default function VendorDashboardPage() {
   };
 
   // Login screen
-  if (!vendor) return (
-    <div className="min-h-screen bg-background"><MarketplaceNav />
-      <div className="max-w-md mx-auto px-4 py-20">
-        <div className="text-center mb-8">
-          <Store className="w-14 h-14 mx-auto mb-4 text-primary" />
-          <h1 className="font-heading text-3xl font-semibold mb-2">Vendor Dashboard</h1>
-          <p className="text-muted-foreground text-sm">Enter your registered business email to access your dashboard.</p>
-        </div>
-        <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-          <div className="space-y-1.5">
-            <Label>Business Email</Label>
-            <Input type="email" value={lookupEmail} onChange={e => setLookupEmail(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && lookupVendor()}
-              placeholder="your@business.com" />
-          </div>
-          <Button onClick={lookupVendor} disabled={loading} className="w-full">
-            {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Looking up...</> : "Access Dashboard"}
-          </Button>
-          <p className="text-center text-xs text-muted-foreground">
-            Not registered? <Link to="/marketplace/register" className="text-primary underline">Register here</Link>
-          </p>
+  if (!vendor) {
+    // If logged-in vendor user, show a loading spinner while auto-lookup runs
+    if (mpUser?.account_type === "vendor") return (
+      <div className="min-h-screen bg-background"><MarketplaceNav />
+        <div className="max-w-md mx-auto px-4 py-20 text-center">
+          <Loader2 className="w-10 h-10 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading your vendor dashboard...</p>
         </div>
       </div>
-    </div>
-  );
+    );
+    return (
+      <div className="min-h-screen bg-background"><MarketplaceNav />
+        <div className="max-w-md mx-auto px-4 py-20">
+          <div className="text-center mb-8">
+            <Store className="w-14 h-14 mx-auto mb-4 text-primary" />
+            <h1 className="font-heading text-3xl font-semibold mb-2">Vendor Dashboard</h1>
+            <p className="text-muted-foreground text-sm">Enter your registered business email to access your dashboard.</p>
+          </div>
+          <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+            <div className="space-y-1.5">
+              <Label>Business Email</Label>
+              <Input type="email" value={lookupEmail} onChange={e => setLookupEmail(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && lookupVendor()}
+                placeholder="your@business.com" />
+            </div>
+            <Button onClick={lookupVendor} disabled={loading} className="w-full">
+              {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Looking up...</> : "Access Dashboard"}
+            </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              Not registered? <Link to="/marketplace/register" className="text-primary underline">Register here</Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background"><MarketplaceNav />
@@ -134,7 +176,10 @@ export default function VendorDashboardPage() {
               {statusBadge(vendor.approval_status)}
               <Badge variant="outline" className="text-[10px]">{vendor.category_name}</Badge>
             </div>
-            <h1 className="font-heading text-2xl font-semibold">{vendor.business_name}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="font-heading text-2xl font-semibold">{vendor.business_name}</h1>
+              {vendor.is_verified && <VerifiedBadge size="md" />}
+            </div>
             <p className="text-sm text-muted-foreground">{vendor.email}</p>
           </div>
           {vendor.approval_status === "Approved" && (
@@ -180,9 +225,9 @@ export default function VendorDashboardPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
             { label: "Products", value: products.length, icon: <Package className="w-5 h-5 text-primary" /> },
+            { label: "Comments", value: comments.length, icon: <MessageSquare className="w-5 h-5 text-blue-500" /> },
             { label: "Reviews", value: reviews.length, icon: <Star className="w-5 h-5 text-amber-400" /> },
             { label: "Avg. Rating", value: (vendor.average_rating || 0).toFixed(1), icon: <Star className="w-5 h-5 text-amber-400 fill-amber-400" /> },
-            { label: "Status", value: vendor.approval_status, icon: <Store className="w-5 h-5 text-primary" /> },
           ].map(s => (
             <div key={s.label} className="bg-card border border-border rounded-xl p-4">
               <div className="flex items-center gap-2 mb-1">{s.icon}<span className="text-xs text-muted-foreground">{s.label}</span></div>
@@ -192,47 +237,37 @@ export default function VendorDashboardPage() {
         </div>
 
         <Tabs defaultValue="products">
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 flex-wrap h-auto gap-1">
             <TabsTrigger value="products"><Package className="w-4 h-4 mr-1" />Products/Services</TabsTrigger>
+            <TabsTrigger value="comments"><MessageSquare className="w-4 h-4 mr-1" />Comments {comments.length > 0 && <span className="ml-1 bg-primary text-primary-foreground rounded-full text-[9px] w-4 h-4 flex items-center justify-center">{comments.filter(c => !c.vendor_reply).length || ""}</span>}</TabsTrigger>
             <TabsTrigger value="reviews"><Star className="w-4 h-4 mr-1" />Reviews</TabsTrigger>
             <TabsTrigger value="settings"><Settings className="w-4 h-4 mr-1" />Settings</TabsTrigger>
           </TabsList>
 
           {/* Products */}
           <TabsContent value="products">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading text-lg font-semibold">Your Listings</h2>
-              <Button size="sm" onClick={() => { setProductForm({ name: "", description: "", price: "", discount_percent: 0, unit: "", is_available: true, image_urls: [] }); setProductDialog("new"); }}>
-                <Plus className="w-4 h-4 mr-1" />Add Listing
-              </Button>
-            </div>
-            {products.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground border border-dashed border-border rounded-xl">
-                <Package className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                <p>No listings yet. Add your products or services.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {products.map(p => (
-                  <div key={p.id} className="bg-card border border-border rounded-xl p-4 flex gap-3">
-                    {p.image_urls?.[0] && <img src={p.image_urls[0]} alt={p.name} className="w-16 h-16 rounded-lg object-cover shrink-0" />}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate">{p.name}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
-                      <p className="text-sm font-bold text-primary mt-1">₦{p.price?.toLocaleString()}{p.unit ? ` / ${p.unit}` : ""}</p>
-                    </div>
-                    <div className="flex flex-col gap-1 shrink-0">
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setProductForm({ ...p }); setProductDialog(p); }}>
-                        <Pencil className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteProduct(p.id)}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <VendorProductsTab
+              products={products}
+              onAdd={() => { setProductForm({ name: "", description: "", price: "", discount_percent: 0, unit: "", is_available: true, image_urls: [] }); setProductDialog("new"); }}
+              onEdit={(p) => { setProductForm({ ...p }); setProductDialog(p); }}
+              onDelete={deleteProduct}
+            />
+          </TabsContent>
+
+          {/* Comments */}
+          <TabsContent value="comments">
+            <VendorCommentsTab
+              comments={comments}
+              products={products}
+              onReply={async (commentId, text) => {
+                await base44.entities.VendorComment.update(commentId, {
+                  vendor_reply: text,
+                  vendor_replied_at: new Date().toISOString(),
+                });
+                refetchComments();
+                toast.success("Reply posted!");
+              }}
+            />
           </TabsContent>
 
           {/* Reviews */}
@@ -251,7 +286,6 @@ export default function VendorDashboardPage() {
                       </div>
                       <StarRating rating={r.rating} size="sm" />
                     </div>
-                    {r.title && <p className="text-sm font-medium">{r.title}</p>}
                     <p className="text-sm text-muted-foreground">{r.comment}</p>
                   </div>
                 ))}
@@ -264,7 +298,7 @@ export default function VendorDashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-heading text-lg font-semibold">Business Settings</h2>
               {!editSettings ? (
-                <Button size="sm" variant="outline" onClick={() => { setSettingsForm({ description: vendor.description, services_products: vendor.services_products, opening_hours: vendor.opening_hours, website: vendor.website, phone: vendor.phone, location_address: vendor.location_address, location_city: vendor.location_city, location_state: vendor.location_state, social_facebook: vendor.social_facebook, social_instagram: vendor.social_instagram, social_twitter: vendor.social_twitter, social_whatsapp: vendor.social_whatsapp }); setEditSettings(true); }}>
+                <Button size="sm" variant="outline" onClick={() => { setSettingsForm({ username: vendor.username, description: vendor.description, services_products: vendor.services_products, opening_hours: vendor.opening_hours, website: vendor.website, phone: vendor.phone, location_address: vendor.location_address, location_city: vendor.location_city, location_state: vendor.location_state, social_facebook: vendor.social_facebook, social_instagram: vendor.social_instagram, social_twitter: vendor.social_twitter, social_whatsapp: vendor.social_whatsapp }); setEditSettings(true); }}>
                   <Pencil className="w-4 h-4 mr-1" />Edit
                 </Button>
               ) : (
@@ -282,6 +316,14 @@ export default function VendorDashboardPage() {
               </div>
             ) : (
               <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label>Vendor Username (sets your URL: /marketplace/<em>username</em>)</Label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground text-sm">/marketplace/</span>
+                    <Input value={settingsForm.username || ""} onChange={e => setSettingsForm(f => ({ ...f, username: e.target.value.replace(/\s/g, "").toLowerCase() }))} placeholder="your-business-slug" />
+                  </div>
+                  {vendor.username && <p className="text-xs text-emerald-600">Current: {window.location.origin}/marketplace/{vendor.username}</p>}
+                </div>
                 <div className="space-y-1.5"><Label>Description</Label><Textarea value={settingsForm.description || ""} onChange={e => setSettingsForm(f => ({ ...f, description: e.target.value }))} className="h-24" /></div>
                 <div className="space-y-1.5"><Label>Services/Products</Label><Textarea value={settingsForm.services_products || ""} onChange={e => setSettingsForm(f => ({ ...f, services_products: e.target.value }))} className="h-20" /></div>
                 <div className="grid grid-cols-2 gap-4">
