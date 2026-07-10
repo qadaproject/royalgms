@@ -7,7 +7,7 @@ Deno.serve(async (req) => {
     }
 
     const token = Deno.env.get("KUDISMS_API_TOKEN");
-    const senderID = Deno.env.get("KUDISMS_SENDER_ID") || "OLUOF WARRI";
+    const senderID = "OLUOF WARRI";
 
     if (!token) {
       return Response.json({ error: 'KUDISMS_API_TOKEN not configured' }, { status: 500 });
