@@ -30,18 +30,65 @@ Deno.serve(async (req) => {
       recipient = "234" + recipient;
     }
 
+    // Upload image to Meta to get a reliable media ID
+    const imageUrl = "https://media.base44.com/images/public/69f83e971133ed44e3fc81f6/aa8566db6_ogiame2.jpg";
+    const imgResp = await fetch(imageUrl);
+    const imgBlob = await imgResp.blob();
+    const formData = new FormData();
+    formData.append("messaging_product", "whatsapp");
+    formData.append("type", "image/jpeg");
+    formData.append("file", imgBlob, "ogiame2.jpg");
+
+    const mediaResp = await fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/media?appsecret_proof=${appsecretProof}`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${accessToken}` },
+      body: formData
+    });
+    const mediaResult = await mediaResp.json();
+
+    if (!mediaResp.ok || !mediaResult.id) {
+      return Response.json({ error: "Failed to upload image to Meta", details: mediaResult }, { status: 500 });
+    }
+
     const payload = {
       messaging_product: "whatsapp",
       to: recipient,
       type: "template",
       template: {
-        name: "invitation_notice",
+        name: "notice",
         language: { code: "en" },
         components: [
           {
+            type: "header",
+            parameters: [
+              {
+                type: "image",
+                image: {
+                  id: mediaResult.id
+                }
+              }
+            ]
+          },
+          {
             type: "body",
             parameters: [
-              { type: "text", text: name },
+              { type: "text", text: link },
+              { type: "text", text: name }
+            ]
+          },
+          {
+            type: "button",
+            sub_type: "url",
+            index: 0,
+            parameters: [
+              { type: "text", text: link }
+            ]
+          },
+          {
+            type: "button",
+            sub_type: "url",
+            index: 1,
+            parameters: [
               { type: "text", text: link }
             ]
           }
