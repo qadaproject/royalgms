@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
       recipient = "234" + recipient;
     }
 
-    // Upload image to Meta to get a reliable media ID
+    // Upload image to Meta to get a media ID
     const imageUrl = "https://media.base44.com/images/public/69f83e971133ed44e3fc81f6/aa8566db6_ogiame2.jpg";
     const imgResp = await fetch(imageUrl);
     const imgBlob = await imgResp.blob();
@@ -63,17 +63,15 @@ Deno.serve(async (req) => {
             parameters: [
               {
                 type: "image",
-                image: {
-                  id: mediaResult.id
-                }
+                image: { id: mediaResult.id }
               }
             ]
           },
           {
             type: "body",
             parameters: [
-              { type: "text", text: link },
-              { type: "text", text: name }
+              { type: "text", text: name },
+              { type: "text", text: link }
             ]
           },
           {
