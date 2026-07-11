@@ -35,14 +35,14 @@ Deno.serve(async (req) => {
       to: recipient,
       type: "template",
       template: {
-        name: "new_royal_invite",
+        name: "notice",
         language: { code: "en" },
         components: [
           {
             type: "body",
             parameters: [
-              { type: "text", text: name },
-              { type: "text", text: link }
+              { type: "text", text: link },
+              { type: "text", text: name }
             ]
           }
         ]
