@@ -50,10 +50,10 @@ export default function InviteDetail() {
   return (
     <div className="min-h-screen bg-[#5a0a0a] flex flex-col items-center justify-center py-8 px-4">
       <style>{`
-        body { background: #5a0a0a; }
+        body { background: #3d0a06; }
         @media print {
           .no-print { display: none !important; }
-          body { background: #7a1010 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+          body { background: #6b1a12 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
           @page { size: A4 portrait; margin: 10mm; }
           .invite-card { box-shadow: none !important; }
         }
