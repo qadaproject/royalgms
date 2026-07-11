@@ -118,7 +118,7 @@ export default function InviteDetail() {
           <p className="font-heading text-2xl font-bold text-[#c9a84c] uppercase tracking-wide leading-tight mb-1">
             {settings?.event_name || "5th Coronation Anniversary"}
           </p>
-          <p className="text-[#c9a84c]/70 text-[10px] uppercase tracking-[0.3em] mb-1">of</p>
+          <p className="text-[#c9a84c]/70 text-[10px] uppercase tracking-[0.3em] mb-1">Of</p>
           <p className="text-[#f5ede0]/50 text-xs mb-6">
             {settings?.event_subtitle || "Ogiame Atuwatse III, Olu of Warri Kingdom"}
           </p>
