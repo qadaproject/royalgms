@@ -74,7 +74,7 @@ export default function InviteDetail() {
       <div
         className="invite-card relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
         style={{
-          background: "radial-gradient(ellipse at 50% 30%, #9b1515 0%, #6b0c0c 40%, #4a0808 100%)",
+          background: "radial-gradient(ellipse at 50% 30%, #6b1a12 0%, #3d0a06 40%, #4a0808 100%)",
           border: "2px solid #c9a84c",
         }}
       >
