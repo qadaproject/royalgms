@@ -72,7 +72,7 @@ export default function InvitationManager() {
     <div>
       <PageHeader
         title="Invitation Manager"
-        subtitle={`${guests.length} guests — generate, print or send invitations`}
+        subtitle="Generate, print or send invitations"
       />
 
       {/* Search */}
