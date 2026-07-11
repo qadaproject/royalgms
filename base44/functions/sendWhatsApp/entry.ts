@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
       to: recipient,
       type: "template",
       template: {
-        name: "invitation_notice",
+        name: "new_royal_invite",
         language: { code: "en" },
         components: [
           {
