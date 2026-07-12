@@ -179,7 +179,9 @@ export default function InviteDetail() {
             {settings?.footer_note || "This invitation is non-transferable. Please present upon arrival at the security checkpoint."}
           </p>
         </div>
-        {/* Update RSVP / Itinerary Button */}
+        
+      </div>
+      {/* Update RSVP / Itinerary Button */}
 <div className="no-print mt-4">
   <a
     href={itineraryUrl}
@@ -188,7 +190,6 @@ export default function InviteDetail() {
     Update RSVP / Itinerary
   </a>
 </div>
-      </div>
     </div>
   );
 }
