@@ -178,9 +178,16 @@ export default function InviteDetail() {
           <p className="text-[#f5ede0]/30 text-[10px] italic">
             {settings?.footer_note || "This invitation is non-transferable. Please present upon arrival at the security checkpoint."}
           </p>
-
-          
         </div>
+        {/* Update RSVP / Itinerary Button */}
+<div className="no-print mt-4">
+  <a
+    href={itineraryUrl}
+    className="flex items-center justify-center gap-2 text-[#c9a84c] border border-[#c9a84c]/50 hover:bg-[#c9a84c]/10 transition-colors rounded-lg px-4 py-2 text-xs font-semibold uppercase tracking-wider"
+  >
+    Update RSVP / Itinerary
+  </a>
+</div>
       </div>
     </div>
   );
