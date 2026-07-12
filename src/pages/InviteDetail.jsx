@@ -129,7 +129,17 @@ export default function InviteDetail() {
             style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(201,168,76,0.2)" }}
           >
             {[
-              { label: "DATE", value: settings?.event_date },
+              {
+  label: "DATE",
+  value: settings?.event_date
+    ? new Date(settings.event_date).toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : ""
+},
               { label: "VENUE", value: settings?.venue_name || settings?.venue_address },
               { label: "TIME", value: settings?.event_time },
             ].filter(d => d.value).map((row, i, arr) => (
