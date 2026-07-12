@@ -179,15 +179,7 @@ export default function InviteDetail() {
             {settings?.footer_note || "This invitation is non-transferable. Please present upon arrival at the security checkpoint."}
           </p>
 
-          {/* Update RSVP link */}
-          <div className="no-print mt-5">
-            <a
-              href={itineraryUrl}
-              className="text-[#c9a84c]/60 text-xs underline underline-offset-2 hover:text-[#c9a84c] transition-colors"
-            >
-              Update your RSVP / Itinerary →
-            </a>
-          </div>
+          
         </div>
       </div>
     </div>
