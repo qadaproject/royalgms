@@ -1,9 +1,9 @@
 Deno.serve(async (req) => {
   try {
-    const { phone, name, link } = await req.json();
+    const { phone, name, qr_code } = await req.json();
 
-    if (!phone || !name || !link) {
-      return Response.json({ error: 'phone, name, and link are required' }, { status: 400 });
+    if (!phone || !name || !qr_code) {
+      return Response.json({ error: 'phone, name, and qr_code are required' }, { status: 400 });
     }
 
     const accessToken = Deno.env.get("WHATSAPP_ACCESS_TOKEN");
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
           {
             type: "body",
             parameters: [
-              { type: "text", text: link },
+              { type: "text", text: qr_code },
               { type: "text", text: name }
             ]
           },
@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
             sub_type: "url",
             index: 0,
             parameters: [
-              { type: "text", text: link }
+              { type: "text", text: qr_code }
             ]
           },
           {
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
             sub_type: "url",
             index: 1,
             parameters: [
-              { type: "text", text: link }
+              { type: "text", text: qr_code }
             ]
           }
         ]

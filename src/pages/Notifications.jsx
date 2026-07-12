@@ -260,12 +260,11 @@ export default function Notifications() {
       const rawPhone = guest.phone || guest.contact_person_phone;
       const phone = formatPhone(rawPhone);
       const guestName = `${guest.formal_salutation || ""} ${guest.full_name}`.trim();
-      const inviteLink = buildInviteLink(guest);
       if (phone) {
         await base44.functions.invoke("sendWhatsApp", {
           phone,
           name: guestName,
-          link: inviteLink,
+          qr_code: guest.qr_code,
         }).catch(() => { success = false; });
       } else {
         success = false;
