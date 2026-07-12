@@ -39,10 +39,37 @@ Deno.serve(async (req) => {
         language: { code: "en" },
         components: [
           {
+            type: "header",
+            parameters: [
+              {
+                type: "image",
+                image: {
+                  link: "https://media.base44.com/images/public/69f83e971133ed44e3fc81f6/97538d805_ogiame2.jpg"
+                }
+              }
+            ]
+          },
+          {
             type: "body",
             parameters: [
               { type: "text", text: link },
               { type: "text", text: name }
+            ]
+          },
+          {
+            type: "button",
+            sub_type: "url",
+            index: 0,
+            parameters: [
+              { type: "text", text: link }
+            ]
+          },
+          {
+            type: "button",
+            sub_type: "url",
+            index: 1,
+            parameters: [
+              { type: "text", text: link }
             ]
           }
         ]
