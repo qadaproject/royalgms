@@ -18,14 +18,14 @@ export function buildPrintHTML(guest, settings) {
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      @page { size: A5 portrait; margin: 8mm; }
+      @page { size: A5 portrait; margin: 4mm; }
       body { background: #1a0a06; print-color-adjust: exact; -webkit-print-color-adjust: exact;
              display: flex; justify-content: center; align-items: flex-start;
              min-height: 100vh; font-family: 'Cormorant Garamond', Georgia, serif; }
       @media print { body { background: #1a0a06; } }
       .card {
         background: linear-gradient(135deg, #3d0a06 0%, #6b1a12 50%, #3d0a06 100%);
-        border: 3px solid #c9a84c; border-radius: 12px; padding: 32px;
+        border: 3px solid #c9a84c; border-radius: 12px; padding: 20px;
         color: #f5ede0; width: 100%; max-width: 420px; position: relative;
       }
       .corner { position: absolute; width: 22px; height: 22px; border-color: #c9a84c; border-style: solid; border-width: 0; }
@@ -33,22 +33,22 @@ export function buildPrintHTML(guest, settings) {
       .tr { top: 10px; right: 10px; border-top-width: 2px; border-right-width: 2px; }
       .bl { bottom: 10px; left: 10px; border-bottom-width: 2px; border-left-width: 2px; }
       .br { bottom: 10px; right: 10px; border-bottom-width: 2px; border-right-width: 2px; }
-      .gold-line { width: 70px; height: 1px; background: #c9a84c; margin: 10px auto; }
+      .gold-line { width: 70px; height: 1px; background: #c9a84c; margin: 6px auto; }
       .label { color: #c9a84c; font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase;
                 font-family: 'Inter', sans-serif; font-weight: 600; }
-      .section { text-align: center; margin-bottom: 16px; }
-      .crest { width: 72px; height: 72px; object-fit: contain; display: inline-block; }
-      .details-box { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 14px 18px; margin: 12px 0; }
-      .detail-row { display: flex; gap: 12px; margin-bottom: 8px; align-items: baseline; }
+      .section { text-align: center; margin-bottom: 10px; }
+      .crest { width: 58px; height: 58px; object-fit: contain; display: inline-block; }
+      .details-box { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 10px 14px; margin: 8px 0; }
+      .detail-row { display: flex; gap: 12px; margin-bottom: 5px; align-items: baseline; }
       .detail-key { color: #c9a84c; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
                     font-family: 'Inter', sans-serif; font-weight: 600; min-width: 38px; }
       .detail-val { color: #f5ede0; font-size: 12px; font-weight: 500; }
-      .zone-grid { display: grid; grid-template-columns: 1fr 1fr; padding-top: 10px;
-                   border-top: 1px solid rgba(201,168,76,0.2); margin-top: 6px; }
-      .qr-wrap { text-align: center; margin: 12px 0 6px; }
-      .qr-inner { background: #fff; padding: 8px; border-radius: 8px; border: 2px solid #c9a84c; display: inline-block; }
+      .zone-grid { display: grid; grid-template-columns: 1fr 1fr; padding-top: 7px;
+                   border-top: 1px solid rgba(201,168,76,0.2); margin-top: 4px; }
+      .qr-wrap { text-align: center; margin: 8px 0 4px; }
+      .qr-inner { background: #fff; padding: 6px; border-radius: 8px; border: 2px solid #c9a84c; display: inline-block; }
       .footer-note { text-align: center; color: rgba(245,237,224,0.3); font-size: 8px;
-                     margin-top: 16px; font-style: italic; line-height: 1.6; font-family: 'Inter', sans-serif; }
+                     margin-top: 8px; font-style: italic; line-height: 1.6; font-family: 'Inter', sans-serif; }
     </style>
     </head><body>
     <div class="card">
@@ -64,7 +64,7 @@ export function buildPrintHTML(guest, settings) {
         <h2 style="font-size:18px;font-weight:700;color:#f5ede0;letter-spacing:0.04em;line-height:1.2;margin:4px 0 2px;">Ògíame Atúwàtse III, CFR,</h2>
         <p style="color:#c9a84c;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:4px;">The Olu of Warri,</p>
         <div class="gold-line"></div>
-        <p style="color:rgba(245,237,224,0.73);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;margin:10px 0;font-style:italic;">Formally Invites</p>
+        <p style="color:rgba(245,237,224,0.73);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;margin:6px 0;font-style:italic;">Formally Invites</p>
         <div class="gold-line"></div>
       </div>
 
@@ -75,7 +75,7 @@ export function buildPrintHTML(guest, settings) {
 
       <div class="gold-line"></div>
 
-      <div class="section" style="margin-top:14px;">
+      <div class="section" style="margin-top:8px;">
         <p style="color:rgba(245,237,224,0.73);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:6px;font-style:italic;">To the</p>
         <h3 style="font-size:17px;font-weight:700;color:#c9a84c;letter-spacing:0.06em;text-transform:uppercase;line-height:1.3;">
           ${settings?.event_name || "5th Coronation Anniversary"}
@@ -96,7 +96,7 @@ export function buildPrintHTML(guest, settings) {
       </div>
 
       <div class="qr-wrap">
-        <div class="qr-inner"><img src="${qrImgUrl}" alt="QR Code" style="width:110px;height:110px;display:block;" /></div>
+        <div class="qr-inner"><img src="${qrImgUrl}" alt="QR Code" style="width:90px;height:90px;display:block;" /></div>
         <p class="label" style="margin-top:6px;">Scan to view invitation</p>
         <p style="color:#c9a84c;font-size:10px;font-family:monospace;font-weight:700;letter-spacing:0.2em;margin-top:3px;">${guest.qr_code}</p>
       </div>
