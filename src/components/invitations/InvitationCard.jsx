@@ -84,8 +84,8 @@ export default function InvitationCard({ guest, settings }) {
             </div>
           ))}
           {/* Seating Zone row */}
-          <div className="border-t border-[#c9a84c]/20 px-5 py-3">
-            <p className="text-[#c9a84c] text-[9px] font-bold uppercase tracking-[0.2em] mb-1">Seating Zone</p>
+          <div className="border-t border-[#c9a84c]/20 px-5 py-3 flex items-baseline gap-3">
+            <p className="text-[#c9a84c] text-[9px] font-bold uppercase tracking-[0.2em] shrink-0">Seating Zone</p>
             <p className="text-[#f5ede0] text-sm">{guest.seating_zone || "To be assigned"}</p>
           </div>
         </div>
