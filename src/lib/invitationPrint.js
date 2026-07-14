@@ -14,7 +14,7 @@ export function buildPrintHTML(guest, settings) {
 
   return `
     <html><head>
-    <title>${guest.full_name.replace(/\s+/g, '_')}_${guest.qr_code}</title>
+    <title>${guest.full_name.replace(/\./g, '').replace(/\s+/g, '_')}_${guest.qr_code}</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
