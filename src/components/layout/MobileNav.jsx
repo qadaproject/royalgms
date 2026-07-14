@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Menu, X, LayoutDashboard, Users, Send, Armchair, BarChart3,
-  Bell, Shield, Settings, Mail, ClipboardList, Globe, Store, MapPin, BookUser, LogOut, Crown
+  Bell, Shield, Settings, Mail, ClipboardList, Globe, Store, MapPin, BookUser, LogOut, Crown, FileText
 } from "lucide-react";
 import RoyalCrest from "./RoyalCrest";
 import { base44 } from "@/api/base44Client";
@@ -11,6 +11,7 @@ const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "chairman", "data_manager", "dispatch_unit", "protocol_liaison", "security"] },
   { path: "/guests", label: "Guest Registry", icon: Users, roles: ["admin", "chairman", "data_manager", "protocol_liaison"] },
   { path: "/invitation-manager", label: "Invitations", icon: Mail, roles: ["admin", "chairman", "data_manager", "dispatch_unit", "protocol_liaison"] },
+  { path: "/iv-generator", label: "IV Generator", icon: FileText, roles: ["admin", "chairman", "data_manager", "protocol_liaison"] },
   { path: "/invitations", label: "Dispatch Tracker", icon: Send, roles: ["admin", "data_manager", "dispatch_unit"] },
   { path: "/seating", label: "Seating & Protocol", icon: Armchair, roles: ["admin", "chairman", "protocol_liaison"] },
   { path: "/notifications", label: "Notifications", icon: Bell, roles: ["admin", "chairman", "data_manager"] },

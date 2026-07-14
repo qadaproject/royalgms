@@ -16,6 +16,7 @@ import SecurityCheckpoint from './pages/SecurityCheckpoint';
 import RSVPPortal from './pages/RSVPPortal';
 import EventSettings from './pages/EventSettings';
 import InvitationManager from './pages/InvitationManager';
+import IVGenerator from './pages/IVGenerator';
 import InviteDetail from './pages/InviteDetail';
 import CheckInScanner from './pages/CheckInScanner';
 import HomePage from './pages/HomePage';
@@ -96,6 +97,7 @@ const AuthenticatedApp = () => {
         <Route path="/guests" element={<Guests />} />
         <Route path="/invitations" element={<Invitations />} />
         <Route path="/invitation-manager" element={<InvitationManager />} />
+        <Route path="/iv-generator" element={<IVGenerator />} />
         <Route path="/seating" element={<Seating />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/notifications" element={<Notifications />} />
