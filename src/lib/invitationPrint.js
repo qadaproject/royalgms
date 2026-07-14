@@ -37,7 +37,7 @@ export function buildPrintHTML(guest, settings) {
       .label { color: #c9a84c; font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase;
                 font-family: 'Inter', sans-serif; font-weight: 600; }
       .section { text-align: center; margin-bottom: 10px; }
-      .crest { width: 58px; height: 58px; object-fit: contain; display: inline-block; }
+      .crest { width: 72px; height: 72px; object-fit: contain; display: inline-block; }
       .details-box { background: rgba(0,0,0,0.25); border-radius: 8px; padding: 10px 14px; margin: 8px 0; }
       .detail-row { display: flex; gap: 12px; margin-bottom: 5px; align-items: baseline; }
       .detail-key { color: #c9a84c; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
