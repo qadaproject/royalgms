@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import PageHeader from "../components/shared/PageHeader";
 import CategoryBadge from "../components/shared/CategoryBadge";
 import ReminderWorkflow from "../components/notifications/ReminderWorkflow";
+import { getTierForCategory } from "@/lib/guestTiers";
 import { format } from "date-fns";
 
 const APP_URL = window.location.origin;
@@ -128,6 +129,7 @@ export default function Notifications() {
   const [bulkSending, setBulkSending] = useState(false);
   const [search, setSearch] = useState("");
   const [rsvpFilter, setRsvpFilter] = useState("All");
+  const [tierFilter, setTierFilter] = useState("All Tiers");
   const queryClient = useQueryClient();
 
   const { data: guests = [] } = useQuery({
@@ -182,6 +184,7 @@ export default function Notifications() {
   const filteredGuests = useMemo(() => {
     let list = guests.filter((g) => g.qr_code);
     if (rsvpFilter !== "All") list = list.filter((g) => g.rsvp_status === rsvpFilter);
+    if (tierFilter !== "All Tiers") list = list.filter((g) => (g.tier || getTierForCategory(g.category)) === tierFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter((g) =>
@@ -371,6 +374,17 @@ export default function Notifications() {
                 <SelectItem value="Accepted">Accepted</SelectItem>
                 <SelectItem value="Declined">Declined</SelectItem>
                 <SelectItem value="Proxy">Proxy</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={tierFilter} onValueChange={setTierFilter}>
+              <SelectTrigger className="w-40 h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All Tiers">All Tiers</SelectItem>
+                <SelectItem value="Tier 1">Tier 1</SelectItem>
+                <SelectItem value="Tier 2">Tier 2</SelectItem>
+                <SelectItem value="Tier 3">Tier 3</SelectItem>
               </SelectContent>
             </Select>
           </div>

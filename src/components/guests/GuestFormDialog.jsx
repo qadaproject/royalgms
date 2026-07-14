@@ -11,6 +11,7 @@ import { Upload, Loader2, X, FileImage } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import GuestActivityLog from "./GuestActivityLog";
+import { getTierForCategory, TIER_LABELS } from "@/lib/guestTiers";
 
 const categories = ["A - Royal", "B - Federal", "C - State", "D - Corporate", "E - Diplomatic", "F - Traditional", "G - General", "H - Socials", "I - Communities", "J - Chiefs"];
 const salutations = ["His Imperial Majesty", "His Majesty", "Her Majesty", "His Royal Highness", "His Royal Majesty", "Her Royal Majesty", "His Excellency", "Her Excellency", "Senator", "Pastor", "Rt. Hon.", "Hon.", "Chief", "Dr.", "Prof.", "Engr.", "Barr.", "Alhaji", "Chief (Mrs.)", "Mr.", "Mrs.", "Ms."];
@@ -21,6 +22,7 @@ const emptyGuest = {
   official_title: "",
   post_nominals: "",
   category: "G - General",
+  tier: "",
   email: "",
   phone: "",
   contact_person_name: "",
@@ -106,13 +108,23 @@ export default function GuestFormDialog({ open, onOpenChange, guest, onSave }) {
               </div>
               <div>
                 <Label className="text-xs">Category *</Label>
-                <Select value={form.category} onValueChange={(v) => update("category", v)}>
+                <Select value={form.category} onValueChange={(v) => { update("category", v); update("tier", getTierForCategory(v)); }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div>
+              <Label className="text-xs">Internal Tier</Label>
+              <Select value={form.tier || getTierForCategory(form.category)} onValueChange={(v) => update("tier", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(TIER_LABELS).map(([val, label]) => <SelectItem key={val} value={val}>{label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-muted-foreground mt-1">Internal classification — never shown on invitations or messages</p>
             </div>
             <div>
               <Label className="text-xs">Full Name *</Label>

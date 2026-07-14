@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Download, CheckCircle2, X, FileSpreadsheet, Loader2, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { getTierForCategory } from "@/lib/guestTiers";
 
 const COLUMNS = [
   "formal_salutation", "full_name", "official_title", "post_nominals", "category",
@@ -166,6 +167,7 @@ export default function GuestImportDialog({ open, onOpenChange, onImport, existi
       const token = generateToken();
       return {
         ...row,
+        tier: row.tier || getTierForCategory(row.category),
         rsvp_status: row.rsvp_status || "Pending",
         security_detail_size: parseInt(row.security_detail_size) || 0,
         protocol_validated: false,

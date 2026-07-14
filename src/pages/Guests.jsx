@@ -12,6 +12,7 @@ import GuestPrintMenu from "../components/guests/GuestPrintMenu";
 import BulkRSVPAction from "../components/guests/BulkRSVPAction";
 import GuestImportDialog from "../components/guests/GuestImportDialog";
 import DeleteAllGuestsDialog from "../components/guests/DeleteAllGuestsDialog";
+import { getTierForCategory } from "@/lib/guestTiers";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +28,7 @@ export default function Guests() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All Categories");
   const [status, setStatus] = useState("All Status");
+  const [tier, setTier] = useState("All Tiers");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editGuest, setEditGuest] = useState(null);
   const [deleteGuest, setDeleteGuest] = useState(null);
@@ -134,7 +136,7 @@ export default function Guests() {
   const handleExportCSV = () => {
     const cols = [
       "full_name", "formal_salutation", "official_title", "post_nominals",
-      "category", "rsvp_status", "email", "phone",
+      "category", "tier", "rsvp_status", "email", "phone",
       "contact_person_name", "contact_person_phone", "contact_person_email",
       "seating_zone", "seat_number", "security_detail_size",
       "arrival_details", "dietary_requirements", "medical_alerts",
@@ -143,7 +145,7 @@ export default function Guests() {
     const header = cols.join(",");
     const rows = filteredGuests.map((g) =>
       cols.map((c) => {
-        const val = g[c] ?? "";
+        const val = c === "tier" ? (g.tier || getTierForCategory(g.category)) : (g[c] ?? "");
         const str = String(val).replace(/"/g, '""');
         return str.includes(",") || str.includes('"') || str.includes("\n") ? `"${str}"` : str;
       }).join(",")
@@ -176,7 +178,9 @@ export default function Guests() {
       g.formal_salutation?.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = category === "All Categories" || g.category === category;
     const matchesStatus = status === "All Status" || g.rsvp_status === status;
-    return matchesSearch && matchesCategory && matchesStatus;
+    const guestTier = g.tier || getTierForCategory(g.category);
+    const matchesTier = tier === "All Tiers" || guestTier === tier;
+    return matchesSearch && matchesCategory && matchesStatus && matchesTier;
   });
 
   return (
@@ -208,6 +212,8 @@ export default function Guests() {
         setCategory={setCategory}
         status={status}
         setStatus={setStatus}
+        tier={tier}
+        setTier={setTier}
       />
 
       <BulkRSVPAction

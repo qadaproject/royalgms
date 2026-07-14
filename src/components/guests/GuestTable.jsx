@@ -6,6 +6,7 @@ import { Pencil, Trash2, ShieldCheck, ShieldAlert, Link2, ChevronLeft, ChevronRi
 import { toast } from "sonner";
 import CategoryBadge from "../shared/CategoryBadge";
 import StatusBadge from "../shared/StatusBadge";
+import { getTierForCategory, TIER_STYLES } from "@/lib/guestTiers";
 import GuestViewModal from "./GuestViewModal";
 
 const PAGE_SIZE = 20;
@@ -102,6 +103,7 @@ export default function GuestTable({ guests, onEdit, onDelete, selectedIds = new
               </TableHead>
               <TableHead className="text-[10px] uppercase tracking-wider font-semibold">Guest</TableHead>
               <TableHead className="text-[10px] uppercase tracking-wider font-semibold">Category</TableHead>
+              <TableHead className="text-[10px] uppercase tracking-wider font-semibold hidden md:table-cell">Tier</TableHead>
               <TableHead className="text-[10px] uppercase tracking-wider font-semibold">RSVP</TableHead>
               <TableHead className="text-[10px] uppercase tracking-wider font-semibold hidden md:table-cell">Protocol</TableHead>
               <TableHead className="text-[10px] uppercase tracking-wider font-semibold hidden lg:table-cell">Contact Person</TableHead>
@@ -136,6 +138,12 @@ export default function GuestTable({ guests, onEdit, onDelete, selectedIds = new
                 </TableCell>
                 <TableCell>
                   <CategoryBadge category={guest.category} />
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {(() => {
+                    const t = guest.tier || getTierForCategory(guest.category);
+                    return <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold ${TIER_STYLES[t] || ""}`}>{t}</span>;
+                  })()}
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={guest.rsvp_status || "Pending"} />

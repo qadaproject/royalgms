@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, ShieldAlert, QrCode, Phone, Mail, User, MapPin, Utensils, AlertCircle, FileText, FileImage } from "lucide-react";
 import CategoryBadge from "../shared/CategoryBadge";
 import StatusBadge from "../shared/StatusBadge";
+import { getTierForCategory, TIER_STYLES } from "@/lib/guestTiers";
 
 function Field({ label, value, icon: Icon }) {
   if (!value && value !== 0) return null;
@@ -53,6 +54,10 @@ export default function GuestViewModal({ guest, open, onOpenChange }) {
             </div>
             <div className="flex flex-col items-end gap-2">
               <CategoryBadge category={guest.category} />
+              {(() => {
+                const t = guest.tier || getTierForCategory(guest.category);
+                return <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold ${TIER_STYLES[t] || ""}`}>{t}</span>;
+              })()}
               <StatusBadge status={guest.rsvp_status || "Pending"} />
               {guest.protocol_validated ? (
                 <div className="flex items-center gap-1.5 text-emerald-600 text-xs font-medium">

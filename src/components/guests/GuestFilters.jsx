@@ -18,7 +18,9 @@ const categories = [
 
 const statuses = ["All Status", "Pending", "Accepted", "Declined", "Proxy"];
 
-export default function GuestFilters({ search, setSearch, category, setCategory, status, setStatus }) {
+const tiers = ["All Tiers", "Tier 1", "Tier 2", "Tier 3"];
+
+export default function GuestFilters({ search, setSearch, category, setCategory, status, setStatus, tier, setTier }) {
   return (
     <div className="flex flex-col sm:flex-row gap-3 mb-6">
       <div className="relative flex-1">
@@ -37,6 +39,16 @@ export default function GuestFilters({ search, setSearch, category, setCategory,
         <SelectContent>
           {categories.map((c) => (
             <SelectItem key={c} value={c}>{c}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select value={tier} onValueChange={setTier}>
+        <SelectTrigger className="w-full sm:w-40">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {tiers.map((t) => (
+            <SelectItem key={t} value={t}>{t}</SelectItem>
           ))}
         </SelectContent>
       </Select>
