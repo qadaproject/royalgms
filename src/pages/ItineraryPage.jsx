@@ -191,15 +191,9 @@ export default function ItineraryPage() {
               {/* Locked fields */}
               <div className="grid grid-cols-1 gap-3 pb-4 mb-4 border-b border-[#c9a84c]/10">
                 <p className="text-[#f5ede0]/30 text-[10px] uppercase tracking-wider font-sans flex items-center gap-1"><Lock className="w-3 h-3" /> Registered Details (locked)</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-[#f5ede0]/30 text-[10px] font-sans uppercase tracking-wider mb-1">Full Name</p>
-                    <p className="text-[#f5ede0]/60 text-sm font-sans bg-[#0d0603]/50 rounded px-3 py-2">{guest.full_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-[#f5ede0]/30 text-[10px] font-sans uppercase tracking-wider mb-1">Category</p>
-                    <p className="text-[#f5ede0]/60 text-sm font-sans bg-[#0d0603]/50 rounded px-3 py-2">{guest.category}</p>
-                  </div>
+                <div>
+                  <p className="text-[#f5ede0]/30 text-[10px] font-sans uppercase tracking-wider mb-1">Full Name</p>
+                  <p className="text-[#f5ede0]/60 text-sm font-sans bg-[#0d0603]/50 rounded px-3 py-2">{guest.full_name}</p>
                 </div>
               </div>
               {/* Editable fields */}
