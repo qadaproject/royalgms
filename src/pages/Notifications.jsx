@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bell, Send, Mail, MessageSquare, CheckCircle2, Loader2, RefreshCw, Search, Phone, AlertTriangle } from "lucide-react";
+import { Bell, Send, Mail, MessageSquare, CheckCircle2, Loader2, RefreshCw, Search, Phone, AlertTriangle, Globe } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import PageHeader from "../components/shared/PageHeader";
@@ -31,10 +31,22 @@ function applyTemplate(template, guest) {
 function formatPhone(phone) {
   if (!phone) return null;
   let p = phone.toString().replace(/\D/g, "");
-  if (p.startsWith("234") && p.length === 13) return p;
-  if (p.startsWith("0") && p.length === 11) return "234" + p.slice(1);
-  if (!p.startsWith("234")) return "234" + p;
+  if (p.startsWith("00")) p = p.slice(2);
+  if (p.startsWith("0")) return "234" + p.slice(1);
+  if (p.startsWith("234")) return p;
+  if (p.length === 10 && /^[789]/.test(p)) return "234" + p;
+  // International number — return as-is (already has country code)
   return p;
+}
+
+function isNigerianPhone(phone) {
+  if (!phone) return false;
+  let p = phone.toString().replace(/\D/g, "");
+  if (p.startsWith("00")) p = p.slice(2);
+  if (p.startsWith("234")) return true;
+  if (p.startsWith("0")) return true;
+  if (p.length === 10 && /^[789]/.test(p)) return true;
+  return false;
 }
 
 function buildHtmlEmail(guest, bodyText, eventSettings) {
@@ -130,6 +142,10 @@ export default function Notifications() {
   const [search, setSearch] = useState("");
   const [rsvpFilter, setRsvpFilter] = useState("All");
   const [tierFilter, setTierFilter] = useState("All Tiers");
+  const [logSearch, setLogSearch] = useState("");
+  const [logChannelFilter, setLogChannelFilter] = useState("All");
+  const [logStatusFilter, setLogStatusFilter] = useState("All");
+  const [logOriginFilter, setLogOriginFilter] = useState("All");
   const queryClient = useQueryClient();
 
   const { data: guests = [] } = useQuery({
@@ -199,6 +215,28 @@ export default function Notifications() {
     return list;
   }, [guests, search, rsvpFilter]);
 
+  const filteredLogs = useMemo(() => {
+    return logs.filter((log) => {
+      if (logSearch.trim()) {
+        const q = logSearch.toLowerCase();
+        if (!log.guest_name?.toLowerCase().includes(q) && !(log.guest_phone || "").includes(q) && !(log.guest_email || "").toLowerCase().includes(q)) return false;
+      }
+      if (logChannelFilter !== "All") {
+        const ch = log.channel || "";
+        if (logChannelFilter === "WhatsApp" && !ch.includes("WhatsApp")) return false;
+        if (logChannelFilter === "Email" && !ch.includes("Email")) return false;
+        if (logChannelFilter === "SMS" && !ch.includes("SMS")) return false;
+      }
+      if (logStatusFilter !== "All" && log.status !== logStatusFilter) return false;
+      if (logOriginFilter !== "All") {
+        const isForeign = !isNigerianPhone(log.guest_phone);
+        if (logOriginFilter === "Nigerian" && isForeign) return false;
+        if (logOriginFilter === "Foreign" && !isForeign) return false;
+      }
+      return true;
+    });
+  }, [logs, logSearch, logChannelFilter, logStatusFilter, logOriginFilter]);
+
   const logMutation = useMutation({
     mutationFn: (data) => base44.entities.NotificationLog.create(data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notification_logs"] }),
@@ -218,6 +256,7 @@ export default function Notifications() {
     const smsBody = applyTemplate(smsTemplate, guest);
 
     let success = true;
+    let waDeliveryDetail = "";
 
     if (ch === "Email" || ch === "Email + SMS" || ch === "Email + WhatsApp") {
       const htmlBody = buildHtmlEmail(guest, emailBody, eventSettings);
@@ -264,25 +303,39 @@ export default function Notifications() {
       const phone = formatPhone(rawPhone);
       const guestName = `${guest.formal_salutation || ""} ${guest.full_name}`.trim();
       if (phone) {
-        await base44.functions.invoke("sendWhatsApp", {
-          phone,
-          name: guestName,
-          qr_code: guest.qr_code,
-        }).catch(() => { success = false; });
+        try {
+          const res = await base44.functions.invoke("sendWhatsApp", {
+            phone,
+            name: guestName,
+            qr_code: guest.qr_code,
+          });
+          if (res?.data?.error) {
+            success = false;
+            waDeliveryDetail = res.data.error;
+          } else {
+            waDeliveryDetail = res?.data?.message_status || "";
+          }
+        } catch (e) {
+          success = false;
+          waDeliveryDetail = e?.message || "Send failed";
+        }
       } else {
         success = false;
       }
     }
 
+    const rawPhoneForLog = guest.phone || guest.contact_person_phone || "";
     await logMutation.mutateAsync({
       guest_id: guest.id,
       guest_name: guest.full_name,
       guest_email: guest.email || guest.contact_person_email || "",
-      guest_phone: guest.phone || guest.contact_person_phone || "",
+      guest_phone: rawPhoneForLog,
       channel: ch,
       status: success ? "Sent" : "Failed",
       message_preview: emailBody.substring(0, 200),
       rsvp_token: guest.qr_code,
+      is_international: !!rawPhoneForLog && !isNigerianPhone(rawPhoneForLog),
+      delivery_detail: waDeliveryDetail || "",
     });
 
     base44.entities.GuestActivityLog.create({
@@ -450,12 +503,57 @@ export default function Notifications() {
 
         {/* Log */}
         <div>
-          <h2 className="font-heading text-lg font-semibold mb-4">Notification Log</h2>
-          {logs.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No notifications sent yet</p>
+          <h2 className="font-heading text-lg font-semibold mb-3">Notification Log</h2>
+          {/* Log Filters */}
+          <div className="space-y-2 mb-3">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+              <Input
+                value={logSearch}
+                onChange={(e) => setLogSearch(e.target.value)}
+                placeholder="Search log by name, phone, email..."
+                className="pl-8 h-8 text-xs"
+              />
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <Select value={logChannelFilter} onValueChange={setLogChannelFilter}>
+                <SelectTrigger className="h-8 w-[110px] text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All Channels</SelectItem>
+                  <SelectItem value="Email">Email</SelectItem>
+                  <SelectItem value="SMS">SMS</SelectItem>
+                  <SelectItem value="WhatsApp">WhatsApp</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={logStatusFilter} onValueChange={setLogStatusFilter}>
+                <SelectTrigger className="h-8 w-[100px] text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All Status</SelectItem>
+                  <SelectItem value="Sent">Sent</SelectItem>
+                  <SelectItem value="Failed">Failed</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={logOriginFilter} onValueChange={setLogOriginFilter}>
+                <SelectTrigger className="h-8 w-[120px] text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All Numbers</SelectItem>
+                  <SelectItem value="Nigerian">Nigerian</SelectItem>
+                  <SelectItem value="Foreign">Foreign</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          {filteredLogs.length === 0 ? (
+            <p className="text-muted-foreground text-sm">{logs.length === 0 ? "No notifications sent yet" : "No logs match filters"}</p>
           ) : (
             <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
-              {logs.map((log) => (
+              {filteredLogs.map((log) => (
                 <div key={log.id} className="p-3 bg-card border border-border rounded-lg">
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <p className="text-xs font-medium truncate flex-1">{log.guest_name}</p>
@@ -469,6 +567,18 @@ export default function Notifications() {
                     <span>·</span>
                     <span>{log.created_date ? format(new Date(log.created_date), "MMM d, HH:mm") : ""}</span>
                   </div>
+                  {log.is_international && log.guest_phone && (
+                    <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                      <span className="inline-flex items-center gap-1 rounded-md border border-blue-500/30 bg-blue-500/5 px-1.5 py-0.5 text-[8px] font-semibold text-blue-600">
+                        <Globe className="w-2.5 h-2.5" /> International
+                      </span>
+                      {log.channel?.includes("WhatsApp") && (
+                        <Badge variant="outline" className={`text-[8px] px-1 py-0 ${log.status === "Sent" ? "text-emerald-600 border-emerald-500/30" : "text-red-600 border-red-500/30"}`}>
+                          {log.status === "Sent" ? (log.delivery_detail ? `Meta: ${log.delivery_detail}` : "Accepted") : (log.delivery_detail || "Failed")}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

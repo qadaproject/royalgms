@@ -22,12 +22,26 @@ Deno.serve(async (req) => {
     const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(accessToken));
     const appsecretProof = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("");
 
-    // Format phone: ensure it starts with country code, no +
+    // Format phone: handle Nigerian and international numbers correctly
     let recipient = phone.toString().replace(/\D/g, "");
+    let isInternational = false;
+
+    // Strip international dialing prefix "00"
+    if (recipient.startsWith("00")) {
+      recipient = recipient.slice(2);
+    }
+
     if (recipient.startsWith("0")) {
+      // Nigerian local number with leading 0 (e.g. 08012345678)
       recipient = "234" + recipient.slice(1);
-    } else if (!recipient.startsWith("234")) {
+    } else if (recipient.startsWith("234")) {
+      // Nigerian number already has country code — keep as-is
+    } else if (recipient.length === 10 && /^[789]/.test(recipient)) {
+      // Nigerian mobile without leading 0 (e.g. 8012345678)
       recipient = "234" + recipient;
+    } else {
+      // International number with its own country code (e.g. 447911..., 1415555..., 97150...)
+      isInternational = true;
     }
 
     const payload = {
@@ -91,7 +105,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: result.error?.message || "Meta WhatsApp API error", details: result }, { status: 500 });
     }
 
-    return Response.json({ success: true, result });
+    const messageStatus = result.messages?.[0]?.message_status || "unknown";
+    return Response.json({ success: true, result, is_international: isInternational, recipient, message_status: messageStatus });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

@@ -37,6 +37,15 @@
     },
     "rsvp_token": {
       "type": "string"
+    },
+    "is_international": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if the guest's phone number is a foreign (non-Nigerian) number"
+    },
+    "delivery_detail": {
+      "type": "string",
+      "description": "WhatsApp Meta message_status (e.g. accepted, sent, delivered, read) or error detail for international deliveries"
     }
   },
   "required": [
