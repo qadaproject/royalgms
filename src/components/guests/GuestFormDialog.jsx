@@ -28,6 +28,7 @@ const emptyGuest = {
   contact_person_name: "",
   contact_person_phone: "",
   contact_person_email: "",
+  honour_status: "",
   rsvp_status: "Pending",
   dietary_requirements: "",
   medical_alerts: "",
@@ -133,6 +134,18 @@ export default function GuestFormDialog({ open, onOpenChange, guest, onSave }) {
             <div>
               <Label className="text-xs">Official Title</Label>
               <Input value={form.official_title} onChange={(e) => update("official_title", e.target.value)} placeholder="e.g. Governor of Delta State" />
+            </div>
+            <div>
+              <Label className="text-xs">Honour Status</Label>
+              <Select value={form.honour_status || "none"} onValueChange={(v) => update("honour_status", v === "none" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="Guest of Honour">Guest of Honour</SelectItem>
+                  <SelectItem value="Special Guest of Honour">Special Guest of Honour</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-muted-foreground mt-1">Displayed on the invitation card for Special Guest of Honour</p>
             </div>
             <div>
               <Label className="text-xs">Post-Nominals</Label>

@@ -39,7 +39,12 @@ export default function InvitationCard({ guest, settings }) {
           {guestName}
         </p>
         {guest.official_title && (
-          <p className="text-[#c9a84c]/80 text-sm italic mb-4">{guest.official_title}</p>
+          <p className="text-[#c9a84c]/80 text-sm italic mb-1">{guest.official_title}</p>
+        )}
+        {guest.honour_status === "Special Guest of Honour" && (
+          <p className="text-[#f5ede0] text-sm mb-4">
+            <span className="italic">as</span> <span className="font-semibold">Special Guest of Honour</span>
+          </p>
         )}
 
         {/* Divider */}

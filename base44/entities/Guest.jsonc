@@ -14,6 +14,14 @@
       "type": "string",
       "description": "e.g. Governor of Delta State, CEO of Shell Nigeria"
     },
+    "honour_status": {
+      "type": "string",
+      "enum": [
+        "Guest of Honour",
+        "Special Guest of Honour"
+      ],
+      "description": "Honour status displayed on the invitation card. Shown as 'as Special Guest of Honour' for Special Guest of Honour. Blank for none."
+    },
     "post_nominals": {
       "type": "string",
       "description": "e.g. CFR, OFR, GCON, MFR, PhD"

@@ -72,6 +72,7 @@ export function buildPrintHTML(guest, settings) {
       <div class="section" style="margin-bottom:4px;">
         <p style="font-size:24px;font-weight:700;color:#f5ede0;line-height:1.25;font-family:'Cormorant Garamond',serif;">${guestName}</p>
         ${guest.official_title ? `<p style="color:rgba(201,168,76,0.8);font-size:14px;margin-top:4px;font-style:italic;">${guest.official_title}</p>` : ""}
+        ${guest.honour_status === "Special Guest of Honour" ? `<p style="color:#f5ede0;font-size:14px;margin-top:4px;"><span style="font-style:italic;">as</span> <span style="font-weight:600;">Special Guest of Honour</span></p>` : ""}
       </div>
 
       <div class="divider">
