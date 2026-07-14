@@ -138,27 +138,9 @@ export default function GuestImportDialog({ open, onOpenChange, onImport, existi
         if (errs.length) rowErrors[i] = errs;
       });
 
-      // Detect duplicates by email or phone
-      const existingEmails = new Map();
-      const existingPhones = new Map();
-      existingGuests.forEach((g) => {
-        if (g.email?.trim()) existingEmails.set(g.email.toLowerCase().trim(), g.full_name);
-        if (g.phone?.trim()) existingPhones.set(g.phone.replace(/\s+/g, "").trim(), g.full_name);
-      });
-
+      // Duplicate check disabled — all valid rows import regardless of existing guests
       const dupSet = new Set();
       const dupDetails = [];
-      parsed.forEach((row, i) => {
-        const email = row.email?.toLowerCase().trim();
-        const phone = row.phone?.replace(/\s+/g, "").trim();
-        if (email && existingEmails.has(email)) {
-          dupSet.add(i);
-          dupDetails.push({ rowIndex: i, importedName: row.full_name, matchedName: existingEmails.get(email), matchField: "Email", matchValue: row.email });
-        } else if (phone && existingPhones.has(phone)) {
-          dupSet.add(i);
-          dupDetails.push({ rowIndex: i, importedName: row.full_name, matchedName: existingPhones.get(phone), matchField: "Phone", matchValue: row.phone });
-        }
-      });
 
       setRows(parsed);
       setErrors(rowErrors);
