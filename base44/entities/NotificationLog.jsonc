@@ -45,7 +45,11 @@
     },
     "delivery_detail": {
       "type": "string",
-      "description": "WhatsApp Meta message_status (e.g. accepted, sent, delivered, read) or error detail for international deliveries"
+      "description": "WhatsApp Meta message_status (accepted, sent, delivered, read, failed) updated in real time via webhook"
+    },
+    "wa_message_id": {
+      "type": "string",
+      "description": "Meta WhatsApp message ID (wamid) used to match incoming webhook delivery status updates to this log entry"
     }
   },
   "required": [

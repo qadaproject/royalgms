@@ -257,6 +257,7 @@ export default function Notifications() {
 
     let success = true;
     let waDeliveryDetail = "";
+    let waMessageId = "";
 
     if (ch === "Email" || ch === "Email + SMS" || ch === "Email + WhatsApp") {
       const htmlBody = buildHtmlEmail(guest, emailBody, eventSettings);
@@ -314,6 +315,7 @@ export default function Notifications() {
             waDeliveryDetail = res.data.error;
           } else {
             waDeliveryDetail = res?.data?.message_status || "";
+            waMessageId = res?.data?.result?.messages?.[0]?.id || "";
           }
         } catch (e) {
           success = false;
@@ -336,6 +338,7 @@ export default function Notifications() {
       rsvp_token: guest.qr_code,
       is_international: !!rawPhoneForLog && !isNigerianPhone(rawPhoneForLog),
       delivery_detail: waDeliveryDetail || "",
+      wa_message_id: waMessageId || "",
     });
 
     base44.entities.GuestActivityLog.create({
@@ -572,11 +575,14 @@ export default function Notifications() {
                       <span className="inline-flex items-center gap-1 rounded-md border border-blue-500/30 bg-blue-500/5 px-1.5 py-0.5 text-[8px] font-semibold text-blue-600">
                         <Globe className="w-2.5 h-2.5" /> International
                       </span>
-                      {log.channel?.includes("WhatsApp") && (
-                        <Badge variant="outline" className={`text-[8px] px-1 py-0 ${log.status === "Sent" ? "text-emerald-600 border-emerald-500/30" : "text-red-600 border-red-500/30"}`}>
-                          {log.status === "Sent" ? (log.delivery_detail ? `Meta: ${log.delivery_detail}` : "Accepted") : (log.delivery_detail || "Failed")}
-                        </Badge>
-                      )}
+                      {log.channel?.includes("WhatsApp") && (() => {
+                        const detail = (log.delivery_detail || "").toLowerCase();
+                        const isDelivered = detail.includes("delivered") || detail.includes("read");
+                        const isFailed = detail.includes("failed") || log.status === "Failed";
+                        const colorClass = isDelivered ? "text-emerald-600 border-emerald-500/30 bg-emerald-500/5" : isFailed ? "text-red-600 border-red-500/30" : "text-amber-600 border-amber-500/30 bg-amber-500/5";
+                        const label = log.status === "Sent" ? (log.delivery_detail ? `Meta: ${log.delivery_detail}` : "Accepted") : (log.delivery_detail || "Failed");
+                        return <Badge variant="outline" className={`text-[8px] px-1 py-0 ${colorClass}`}>{label}</Badge>;
+                      })()}
                     </div>
                   )}
                 </div>
