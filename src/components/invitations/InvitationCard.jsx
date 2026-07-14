@@ -83,16 +83,10 @@ export default function InvitationCard({ guest, settings }) {
               <span className="text-[#f5ede0] text-sm">{row.value}</span>
             </div>
           ))}
-          {/* Category + Seating divider row */}
-          <div className="border-t border-[#c9a84c]/20 grid grid-cols-2">
-            <div className="px-5 py-3 border-r border-[#c9a84c]/10">
-              <p className="text-[#c9a84c] text-[9px] font-bold uppercase tracking-[0.2em] mb-1">Category</p>
-              <p className="text-[#f5ede0] text-sm">{guest.category || "—"}</p>
-            </div>
-            <div className="px-5 py-3">
-              <p className="text-[#c9a84c] text-[9px] font-bold uppercase tracking-[0.2em] mb-1">Seating Zone</p>
-              <p className="text-[#f5ede0] text-sm">{guest.seating_zone || "To be assigned"}</p>
-            </div>
+          {/* Seating Zone row */}
+          <div className="border-t border-[#c9a84c]/20 px-5 py-3">
+            <p className="text-[#c9a84c] text-[9px] font-bold uppercase tracking-[0.2em] mb-1">Seating Zone</p>
+            <p className="text-[#f5ede0] text-sm">{guest.seating_zone || "To be assigned"}</p>
           </div>
         </div>
 

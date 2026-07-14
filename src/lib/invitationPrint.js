@@ -44,9 +44,7 @@ export function buildPrintHTML(guest, settings) {
       .detail-key { color: #c9a84c; font-size: 10px; font-weight: 700; letter-spacing: 0.2em;
                     text-transform: uppercase; font-family: 'Inter', sans-serif; min-width: 48px; }
       .detail-val { color: #f5ede0; font-size: 14px; }
-      .zone-grid { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid rgba(201,168,76,0.2); }
-      .zone-cell { padding: 12px 20px; }
-      .zone-cell-left { border-right: 1px solid rgba(201,168,76,0.1); }
+      .zone-row { border-top: 1px solid rgba(201,168,76,0.2); padding: 12px 20px; }
       .zone-label { color: #c9a84c; font-size: 9px; font-weight: 700; letter-spacing: 0.2em;
                     text-transform: uppercase; font-family: 'Inter', sans-serif; margin-bottom: 4px; }
       .zone-val { color: #f5ede0; font-size: 14px; }
@@ -97,15 +95,9 @@ export function buildPrintHTML(guest, settings) {
         <div class="detail-row detail-row-sep"><span class="detail-key">DATE</span><span class="detail-val">${formatEventDate(settings?.event_date)}</span></div>
         <div class="detail-row detail-row-sep"><span class="detail-key">VENUE</span><span class="detail-val">${venue}</span></div>
         <div class="detail-row"><span class="detail-key">TIME</span><span class="detail-val">${settings?.event_time || "TBC"}</span></div>
-        <div class="zone-grid">
-          <div class="zone-cell zone-cell-left">
-            <p class="zone-label">Category</p>
-            <p class="zone-val">${guest.category || "—"}</p>
-          </div>
-          <div class="zone-cell">
-            <p class="zone-label">Seating Zone</p>
-            <p class="zone-val">${guest.seating_zone || "To be assigned"}</p>
-          </div>
+        <div class="zone-row">
+          <p class="zone-label">Seating Zone</p>
+          <p class="zone-val">${guest.seating_zone || "To be assigned"}</p>
         </div>
       </div>
 
