@@ -16,7 +16,7 @@ export default function IVGenerator() {
 
   useEffect(() => {
     Promise.all([
-      base44.entities.Guest.list("-created_date", 500),
+      base44.entities.Guest.list("-created_date", 10000),
       base44.entities.EventSettings.list("-created_date", 1),
     ]).then(([guests, settingsList]) => {
       setAllGuests(guests || []);

@@ -199,7 +199,7 @@ export default function Notifications() {
   const sentGuestIds = new Set(logs.map((l) => l.guest_id));
 
   const filteredGuests = useMemo(() => {
-    let list = guests.filter((g) => g.qr_code);
+    let list = guests;
     if (rsvpFilter !== "All") list = list.filter((g) => g.rsvp_status === rsvpFilter);
     if (tierFilter !== "All Tiers") list = list.filter((g) => (g.tier || getTierForCategory(g.category)) === tierFilter);
     if (search.trim()) {
@@ -471,6 +471,9 @@ export default function Notifications() {
                         <span className={`text-[10px] truncate ${!hasPhone ? "text-amber-600 font-medium" : "text-muted-foreground"}`}>
                           · {hasPhone ? (g.phone || g.contact_person_phone) : "No phone"}
                         </span>
+                        {!g.qr_code && (
+                          <span className="text-[10px] font-medium text-red-600">· No QR token — re-save guest</span>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
