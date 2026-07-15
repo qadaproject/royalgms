@@ -16,6 +16,7 @@ const EVENT_LABELS = {
   notification_sent: "Notification Sent",
   zone_assigned: "Zone Assigned",
   protocol_validated: "Protocol Validated",
+  link_accessed: "Link Accessed",
 };
 
 const EVENT_COLORS = {
@@ -25,6 +26,7 @@ const EVENT_COLORS = {
   delivery_status_changed: "text-purple-600 border-purple-500/30 bg-purple-500/5",
   zone_assigned: "text-cyan-600 border-cyan-500/30 bg-cyan-500/5",
   protocol_validated: "text-pink-600 border-pink-500/30 bg-pink-500/5",
+  link_accessed: "text-indigo-600 border-indigo-500/30 bg-indigo-500/5",
 };
 
 export default function GuestUpdateLog() {
@@ -130,6 +132,11 @@ export default function GuestUpdateLog() {
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground leading-relaxed">{log.description}</p>
+                      {log.source && (
+                        <span className="inline-block mt-1 text-[10px] text-indigo-600 bg-indigo-500/5 border border-indigo-500/20 rounded px-1.5 py-0.5 font-medium">
+                          Source: {log.source}{log.page ? ` · ${log.page}` : ""}
+                        </span>
+                      )}
                       {(log.old_value || log.new_value) && (
                         <div className="mt-2 flex gap-3 flex-wrap text-xs">
                           {log.old_value && (

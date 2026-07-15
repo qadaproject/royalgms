@@ -3,15 +3,17 @@ import { base44 } from "@/api/base44Client";
 import { Loader2, AlertTriangle, Printer } from "lucide-react";
 import RoyalCrest from "../components/layout/RoyalCrest";
 import InvitationCard from "@/components/invitations/InvitationCard";
+import { logLinkAccess, parseRefAndSource } from "@/lib/logLinkAccess";
 
 export default function InviteDetail() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const token = urlParams.get("ref") || urlParams.get("token");
+  const { ref, source } = parseRefAndSource();
+  const token = ref;
 
   const [guest, setGuest] = useState(null);
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [logged, setLogged] = useState(false);
 
   useEffect(() => {
     if (!token) { setNotFound(true); setLoading(false); return; }
@@ -20,8 +22,13 @@ export default function InviteDetail() {
       base44.entities.EventSettings.list("-created_date", 1),
     ]).then(([guests, settingsList]) => {
       if (guests && guests.length > 0) {
-        setGuest(guests[0]);
+        const g = guests[0];
+        setGuest(g);
         setSettings(settingsList[0] || null);
+        if (!logged) {
+          setLogged(true);
+          logLinkAccess(g, "Invitation", source);
+        }
       } else {
         setNotFound(true);
       }
@@ -44,7 +51,7 @@ export default function InviteDetail() {
   );
 
   const handlePrint = () => window.print();
-  const itineraryUrl = `/itinerary?ref=${guest?.qr_code}`;
+  const itineraryUrl = `/itinerary?ref=${guest?.qr_code}${source && source !== "Direct" ? `&source=${source}` : ""}`;
 
   const guestName = [guest.formal_salutation, guest.full_name, guest.post_nominals ? `, ${guest.post_nominals}` : ""].filter(Boolean).join(" ");
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Loader2, CheckCircle2, Lock, Edit3, Menu, X } from "lucide-react";
+import { logLinkAccess, parseRefAndSource } from "@/lib/logLinkAccess";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -27,8 +28,7 @@ const FIELD_LABELS = {
 
 export default function ItineraryPage() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const urlParams = new URLSearchParams(window.location.search);
-  const refToken = urlParams.get("ref") || urlParams.get("token") || "";
+  const { ref: refToken, source } = parseRefAndSource();
 
   const [tokenInput, setTokenInput] = useState(refToken);
   const [guest, setGuest] = useState(null);
@@ -39,6 +39,7 @@ export default function ItineraryPage() {
   const [corrections, setCorrections] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [accessLogged, setAccessLogged] = useState(false);
 
   const lookupGuest = async (t) => {
     const tok = t.trim().toUpperCase();
@@ -54,6 +55,10 @@ export default function ItineraryPage() {
         const g = results[0];
         setGuest(g);
         setSettings(settingsList[0] || null);
+        if (!accessLogged) {
+          setAccessLogged(true);
+          logLinkAccess(g, "Itinerary", source);
+        }
         const f = {};
         Object.keys(FIELD_LABELS).forEach((k) => { f[k] = g[k] || ""; });
         f.rsvp_status = g.rsvp_status || "Pending";

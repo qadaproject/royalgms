@@ -18,7 +18,8 @@
         "rsvp_status_changed",
         "notification_sent",
         "zone_assigned",
-        "protocol_validated"
+        "protocol_validated",
+        "link_accessed"
       ],
       "description": "Type of event logged"
     },
@@ -37,6 +38,14 @@
     "performed_by": {
       "type": "string",
       "description": "User who performed the action"
+    },
+    "source": {
+      "type": "string",
+      "description": "Origin/channel of a link access e.g. Email, SMS, WhatsApp, Direct"
+    },
+    "page": {
+      "type": "string",
+      "description": "Page accessed e.g. Invitation, Itinerary"
     }
   },
   "required": [

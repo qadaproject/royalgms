@@ -16,13 +16,14 @@ import { format } from "date-fns";
 
 const APP_URL = window.location.origin;
 
-function buildInviteLink(guest) {
-  return `${APP_URL}/invite-detail?ref=${guest.qr_code}`;
+function buildInviteLink(guest, source) {
+  const base = `${APP_URL}/invite-detail?ref=${guest.qr_code}`;
+  return source ? `${base}&source=${source}` : base;
 }
 
-function applyTemplate(template, guest) {
+function applyTemplate(template, guest, source) {
   const name = `${guest.formal_salutation || ""} ${guest.full_name}`.trim();
-  const link = buildInviteLink(guest);
+  const link = buildInviteLink(guest, source);
   return (template || "")
     .replace(/\{\{name\}\}/g, name)
     .replace(/\{\{link\}\}/g, link);
@@ -49,9 +50,9 @@ function isNigerianPhone(phone) {
   return false;
 }
 
-function buildHtmlEmail(guest, bodyText, eventSettings) {
+function buildHtmlEmail(guest, bodyText, eventSettings, source) {
   const name = `${guest.formal_salutation || ""} ${guest.full_name}`.trim();
-  const link = buildInviteLink(guest);
+  const link = buildInviteLink(guest, source);
   const eventName = eventSettings.event_name || "5th Coronation Anniversary of Ògíame Atúwàtse III, CFR";
   const eventDate = eventSettings.event_date ? new Date(eventSettings.event_date).toLocaleDateString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "";
   const venue = eventSettings.venue_name || "";
@@ -252,15 +253,15 @@ export default function Notifications() {
     const emailTemplate = eventSettings.email_template || DEFAULT_EMAIL_TEMPLATE;
     const smsTemplate = eventSettings.sms_template || DEFAULT_SMS_TEMPLATE;
     const emailSubject = eventSettings.email_subject || DEFAULT_EMAIL_SUBJECT;
-    const emailBody = applyTemplate(emailTemplate, guest);
-    const smsBody = applyTemplate(smsTemplate, guest);
+    const emailBody = applyTemplate(emailTemplate, guest, "email");
+    const smsBody = applyTemplate(smsTemplate, guest, "sms");
 
     let success = true;
     let waDeliveryDetail = "";
     let waMessageId = "";
 
     if (ch === "Email" || ch === "Email + SMS" || ch === "Email + WhatsApp") {
-      const htmlBody = buildHtmlEmail(guest, emailBody, eventSettings);
+      const htmlBody = buildHtmlEmail(guest, emailBody, eventSettings, "email");
       const emailRecipients = [guest.email, guest.contact_person_email].filter(Boolean);
       const uniqueRecipients = [...new Set(emailRecipients)];
       if (uniqueRecipients.length > 0) {

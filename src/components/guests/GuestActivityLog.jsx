@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import {
-  Send, Truck, CheckCircle2, Bell, MapPin, ShieldCheck, Clock, Mail, MessageSquare
+  Send, Truck, CheckCircle2, Bell, MapPin, ShieldCheck, Clock, Mail, MessageSquare, Globe
 } from "lucide-react";
 
 const EVENT_ICONS = {
@@ -14,6 +14,7 @@ const EVENT_ICONS = {
   protocol_validated: { icon: ShieldCheck, color: "text-accent", bg: "bg-accent/10" },
   notification_email: { icon: Mail, color: "text-indigo-600", bg: "bg-indigo-500/10" },
   notification_sms: { icon: MessageSquare, color: "text-teal-600", bg: "bg-teal-500/10" },
+  link_accessed: { icon: Globe, color: "text-indigo-600", bg: "bg-indigo-500/10" },
 };
 
 export default function GuestActivityLog({ guestId }) {
