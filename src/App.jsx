@@ -45,6 +45,7 @@ import VendorLoginPage from './pages/VendorLoginPage';
 import VerifyMarketplaceUser from './pages/VerifyMarketplaceUser';
 import MarketplaceUserDashboard from './pages/MarketplaceUserDashboard';
 import VendorByUsername from './pages/VendorByUsername';
+import AdminProtectedRoute from './components/AdminProtectedRoute';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -92,22 +93,24 @@ const AuthenticatedApp = () => {
       <Route path="/directory" element={<DirectoryPage />} />
       <Route path="/directory/listing" element={<DirectoryListingDetail />} />
       <Route path="/itsekiris" element={<ItsekirisPage />} />
-      <Route element={<AppLayout />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/guests" element={<Guests />} />
-        <Route path="/invitations" element={<Invitations />} />
-        <Route path="/invitation-manager" element={<InvitationManager />} />
-        <Route path="/iv-generator" element={<IVGenerator />} />
-        <Route path="/seating" element={<Seating />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/settings" element={<EventSettings />} />
-        <Route path="/guest-update-log" element={<GuestUpdateLog />} />
-        <Route path="/event-history" element={<EventHistoryPage />} />
-        <Route path="/admin/marketplace" element={<AdminMarketplace />} />
-        <Route path="/admin/directory" element={<AdminDirectory />} />
-        <Route path="/admin/itsekiris" element={<AdminItsekiris />} />
-        <Route path="/admin/users" element={<AdminUserManagement />} />
+      <Route element={<AdminProtectedRoute />}>
+        <Route element={<AppLayout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/guests" element={<Guests />} />
+          <Route path="/invitations" element={<Invitations />} />
+          <Route path="/invitation-manager" element={<InvitationManager />} />
+          <Route path="/iv-generator" element={<IVGenerator />} />
+          <Route path="/seating" element={<Seating />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/settings" element={<EventSettings />} />
+          <Route path="/guest-update-log" element={<GuestUpdateLog />} />
+          <Route path="/event-history" element={<EventHistoryPage />} />
+          <Route path="/admin/marketplace" element={<AdminMarketplace />} />
+          <Route path="/admin/directory" element={<AdminDirectory />} />
+          <Route path="/admin/itsekiris" element={<AdminItsekiris />} />
+          <Route path="/admin/users" element={<AdminUserManagement />} />
+        </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
