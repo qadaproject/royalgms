@@ -17,6 +17,7 @@ import ArrivalTracker from "../components/dashboard/ArrivalTracker";
 import EventCountdown from "../components/dashboard/EventCountdown";
 import CategoryRSVPWidget from "../components/dashboard/CategoryRSVPWidget";
 import SecurityActivityFeed from "../components/dashboard/SecurityActivityFeed";
+import NotificationMetrics from "../components/dashboard/NotificationMetrics";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -93,6 +94,11 @@ export default function Dashboard() {
         <StatCard label="Pending" value={pending} icon={Clock} />
         <StatCard label="Declined" value={declined} icon={AlertTriangle} />
         <StatCard label="Delivered" value={delivered} icon={Send} trend={`of ${invitations.length} dispatched`} />
+      </div>
+
+      {/* Notifications Metric */}
+      <div className="grid grid-cols-1 gap-6 mb-6">
+        <NotificationMetrics totalGuests={guests.length} />
       </div>
 
       {/* Charts Row */}
