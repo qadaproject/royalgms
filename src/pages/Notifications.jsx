@@ -303,7 +303,7 @@ export default function Notifications() {
     if (ch === "WhatsApp" || ch === "Email + WhatsApp") {
       const rawPhone = guest.phone || guest.contact_person_phone;
       const phone = formatPhone(rawPhone);
-      const guestName = `${guest.formal_salutation || ""} ${guest.full_name}`.trim();
+      const guestName = [guest.formal_salutation, guest.full_name, guest.official_title].filter(Boolean).join(", ");
       if (phone) {
         try {
           const res = await base44.functions.invoke("sendWhatsApp", {
