@@ -14,6 +14,8 @@ import SeatingWaitlist from "../components/seating/SeatingWaitlist";
 import SeatingPDFExport from "../components/seating/SeatingPDFExport";
 import ZoneOccupancySummary from "../components/seating/ZoneOccupancySummary";
 import SeatDragBoard from "../components/seating/SeatDragBoard";
+import SeatingChangeHistory from "../components/seating/SeatingChangeHistory";
+import { logSeatingChange } from "@/lib/logSeatingChange";
 
 export default function Seating() {
   const [zoneDialogOpen, setZoneDialogOpen] = useState(false);
@@ -58,9 +60,16 @@ export default function Seating() {
   });
 
   const assignGuestMutation = useMutation({
-    mutationFn: ({ guestId, zoneName }) => base44.entities.Guest.update(guestId, { seating_zone: zoneName }),
+    mutationFn: async ({ guestId, zoneName }) => {
+      const guest = guests.find((g) => g.id === guestId);
+      const oldZone = guest?.seating_zone;
+      const oldSeat = guest?.seat_number;
+      await base44.entities.Guest.update(guestId, { seating_zone: zoneName });
+      if (guest) await logSeatingChange({ guest, oldZone, newZone: zoneName, oldSeat, newSeat: oldSeat });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["guests"] });
+      queryClient.invalidateQueries({ queryKey: ["seatingHistory"] });
       toast.success("Guest assigned to zone");
     },
   });
@@ -146,6 +155,10 @@ export default function Seating() {
           <SeatingWaitlist guests={guests} zones={zones} />
         </>
       )}
+
+      <div className="mt-6">
+        <SeatingChangeHistory />
+      </div>
 
       <ZoneFormDialog
         open={zoneDialogOpen}

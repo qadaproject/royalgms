@@ -9,6 +9,7 @@ import CategoryBadge from "../shared/CategoryBadge";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { logSeatingChange } from "@/lib/logSeatingChange";
 
 // Build table groups: each zone has numbered tables (capacity / TABLE_SIZE seats each)
 const TABLE_SIZE = 8;
@@ -58,9 +59,16 @@ export default function SeatDragBoard({ zones, guests, onUpdate }) {
 
     const guestId = draggableId;
     const destParts = destination.droppableId.split("::");
+    const guest = guests.find((g) => g.id === guestId);
+    const oldZone = guest?.seating_zone;
+    const oldSeat = guest?.seat_number;
+    let newZone = oldZone;
+    let newSeat = oldSeat;
 
     if (destination.droppableId === "unassigned") {
       // Remove zone + seat
+      newZone = "";
+      newSeat = "";
       await base44.entities.Guest.update(guestId, { seating_zone: "", seat_number: "" });
     } else if (destParts.length === 2) {
       // zone.id::table-N
@@ -70,13 +78,17 @@ export default function SeatDragBoard({ zones, guests, onUpdate }) {
       const targetZone = zones.find((z) => z.id === zoneId);
       if (!targetZone) return;
 
+      newZone = targetZone.name;
+      newSeat = `Table${tableNum}-Seat${destination.index + 1}`;
       await base44.entities.Guest.update(guestId, {
         seating_zone: targetZone.name,
-        seat_number: `Table${tableNum}-Seat${destination.index + 1}`,
+        seat_number: newSeat,
       });
     }
 
+    if (guest) await logSeatingChange({ guest, oldZone, newZone, oldSeat, newSeat });
     queryClient.invalidateQueries({ queryKey: ["guests"] });
+    queryClient.invalidateQueries({ queryKey: ["seatingHistory"] });
     toast.success("Seating updated");
     if (onUpdate) onUpdate();
   };
