@@ -38,12 +38,23 @@ export default function SeatDragBoard({ zones, guests, onUpdate }) {
   const [search, setSearch] = useState("");
   const queryClient = useQueryClient();
 
-  // Unassigned accepted guests
-  const unassigned = guests.filter(
+  // Truly unassigned accepted guests (shown when not searching)
+  const trueUnassigned = guests.filter(
     (g) => g.rsvp_status === "Accepted" && !g.seating_zone && !g.seat_number
-  ).filter((g) =>
-    !search || g.full_name?.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Registry-wide search: surface any guest so they can be dragged to a table
+  const registryMatches = search
+    ? guests.filter(
+        (g) =>
+          g.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+          g.official_title?.toLowerCase().includes(search.toLowerCase()) ||
+          g.formal_salutation?.toLowerCase().includes(search.toLowerCase())
+      )
+    : [];
+
+  // What gets rendered in the unassigned pool
+  const poolGuests = search ? registryMatches : trueUnassigned;
 
   // Build zone/table structure
   const zoneBoards = zones.map((zone) => {
@@ -57,7 +68,7 @@ export default function SeatDragBoard({ zones, guests, onUpdate }) {
     const { source, destination, draggableId } = result;
     if (!destination || source.droppableId === destination.droppableId) return;
 
-    const guestId = draggableId;
+    const guestId = draggableId.replace(/^pool-/, "");
     const destParts = destination.droppableId.split("::");
     const guest = guests.find((g) => g.id === guestId);
     const oldZone = guest?.seating_zone;
@@ -102,14 +113,14 @@ export default function SeatDragBoard({ zones, guests, onUpdate }) {
             <CardTitle className="font-heading text-base flex items-center gap-2">
               <Users className="w-4 h-4 text-muted-foreground" />
               Unassigned Guests
-              <Badge variant="secondary" className="ml-auto">{unassigned.length}</Badge>
+              <Badge variant="secondary" className="ml-auto">{trueUnassigned.length}</Badge>
             </CardTitle>
             <div className="relative mt-2">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Filter guests..."
+                placeholder="Search entire registry..."
                 className="pl-8 h-8 text-xs"
               />
             </div>
@@ -122,11 +133,14 @@ export default function SeatDragBoard({ zones, guests, onUpdate }) {
                   {...provided.droppableProps}
                   className={`flex flex-wrap gap-2 min-h-[60px] p-2 rounded-lg transition-colors ${snapshot.isDraggingOver ? "bg-accent/10 border border-accent/30" : "bg-muted/30"}`}
                 >
-                  {unassigned.length === 0 && !snapshot.isDraggingOver && (
+                  {!search && trueUnassigned.length === 0 && !snapshot.isDraggingOver && (
                     <p className="text-xs text-muted-foreground m-auto">All accepted guests are assigned</p>
                   )}
-                  {unassigned.map((g, i) => (
-                    <Draggable key={g.id} draggableId={g.id} index={i}>
+                  {search && poolGuests.length === 0 && !snapshot.isDraggingOver && (
+                    <p className="text-xs text-muted-foreground m-auto">No guests found in registry</p>
+                  )}
+                  {poolGuests.map((g, i) => (
+                    <Draggable key={`pool-${g.id}`} draggableId={`pool-${g.id}`} index={i}>
                       {(drag, dragSnap) => (
                         <div
                           ref={drag.innerRef}
