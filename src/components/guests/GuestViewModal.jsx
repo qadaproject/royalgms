@@ -1,8 +1,10 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, ShieldAlert, QrCode, Phone, Mail, User, MapPin, Utensils, AlertCircle, FileText, FileImage } from "lucide-react";
+import { ShieldCheck, ShieldAlert, QrCode, Phone, Mail, User, MapPin, Utensils, AlertCircle, FileText, FileImage, History } from "lucide-react";
 import CategoryBadge from "../shared/CategoryBadge";
 import StatusBadge from "../shared/StatusBadge";
+import GuestActivityLog from "./GuestActivityLog";
 import { getTierForCategory, TIER_STYLES } from "@/lib/guestTiers";
 
 function Field({ label, value, icon: Icon }) {
@@ -72,62 +74,76 @@ export default function GuestViewModal({ guest, open, onOpenChange }) {
           </div>
         </div>
 
-        <div className="space-y-6 mt-2">
-          <Section title="Contact Information">
-            <Field label="Email" value={guest.email} icon={Mail} />
-            <Field label="Phone" value={guest.phone} icon={Phone} />
-          </Section>
+        <Tabs defaultValue="profile" className="mt-2">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="activity">
+              <History className="w-3.5 h-3.5 mr-1.5" />
+              Activity Log
+            </TabsTrigger>
+          </TabsList>
 
-          <Section title="Liaison / PA">
-            <Field label="Contact Person" value={guest.contact_person_name} icon={User} />
-            <Field label="PA Phone" value={guest.contact_person_phone} icon={Phone} />
-            <Field label="PA Email" value={guest.contact_person_email} icon={Mail} />
-          </Section>
-
-          <Section title="Seating & Logistics">
-            <Field label="Seating Zone" value={guest.seating_zone} icon={MapPin} />
-            <Field label="Seat Number" value={guest.seat_number} icon={MapPin} />
-            <Field label="Arrival Details" value={guest.arrival_details} />
-            <Field label="Security Detail Size" value={guest.security_detail_size > 0 ? `${guest.security_detail_size} orderlies` : null} />
-          </Section>
-
-          <Section title="Special Requirements">
-            <Field label="Dietary Requirements" value={guest.dietary_requirements} icon={Utensils} />
-            <Field label="Medical Alerts" value={guest.medical_alerts} icon={AlertCircle} />
-            <Field label="Special Requirements" value={guest.special_requirements} />
-          </Section>
-
-          {(guest.notes || guest.qr_code) && (
-            <Section title="Internal">
-              <Field label="Notes" value={guest.notes} icon={FileText} />
-              <Field label="QR / Admission Token" value={guest.qr_code} icon={QrCode} />
+          <TabsContent value="profile" className="space-y-6 mt-4">
+            <Section title="Contact Information">
+              <Field label="Email" value={guest.email} icon={Mail} />
+              <Field label="Phone" value={guest.phone} icon={Phone} />
             </Section>
-          )}
 
-          {(guest.gallery_urls || []).length > 0 && (
-            <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold text-accent mb-3 border-b border-border pb-1">Files & Photos</p>
-              <div className="grid grid-cols-3 gap-3">
-                {guest.gallery_urls.map((url, idx) => {
-                  const isPdf = url.includes(".pdf") || url.includes("pdf");
-                  return (
-                    <a key={idx} href={url} target="_blank" rel="noopener noreferrer"
-                      className="rounded-lg overflow-hidden border border-border bg-muted aspect-square flex items-center justify-center hover:opacity-80 transition-opacity">
-                      {isPdf ? (
-                        <div className="flex flex-col items-center gap-1 p-2 text-center">
-                          <FileImage className="w-8 h-8 text-primary" />
-                          <span className="text-[10px] text-muted-foreground">PDF</span>
-                        </div>
-                      ) : (
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                      )}
-                    </a>
-                  );
-                })}
+            <Section title="Liaison / PA">
+              <Field label="Contact Person" value={guest.contact_person_name} icon={User} />
+              <Field label="PA Phone" value={guest.contact_person_phone} icon={Phone} />
+              <Field label="PA Email" value={guest.contact_person_email} icon={Mail} />
+            </Section>
+
+            <Section title="Seating & Logistics">
+              <Field label="Seating Zone" value={guest.seating_zone} icon={MapPin} />
+              <Field label="Seat Number" value={guest.seat_number} icon={MapPin} />
+              <Field label="Arrival Details" value={guest.arrival_details} />
+              <Field label="Security Detail Size" value={guest.security_detail_size > 0 ? `${guest.security_detail_size} orderlies` : null} />
+            </Section>
+
+            <Section title="Special Requirements">
+              <Field label="Dietary Requirements" value={guest.dietary_requirements} icon={Utensils} />
+              <Field label="Medical Alerts" value={guest.medical_alerts} icon={AlertCircle} />
+              <Field label="Special Requirements" value={guest.special_requirements} />
+            </Section>
+
+            {(guest.notes || guest.qr_code) && (
+              <Section title="Internal">
+                <Field label="Notes" value={guest.notes} icon={FileText} />
+                <Field label="QR / Admission Token" value={guest.qr_code} icon={QrCode} />
+              </Section>
+            )}
+
+            {(guest.gallery_urls || []).length > 0 && (
+              <div>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-accent mb-3 border-b border-border pb-1">Files & Photos</p>
+                <div className="grid grid-cols-3 gap-3">
+                  {guest.gallery_urls.map((url, idx) => {
+                    const isPdf = url.includes(".pdf") || url.includes("pdf");
+                    return (
+                      <a key={idx} href={url} target="_blank" rel="noopener noreferrer"
+                        className="rounded-lg overflow-hidden border border-border bg-muted aspect-square flex items-center justify-center hover:opacity-80 transition-opacity">
+                        {isPdf ? (
+                          <div className="flex flex-col items-center gap-1 p-2 text-center">
+                            <FileImage className="w-8 h-8 text-primary" />
+                            <span className="text-[10px] text-muted-foreground">PDF</span>
+                          </div>
+                        ) : (
+                          <img src={url} alt="" className="w-full h-full object-cover" />
+                        )}
+                      </a>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="activity" className="mt-4">
+            <GuestActivityLog guestId={guest.id} />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

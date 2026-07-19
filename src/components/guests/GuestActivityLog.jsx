@@ -85,10 +85,18 @@ export default function GuestActivityLog({ guestId }) {
                   {log.new_value && <span className="text-[10px] bg-accent/15 text-accent px-1.5 py-0.5 rounded font-medium">{log.new_value}</span>}
                 </div>
               )}
-              <p className="text-[10px] text-muted-foreground mt-1">
-                {log.created_date ? format(new Date(log.created_date), "MMM d, yyyy · h:mm a") : ""}
-                {log.performed_by && ` · ${log.performed_by}`}
-              </p>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1">
+                <p className="text-[10px] text-muted-foreground">
+                  {log.created_date ? format(new Date(log.created_date), "MMM d, yyyy · h:mm a") : ""}
+                </p>
+                {log.source && (
+                  <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">via {log.source}</span>
+                )}
+                {log.page && (
+                  <span className="text-[10px] text-muted-foreground">· {log.page}</span>
+                )}
+                {log.performed_by && <span className="text-[10px] text-muted-foreground">· by {log.performed_by}</span>}
+              </div>
             </div>
           </div>
         );
