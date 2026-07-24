@@ -143,6 +143,7 @@ export default function Notifications() {
   const [search, setSearch] = useState("");
   const [rsvpFilter, setRsvpFilter] = useState("All");
   const [tierFilter, setTierFilter] = useState("All Tiers");
+  const [categoryFilter, setCategoryFilter] = useState("All Categories");
   const [logSearch, setLogSearch] = useState("");
   const [logChannelFilter, setLogChannelFilter] = useState("All");
   const [logStatusFilter, setLogStatusFilter] = useState("All");
@@ -201,6 +202,7 @@ export default function Notifications() {
   const filteredGuests = useMemo(() => {
     let list = guests;
     if (rsvpFilter !== "All") list = list.filter((g) => g.rsvp_status === rsvpFilter);
+    if (categoryFilter !== "All Categories") list = list.filter((g) => g.category === categoryFilter);
     if (tierFilter !== "All Tiers") list = list.filter((g) => (g.tier || getTierForCategory(g.category)) === tierFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -214,7 +216,7 @@ export default function Notifications() {
       );
     }
     return list;
-  }, [guests, search, rsvpFilter]);
+  }, [guests, search, rsvpFilter, categoryFilter, tierFilter]);
 
   const filteredLogs = useMemo(() => {
     return logs.filter((log) => {
@@ -433,6 +435,24 @@ export default function Notifications() {
                 <SelectItem value="Proxy">Proxy</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-40 h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All Categories">All Categories</SelectItem>
+                <SelectItem value="A - Royal">A - Royal</SelectItem>
+                <SelectItem value="B - Federal">B - Federal</SelectItem>
+                <SelectItem value="C - State">C - State</SelectItem>
+                <SelectItem value="D - Corporate">D - Corporate</SelectItem>
+                <SelectItem value="E - Diplomatic">E - Diplomatic</SelectItem>
+                <SelectItem value="F - Traditional">F - Traditional</SelectItem>
+                <SelectItem value="G - General">G - General</SelectItem>
+                <SelectItem value="H - Socials">H - Socials</SelectItem>
+                <SelectItem value="I - Communities">I - Communities</SelectItem>
+                <SelectItem value="J - Chiefs">J - Chiefs</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={tierFilter} onValueChange={setTierFilter}>
               <SelectTrigger className="w-40 h-9">
                 <SelectValue />
@@ -449,7 +469,7 @@ export default function Notifications() {
           {filteredGuests.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-emerald-500" />
-              <p className="font-heading text-lg">{search || rsvpFilter !== "All" ? "No matching guests" : "No guests in registry"}</p>
+              <p className="font-heading text-lg">{search || rsvpFilter !== "All" || categoryFilter !== "All Categories" || tierFilter !== "All Tiers" ? "No matching guests" : "No guests in registry"}</p>
             </div>
           ) : (
             <div className="space-y-2">
