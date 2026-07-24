@@ -1,12 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Loader2, AlertTriangle, Download } from "lucide-react";
-import html2canvas from "html2canvas";
-import { jsPDF } from "jspdf";
-import { toast } from "sonner";
 import RoyalCrest from "../components/layout/RoyalCrest";
 import InvitationCard from "@/components/invitations/InvitationCard";
 import { logLinkAccess, parseRefAndSource } from "@/lib/logLinkAccess";
+import { buildPrintHTML } from "@/lib/invitationPrint";
 
 export default function InviteDetail() {
   const { ref, source } = parseRefAndSource();
@@ -18,7 +16,6 @@ export default function InviteDetail() {
   const [notFound, setNotFound] = useState(false);
   const [logged, setLogged] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  const cardRef = useRef(null);
 
   useEffect(() => {
     if (!token) { setNotFound(true); setLoading(false); return; }
@@ -57,42 +54,17 @@ export default function InviteDetail() {
 
   const itineraryUrl = `/itinerary?ref=${guest?.qr_code}${source && source !== "Direct" ? `&source=${source}` : ""}`;
 
-  const handleDownload = async () => {
-    if (!cardRef.current || downloading) return;
+  const handleDownload = () => {
+    if (!guest || downloading) return;
     setDownloading(true);
-    try {
-      const canvas = await html2canvas(cardRef.current, {
-        useCORS: true,
-        allowTaint: false,
-        scale: 2,
-        backgroundColor: "#3d0a06",
-      });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgRatio = canvas.height / canvas.width;
-      let renderWidth = pageWidth - 20;
-      let renderHeight = renderWidth * imgRatio;
-      if (renderHeight > pageHeight - 20) {
-        renderHeight = pageHeight - 20;
-        renderWidth = renderHeight / imgRatio;
-      }
-      const x = (pageWidth - renderWidth) / 2;
-      const y = (pageHeight - renderHeight) / 2;
-      pdf.addImage(imgData, "PNG", x, y, renderWidth, renderHeight);
-      const namePart = [guest.formal_salutation, guest.full_name]
-        .filter(Boolean)
-        .join(" ")
-        .replace(/\./g, "")
-        .replace(/\s+/g, "_")
-        .replace(/^_+|_+$/g, "");
-      pdf.save(`${namePart}_${guest.qr_code}.pdf`);
-    } catch (e) {
-      toast.error("Download failed. Please try again.");
-    } finally {
+    const win = window.open("", "_blank");
+    win.document.write(buildPrintHTML(guest, settings));
+    win.document.close();
+    setTimeout(() => {
+      win.focus();
+      win.print();
       setDownloading(false);
-    }
+    }, 900);
   };
 
   const guestName = [guest.formal_salutation, guest.full_name, guest.post_nominals ? `, ${guest.post_nominals}` : ""].filter(Boolean).join(" ");
@@ -122,9 +94,7 @@ export default function InviteDetail() {
       </div>
 
       {/* Invitation Card */}
-      <div ref={cardRef}>
-        <InvitationCard guest={guest} settings={settings} />
-      </div>
+      <InvitationCard guest={guest} settings={settings} />
       {/* Update RSVP / Itinerary Button */}
 <div className="no-print mt-4">
   <a
