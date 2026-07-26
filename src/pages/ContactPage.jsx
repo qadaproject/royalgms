@@ -73,7 +73,7 @@ export default function ContactPage() {
               <p className="text-[#c9a84c] text-[10px] uppercase tracking-[0.3em] font-sans mb-6">Address & Details</p>
               <div className="space-y-6">
                 {[
-                  { icon: MapPin, label: "Address", value: "Royal Protocol Office\nAghofen, Warri Kingdom\nDelta State, Nigeria" },
+                  { icon: MapPin, label: "Address", value: "Olu of Warri Palace\nAghofen, Warri\nDelta State, Nigeria" },
                   { icon: Phone, label: "Telephone", value: "+2348037840906" },
                   { icon: Mail, label: "Email", value: "rsvp@royalgms.com" },
                 ].map(({ icon: Icon, label, value }) => (
