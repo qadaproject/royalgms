@@ -95,13 +95,16 @@ export default function InvitationCard({ guest, settings }) {
           </div>
         </div>
 
+        {/* RSVP line */}
+        <p className="text-[#c9a84c] text-[11px] uppercase tracking-[0.2em] font-semibold mb-3">RSVP - 09163530680, 08037840906</p>
+
         {/* QR Code */}
         <div className="flex justify-center mb-3">
           <div className="bg-white p-3 rounded-xl">
             <img
               src={qrSrc}
               alt="QR"
-              className="w-36 h-36"
+              className="w-24 h-24"
             />
           </div>
         </div>
