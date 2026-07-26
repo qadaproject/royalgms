@@ -49,6 +49,7 @@ function buildPrintHTML(selected, invitations, guests) {
         <div class="detail-item"><span class="detail-label" style="color:${colors.accent}99;">Category</span><span class="detail-value">${cat}</span></div>
         <div class="detail-item"><span class="detail-label" style="color:${colors.accent}99;">Zone</span><span class="detail-value">${g.seating_zone || "—"}</span></div>
       </div>
+      <div style="text-align:center; font-size:10px; letter-spacing:0.15em; text-transform:uppercase; color:${colors.accent}; font-weight:700; margin-top:18px; margin-bottom:4px;">RSVP - 09163530680, 08037840906</div>
       ${g.qr_code ? `
       <div class="qr-section">
         <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(g.qr_code)}" class="qr-img" alt="QR" />

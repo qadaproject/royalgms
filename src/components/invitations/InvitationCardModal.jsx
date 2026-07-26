@@ -143,6 +143,11 @@ function InvitationCard({ guest, eventSettings, qrImgUrl }) {
         </div>
       </div>
 
+      {/* === RSVP === */}
+      <p style={{ textAlign: "center", color: "#c9a84c", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", fontFamily: "'Inter', sans-serif", fontWeight: 600, marginBottom: 8 }}>
+        RSVP - 09163530680, 08037840906
+      </p>
+
       {/* === QR CODE === */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, margin: "16px 0 8px" }}>
         <div style={{ background: "#fff", padding: 8, borderRadius: 8, border: "2px solid #c9a84c" }}>
@@ -231,6 +236,7 @@ export default function InvitationCardModal({ open, onOpenChange, guest, eventSe
   .cz-val { color: #f5ede0; font-size: 9pt; font-weight: 600; }
   .qr-wrap { background: #fff; padding: 6px; border-radius: 6px; border: 2px solid #c9a84c; margin: 6px 0 3px; }
   .qr-wrap img { width: 80px; height: 80px; display: block; }
+  .rsvp-line { color: #c9a84c; font-family: 'Inter', sans-serif; font-size: 8pt; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600; margin-bottom: 3px; }
   .scan-label { color: rgba(201,168,76,0.7); font-family: 'Inter', sans-serif; font-size: 6pt; letter-spacing: 0.18em; text-transform: uppercase; margin-top: 3px; }
   .qr-code { color: #c9a84c; font-family: monospace; font-size: 9pt; font-weight: 700; letter-spacing: 0.2em; margin-top: 2px; }
   .footer { color: rgba(245,237,224,0.3); font-family: 'Inter', sans-serif; font-size: 6pt; font-style: italic; letter-spacing: 0.03em; text-align: center; margin-top: 5px; line-height: 1.5; }
@@ -273,6 +279,7 @@ export default function InvitationCardModal({ open, onOpenChange, guest, eventSe
     </div>
   </div>
 
+  <p class="rsvp-line">RSVP - 09163530680, 08037840906</p>
   <div class="qr-wrap">
     <img src="${qrImgUrl}" alt="QR" />
   </div>

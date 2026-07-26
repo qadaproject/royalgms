@@ -121,6 +121,7 @@ function buildInvitationHTML(guest, invitation, template) {
           <div class="event-val">${guest.seating_zone}</div>
         </div>` : ""}
 
+        <div style="text-align:center; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:${accentColor}; font-weight:bold; margin-bottom:10px;">RSVP - 09163530680, 08037840906</div>
         <div class="qr-section">
           <div class="qr-code">
             <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(guest.qr_code || guest.id)}" width="120" height="120" alt="QR Code" />

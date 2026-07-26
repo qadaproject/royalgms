@@ -102,6 +102,7 @@ export function buildPrintHTML(guest, settings) {
         </div>
       </div>
 
+      <p style="color:#c9a84c;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;text-align:center;font-family:'Inter',sans-serif;font-weight:600;margin-bottom:8px;">RSVP - 09163530680, 08037840906</p>
       <div class="qr-wrap">
         <div class="qr-inner"><img src="${qrImgUrl}" alt="QR Code" style="width:144px;height:144px;display:block;" /></div>
       </div>
