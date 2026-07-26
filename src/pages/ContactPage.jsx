@@ -21,7 +21,7 @@ export default function ContactPage() {
     setSending(true);
     try {
       await base44.integrations.Core.SendEmail({
-        to: "protocol@warrikingdom.org",
+        to: "rsvp@royalgms.com",
         subject: `Contact Form: ${form.name}`,
         body: `Name: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\n\nMessage:\n${form.message}`,
         from_name: "Royal Guest Portal - Contact Form",
@@ -74,8 +74,8 @@ export default function ContactPage() {
               <div className="space-y-6">
                 {[
                   { icon: MapPin, label: "Address", value: "Royal Protocol Office\nAghofen, Warri Kingdom\nDelta State, Nigeria" },
-                  { icon: Phone, label: "Telephone", value: "+234 (0) 800 000 0000" },
-                  { icon: Mail, label: "Email", value: "protocol@warrikingdom.org" },
+                  { icon: Phone, label: "Telephone", value: "+2348037840906" },
+                  { icon: Mail, label: "Email", value: "rsvp@royalgms.com" },
                 ].map(({ icon: Icon, label, value }) => (
                   <div key={label} className="flex gap-4">
                     <div className="w-10 h-10 rounded-full bg-[#1a0a06] border border-[#c9a84c]/30 flex items-center justify-center shrink-0">
