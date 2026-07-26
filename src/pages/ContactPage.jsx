@@ -103,7 +103,7 @@ export default function ContactPage() {
                   <Mail className="w-6 h-6 text-[#c9a84c]" />
                 </div>
                 <h3 className="font-semibold text-[#f5ede0] text-lg mb-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Message Received</h3>
-                <p className="text-[#f5ede0]/50 text-sm font-sans">The Protocol Office will respond within 2 business days.</p>
+                <p className="text-[#f5ede0]/50 text-sm font-sans">The Palace Administration Office will respond within 2 business days.</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
