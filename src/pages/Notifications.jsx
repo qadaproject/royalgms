@@ -403,6 +403,7 @@ export default function Notifications() {
             <SelectItem value="blank">WA Template: blank</SelectItem>
             <SelectItem value="notice">WA Template: notice</SelectItem>
             <SelectItem value="warri_games_invite">WA Template: warri_games_invite</SelectItem>
+            <SelectItem value="sportevent_invite">WA Template: sportevent_invite</SelectItem>
           </SelectContent>
         </Select>
         <Button onClick={sendBulk} disabled={bulkSending || !filteredGuests.length}>
