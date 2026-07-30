@@ -261,6 +261,7 @@ export default function Notifications() {
     let success = true;
     let waDeliveryDetail = "";
     let waMessageId = "";
+    let waPhone = "";
 
     if (ch === "Email" || ch === "Email + SMS" || ch === "Email + WhatsApp") {
       const htmlBody = buildHtmlEmail(guest, emailBody, eventSettings, "email");
@@ -305,6 +306,7 @@ export default function Notifications() {
     if (ch === "WhatsApp" || ch === "Email + WhatsApp") {
       const rawPhone = guest.phone || guest.contact_person_phone;
       const phone = formatPhone(rawPhone);
+      waPhone = phone;
       const guestName = [guest.formal_salutation, guest.full_name, guest.official_title].filter(Boolean).join(", ");
       if (phone) {
         try {
@@ -343,6 +345,20 @@ export default function Notifications() {
       delivery_detail: waDeliveryDetail || "",
       wa_message_id: waMessageId || "",
     });
+
+    // Mirror outgoing WhatsApp sends into the WhatsApp Inbox
+    if ((ch === "WhatsApp" || ch === "Email + WhatsApp") && waPhone && success) {
+      base44.entities.WhatsAppMessage.create({
+        guest_id: guest.id,
+        guest_name: guest.full_name,
+        guest_phone: waPhone,
+        direction: "outgoing",
+        message_text: smsBody.substring(0, 200),
+        wa_message_id: waMessageId || "",
+        status: waDeliveryDetail || "sent",
+        is_read: true,
+      }).catch(() => {});
+    }
 
     base44.entities.GuestActivityLog.create({
       guest_id: guest.id,

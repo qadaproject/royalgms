@@ -12,6 +12,7 @@ import Invitations from './pages/Invitations';
 import Seating from './pages/Seating';
 import Reports from './pages/Reports';
 import Notifications from './pages/Notifications';
+import WhatsAppInbox from './pages/WhatsAppInbox';
 import SecurityCheckpoint from './pages/SecurityCheckpoint';
 import RSVPPortal from './pages/RSVPPortal';
 import EventSettings from './pages/EventSettings';
@@ -103,6 +104,7 @@ const AuthenticatedApp = () => {
           <Route path="/seating" element={<Seating />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/whatsapp-inbox" element={<WhatsAppInbox />} />
           <Route path="/settings" element={<EventSettings />} />
           <Route path="/guest-update-log" element={<GuestUpdateLog />} />
           <Route path="/event-history" element={<EventHistoryPage />} />

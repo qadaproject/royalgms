@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Menu, X, LayoutDashboard, Users, Send, Armchair, BarChart3,
-  Bell, Shield, Settings, Mail, ClipboardList, Globe, Store, MapPin, BookUser, LogOut, Crown, FileText
+  Bell, Shield, Settings, Mail, ClipboardList, Globe, Store, MapPin, BookUser, LogOut, Crown, FileText, MessageCircle
 } from "lucide-react";
 import RoyalCrest from "./RoyalCrest";
 import { base44 } from "@/api/base44Client";
+import { useWhatsAppUnread } from "@/hooks/useWhatsAppUnread";
 
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "chairman", "data_manager", "dispatch_unit", "protocol_liaison", "security"] },
@@ -15,6 +16,7 @@ const navItems = [
   { path: "/invitations", label: "Dispatch Tracker", icon: Send, roles: ["admin", "data_manager", "dispatch_unit"] },
   { path: "/seating", label: "Seating & Protocol", icon: Armchair, roles: ["admin", "chairman", "protocol_liaison"] },
   { path: "/notifications", label: "Notifications", icon: Bell, roles: ["admin", "chairman", "data_manager"] },
+  { path: "/whatsapp-inbox", label: "WhatsApp Inbox", icon: MessageCircle, roles: ["admin", "chairman", "data_manager"] },
   { path: "/reports", label: "Reports", icon: BarChart3, roles: ["admin", "chairman", "data_manager"] },
   { path: "/settings", label: "Event Settings", icon: Settings, roles: ["admin", "chairman"] },
   { path: "/guest-update-log", label: "Guest Update Log", icon: ClipboardList, roles: ["admin", "chairman", "data_manager"] },
@@ -30,6 +32,7 @@ export default function MobileNav({ user }) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const userRole = user?.role || "admin";
+  const unread = useWhatsAppUnread();
 
   const filteredItems = navItems.filter((item) => item.roles.includes(userRole));
 
@@ -62,7 +65,12 @@ export default function MobileNav({ user }) {
                 >
                   <item.icon className={`w-4 h-4 ${isActive ? "text-sidebar-primary" : ""}`} />
                   {item.label}
-                </Link>
+                  {item.path === "/whatsapp-inbox" && unread > 0 && (
+                    <span className="ml-auto bg-[#25D366] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1.5">
+                      {unread > 99 ? "99+" : unread}
+                    </span>
+                  )}
+                  </Link>
               );
             })}
           </nav>

@@ -1,0 +1,54 @@
+{
+  "name": "WhatsAppMessage",
+  "type": "object",
+  "properties": {
+    "guest_id": {
+      "type": "string",
+      "description": "Reference to Guest (may be empty for unmatched senders)"
+    },
+    "guest_name": {
+      "type": "string",
+      "description": "Cached guest name or phone"
+    },
+    "guest_phone": {
+      "type": "string",
+      "description": "Normalized E.164 phone number"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "incoming",
+        "outgoing"
+      ]
+    },
+    "message_text": {
+      "type": "string",
+      "description": "Message body text"
+    },
+    "wa_message_id": {
+      "type": "string",
+      "description": "Meta WhatsApp message id (wamid) for status matching"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "sent",
+        "delivered",
+        "read",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the admin has read this incoming message"
+    }
+  },
+  "required": [
+    "guest_phone",
+    "direction",
+    "message_text"
+  ]
+}
