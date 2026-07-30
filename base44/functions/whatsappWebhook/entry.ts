@@ -44,63 +44,7 @@ Deno.serve(async (req) => {
       for (const entry of entries) {
         const changes = entry.changes || [];
         for (const change of changes) {
-          const value = change.value || {};
-
-          // --- Incoming messages from guests ---
-          const messages = value.messages || [];
-          const contacts = value.contacts || [];
-          for (const message of messages) {
-            const fromPhone = message.from || "";
-            const msgId = message.id || "";
-            if (!fromPhone || !msgId) continue;
-            const type = message.type || "unknown";
-            let text = "";
-            if (type === "text") text = message.text?.body || "";
-            else if (type === "button") text = message.button?.text || "";
-            else if (type === "interactive") text = message.interactive?.button?.text || message.interactive?.list_reply?.title || message.interactive?.nfm_reply?.body || "";
-            else if (type === "image") text = message.image?.caption || "[Image]";
-            else if (type === "video") text = message.video?.caption || "[Video]";
-            else if (type === "audio") text = "[Audio]";
-            else if (type === "document") text = message.document?.caption || "[Document]";
-            else if (type === "location") text = "[Location]";
-            else text = "[" + type + "]";
-
-            const fromName = contacts.find((c) => c.wa_id === fromPhone)?.profile?.name || "";
-
-            // Best-effort guest lookup by phone (E.164 and local 0 variant)
-            let guestId = "";
-            let guestName = fromName;
-            try {
-              let found = await base44.asServiceRole.entities.Guest.filter({ phone: fromPhone });
-              if (!found.length) {
-                const localPhone = "0" + fromPhone.slice(3);
-                found = await base44.asServiceRole.entities.Guest.filter({ phone: localPhone });
-              }
-              if (!found.length) found = await base44.asServiceRole.entities.Guest.filter({ contact_person_phone: fromPhone });
-              if (found.length) { guestId = found[0].id; guestName = found[0].full_name; }
-            } catch (e) {
-              console.error("Guest lookup failed: " + e.message);
-            }
-
-            try {
-              await base44.asServiceRole.entities.WhatsAppMessage.create({
-                guest_id: guestId,
-                guest_name: guestName,
-                phone: fromPhone,
-                direction: "in",
-                message_type: type,
-                message_text: text,
-                status: "received",
-                wa_message_id: msgId,
-                from_name: fromName,
-              });
-            } catch (e) {
-              console.error("Failed to store incoming WhatsApp message: " + e.message);
-            }
-          }
-
-          // --- Delivery status updates for outgoing messages ---
-          const statuses = value.statuses || [];
+          const statuses = change.value?.statuses || [];
           for (const status of statuses) {
             const messageId = status.id;
             const statusValue = status.status; // sent, delivered, read, failed
@@ -114,25 +58,10 @@ Deno.serve(async (req) => {
             try {
               const logs = await base44.asServiceRole.entities.NotificationLog.filter({ wa_message_id: messageId });
               for (const log of logs) {
-                await base44.asServiceRole.entities.NotificationLog.update(log.id, {
-                  delivery_detail: deliveryDetail,
-                  status: statusValue === "failed" ? "Failed" : log.status,
-                });
+                await base44.asServiceRole.entities.NotificationLog.update(log.id, { delivery_detail: deliveryDetail });
               }
             } catch (e) {
               console.error("Failed to update notification log: " + e.message);
-            }
-
-            try {
-              const wms = await base44.asServiceRole.entities.WhatsAppMessage.filter({ wa_message_id: messageId });
-              for (const wm of wms) {
-                await base44.asServiceRole.entities.WhatsAppMessage.update(wm.id, {
-                  status: statusValue === "failed" ? "failed" : statusValue,
-                  delivery_detail: deliveryDetail,
-                });
-              }
-            } catch (e) {
-              console.error("Failed to update WhatsApp message status: " + e.message);
             }
           }
         }
