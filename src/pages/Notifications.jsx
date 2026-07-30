@@ -139,6 +139,7 @@ const DEFAULT_EMAIL_SUBJECT = `Royal RSVP — 5th Coronation Anniversary of Òg�
 export default function Notifications() {
   const [sending, setSending] = useState({});
   const [channel, setChannel] = useState("Email");
+  const [waTemplate, setWaTemplate] = useState("notice");
   const [bulkSending, setBulkSending] = useState(false);
   const [search, setSearch] = useState("");
   const [rsvpFilter, setRsvpFilter] = useState("All");
@@ -312,6 +313,7 @@ export default function Notifications() {
             phone,
             name: guestName,
             qr_code: guest.qr_code,
+            template: waTemplate,
           });
           if (res?.data?.error) {
             success = false;
@@ -391,6 +393,16 @@ export default function Notifications() {
             <SelectItem value="WhatsApp">WhatsApp</SelectItem>
             <SelectItem value="Email + SMS">Email + SMS</SelectItem>
             <SelectItem value="Email + WhatsApp">Email + WhatsApp</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={waTemplate} onValueChange={setWaTemplate}>
+          <SelectTrigger className="w-52 h-9">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="blank">WA Template: blank</SelectItem>
+            <SelectItem value="notice">WA Template: notice</SelectItem>
+            <SelectItem value="warri_games_invite">WA Template: warri_games_invite</SelectItem>
           </SelectContent>
         </Select>
         <Button onClick={sendBulk} disabled={bulkSending || !filteredGuests.length}>
@@ -632,6 +644,9 @@ export default function Notifications() {
               <div className="bg-muted/30 rounded-lg p-3">
                 <p className="font-semibold text-sm">{confirmGuest.guest.formal_salutation} {confirmGuest.guest.full_name}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{confirmGuest.channel === "Email" ? (confirmGuest.guest.email || confirmGuest.guest.contact_person_email || "No email") : (confirmGuest.guest.phone || confirmGuest.guest.contact_person_phone || "No phone")}</p>
+                {confirmGuest.channel.includes("WhatsApp") && (
+                  <p className="text-xs text-muted-foreground mt-0.5">WhatsApp template: <span className="font-medium text-foreground">{waTemplate}</span></p>
+                )}
               </div>
               <div className="flex gap-3">
                 <Button variant="outline" className="flex-1" onClick={() => setConfirmGuest(null)}>Cancel</Button>

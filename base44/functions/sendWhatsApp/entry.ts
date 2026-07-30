@@ -1,6 +1,6 @@
 Deno.serve(async (req) => {
   try {
-    const { phone, name, qr_code } = await req.json();
+    const { phone, name, qr_code, template } = await req.json();
 
     if (!phone || !name || !qr_code) {
       return Response.json({ error: 'phone, name, and qr_code are required' }, { status: 400 });
@@ -44,50 +44,63 @@ Deno.serve(async (req) => {
       isInternational = true;
     }
 
+    const templateName = template || "notice";
+
+    // Templates that share the standard invitation component structure
+    // (header image, body token + name, two call-to-action URL buttons).
+    // "blank" is sent with no components (plain template).
+    const TEMPLATES_WITH_COMPONENTS = ["notice", "warri_games_invite"];
+
+    const buildComponents = () => [
+      {
+        type: "header",
+        parameters: [
+          {
+            type: "image",
+            image: {
+              link: "https://media.base44.com/images/public/69f83e971133ed44e3fc81f6/97538d805_ogiame2.jpg"
+            }
+          }
+        ]
+      },
+      {
+        type: "body",
+        parameters: [
+          { type: "text", text: qr_code },
+          { type: "text", text: name }
+        ]
+      },
+      {
+        type: "button",
+        sub_type: "url",
+        index: 0,
+        parameters: [
+          { type: "text", text: qr_code }
+        ]
+      },
+      {
+        type: "button",
+        sub_type: "url",
+        index: 1,
+        parameters: [
+          { type: "text", text: qr_code }
+        ]
+      }
+    ];
+
+    const templatePayload = {
+      name: templateName,
+      language: { code: "en" },
+      ...(TEMPLATES_WITH_COMPONENTS.includes(templateName)
+        ? { components: buildComponents() }
+        : {}),
+    };
+
     const payload = {
       messaging_product: "whatsapp",
       to: recipient,
       type: "template",
-      template: {
-        name: "notice",
-        language: { code: "en" },
-        components: [
-          {
-            type: "header",
-            parameters: [
-              {
-                type: "image",
-                image: {
-                  link: "https://media.base44.com/images/public/69f83e971133ed44e3fc81f6/97538d805_ogiame2.jpg"
-                }
-              }
-            ]
-          },
-          {
-            type: "body",
-            parameters: [
-              { type: "text", text: qr_code },
-              { type: "text", text: name }
-            ]
-          },
-          {
-            type: "button",
-            sub_type: "url",
-            index: 0,
-            parameters: [
-              { type: "text", text: qr_code }
-            ]
-          },
-          {
-            type: "button",
-            sub_type: "url",
-            index: 1,
-            parameters: [
-              { type: "text", text: qr_code }
-            ]
-          }
-        ]
-      }
+      template: templatePayload,
     };
 
     const response = await fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/messages?appsecret_proof=${appsecretProof}`, {
