@@ -331,6 +331,20 @@ export default function Notifications() {
       }
     }
 
+    if ((ch === "WhatsApp" || ch === "Email + WhatsApp") && waMessageId) {
+      base44.entities.WhatsAppMessage.create({
+        guest_id: guest.id,
+        guest_name: guest.full_name,
+        phone: formatPhone(guest.phone || guest.contact_person_phone) || "",
+        direction: "out",
+        message_type: "template",
+        template_name: waTemplate,
+        message_text: `WhatsApp template: ${waTemplate}`,
+        status: waDeliveryDetail || "sent",
+        wa_message_id: waMessageId,
+      }).catch(() => {});
+    }
+
     const rawPhoneForLog = guest.phone || guest.contact_person_phone || "";
     await logMutation.mutateAsync({
       guest_id: guest.id,
