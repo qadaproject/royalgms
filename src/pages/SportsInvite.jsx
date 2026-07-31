@@ -14,7 +14,7 @@ import { getTierForCategory } from "@/lib/guestTiers";
 import { format } from "date-fns";
 
 const APP_URL = window.location.origin;
-const WHATSAPP_TEMPLATE = "warri_games_invite";
+const WHATSAPP_TEMPLATE = "sportevent_invite";
 
 function buildInviteLink(guest, source) {
   const base = `${APP_URL}/invite-detail?ref=${guest.qr_code}`;
