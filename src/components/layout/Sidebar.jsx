@@ -18,6 +18,7 @@ import {
   BookUser,
   FileText,
   MessageCircle,
+  Trophy,
 } from "lucide-react";
 import RoyalCrest from "./RoyalCrest";
 import { base44 } from "@/api/base44Client";
@@ -32,6 +33,7 @@ const navItems = [
   { path: "/seating", label: "Seating & Protocol", icon: Armchair, roles: ["admin", "chairman", "protocol_liaison"] },
   { path: "/notifications", label: "Notifications", icon: Bell, roles: ["admin", "chairman", "data_manager"] },
   { path: "/whatsapp-inbox", label: "WhatsApp Inbox", icon: MessageCircle, roles: ["admin", "chairman", "data_manager"] },
+  { path: "/sports-invite", label: "Sports Invite", icon: Trophy, roles: ["admin", "chairman", "data_manager"] },
   { path: "/reports", label: "Reports", icon: BarChart3, roles: ["admin", "chairman", "data_manager"] },
   { path: "/settings", label: "Event Settings", icon: Settings, roles: ["admin", "chairman"] },
   { path: "/guest-update-log", label: "Guest Update Log", icon: ClipboardList, roles: ["admin", "chairman", "data_manager"] },

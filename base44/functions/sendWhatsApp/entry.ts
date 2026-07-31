@@ -1,6 +1,6 @@
 Deno.serve(async (req) => {
   try {
-    const { phone, name, qr_code } = await req.json();
+    const { phone, name, qr_code, template_name } = await req.json();
 
     if (!phone || !name || !qr_code) {
       return Response.json({ error: 'phone, name, and qr_code are required' }, { status: 400 });
@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
       to: recipient,
       type: "template",
       template: {
-        name: "notice",
+        name: template_name || "notice",
         language: { code: "en" },
         components: [
           {
